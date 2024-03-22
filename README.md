@@ -1,70 +1,44 @@
-# Getting Started with Create React App
+2024/03/22 updated
+# installation（for Mac）
+1. homebrewのインストール  
+   [homebrewのページ](https://brew.sh/ja/)を開いてインストールコマンドをターミナルにコピペ&実行．  
+   パス等の設定ができていない場合はそれも行う．
+2. nodebrewのインストール
+   ```
+   brew install nodebrew  
+   # nodebrewインストール用ディレクトリ作成
+   mkdir ~/.nodebrew
+   mkdir ~/.nodebrew/src
+   ```
+3. nodeインストールインストール
+   ```
+   # 安定版インストール
+   nodebrew install-binary stable
+   ```
+4. nodeのバージョンを選択
+   ```
+   # インストールしたバージョンの確認
+   nodebrew ls
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+   # 使用するバージョン選択
+   nodebrew use {バージョンを記入}
 
-## Available Scripts
+   # パスを通す
+   export PATH=$HOME/.nodebrew/current/bin:$PATH
 
-In the project directory, you can run:
+   # ターミナルを再起動するか以下で設定リロード
+   # zshrcの部分は設定が書いてあるファイル
+   source ~/.zshrc
 
-### `npm start`
+   # バージョン確認
+   node -v
+   npm -v
+   ```
+5. アプリケーションの起動
+   ```
+   # ディレクトリ移動
+   cd dsa_front
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+   # スタート
+   npm start
+   ```
