@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const DEFAULT_OPTION = '問題を選択してください';
 interface DropdownProps {
@@ -8,6 +8,11 @@ interface DropdownProps {
 
 const Dropdown: React.FC<DropdownProps> = ({ subAssignmentsDropdown, onSelect }) => {
   const [selected, setSelected] = useState('');
+
+  // ページ遷移した時に選択肢をリセット
+  useEffect(() => {
+    setSelected('');
+  }, [subAssignmentsDropdown]);
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
