@@ -4,7 +4,16 @@ import { SubAssignmentDropdown, SubAssignmentDetail } from '../types/Assignments
 import { fetchSubAssignmentDetail, fetchSubAssignments } from '../api/GetAPI';
 import Dropdown from '../components/Dropdown';
 import CodeBlock from '../components/CodeBlock';
+import Accordion from '../components/Accordion';
 
+const codeLines = [
+	"# Example Code",
+	"def hello_world():",
+	"    print('Hello, world!')",
+	"",
+	"hello_world()"
+  ];
+  
 
 const SubmissionPage: React.FC = () => {
 	const { problemNum } = useParams<{ problemNum: string }>();
@@ -37,11 +46,16 @@ const SubmissionPage: React.FC = () => {
 				<div>
 					<h2>課題詳細</h2>
 					<h3>使用するmakefile</h3>
+					<p>※提出された関数ファイルはテスト用のmainファイルと以下のmakefileを使ってコンパイルされます。</p>
 					<CodeBlock lines={subAssignmentDetail.makefile.split('\n')} />
 					<h3>提出するファイル名</h3>
+					<p>以下のファイルを提出してください．</p>
 					<ul>
 						<li>{subAssignmentDetail.required_file_name}</li>
 					</ul>
+					<h3>テストに使用するmainファイル</h3>
+					<Accordion title={subAssignmentDetail.test_file_name} content={codeLines} />
+					<h3>期待する出力</h3>
 				</div>
 			)}
 		</div>
