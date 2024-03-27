@@ -5,15 +5,8 @@ import { fetchSubAssignmentDetail, fetchSubAssignments } from '../api/GetAPI';
 import Dropdown from '../components/Dropdown';
 import CodeBlock from '../components/CodeBlock';
 import Accordion from '../components/Accordion';
+import FileUploadBox from '../components/FileUploadBox';
 
-const codeLines = [
-	"# Example Code",
-	"def hello_world():",
-	"    print('Hello, world!')",
-	"",
-	"hello_world()"
-  ];
-  
 
 const SubmissionPage: React.FC = () => {
 	const { problemNum } = useParams<{ problemNum: string }>();
@@ -58,7 +51,7 @@ const SubmissionPage: React.FC = () => {
 	}
 
 	return (
-		<div>
+		<div style={{ paddingBottom: '100px'}}>
 			<h1>課題{problemNum}確認ページ</h1>
 			<Dropdown subAssignmentsDropdown={subAssignmentsDropdown} onSelect={handleSelect} />
 			{subAssignmentDetail && (
@@ -73,9 +66,20 @@ const SubmissionPage: React.FC = () => {
 						<li>{subAssignmentDetail.required_file_name}</li>
 					</ul>
 					<h3>テストに使用するmainファイル</h3>
-					<Accordion title={subAssignmentDetail.test_file_name} content={codeLines} />
+					{subAssignmentDetail.test_program ? (
+						<Accordion title={subAssignmentDetail.test_file_name} content={subAssignmentDetail.test_program.split('\n')} />
+					) : (
+						<div style={{ color: 'red' }}>データの取得に失敗しました．リロードしても失敗する場合はTAに連絡してください．</div>
+					)}
 					<h3>期待する出力</h3>
-					<CodeBlock lines={subAssignmentDetail.test_output.split('\n')} />
+					{subAssignmentDetail.test_output ? (
+						<CodeBlock lines={subAssignmentDetail.test_output.split('\n')} />
+					) : (
+						<div style={{ color : 'red' }}>データの取得に失敗しました．リロードしても失敗する場合はTAに連絡してください．</div>
+					)}
+					<h3>提出</h3>
+					<p>指定されたファイルを選択し，アップロードしてください．ファイルはドラッグ&ドロップでも選択可能です．</p>
+					<FileUploadBox fileName={subAssignmentDetail.required_file_name} fileNum={1} />
 				</div>
 			)}
 		</div>
