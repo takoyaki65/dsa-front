@@ -17,17 +17,17 @@ const Sidebar: React.FC = () => {
 
     // 現在の日付がstart_dateとend_dateの間にある課題のみをフィルタリング
     const now = new Date();
-    const filteredAssignments = assignments.filter(assignment => {
-      const startDate = new Date(assignment.start_date);
-      const endDate = new Date(assignment.end_date);
-      return startDate <= now && now <= endDate;
-    });
+    // const filteredAssignments = assignments.filter(assignment => {
+    //   const startDate = new Date(assignment.start_date);
+    //   const endDate = new Date(assignment.end_date);
+    //   return startDate <= now && now <= endDate;
+    // });
   
     return (
       <div className="sidebar">
         <ul>
           <Link to="/"><h3>ホーム</h3></Link>
-          {filteredAssignments.map(assignment => (
+          {assignments.map(assignment => (
             <li key={assignment.id}>
               <Link to={`/submission/${assignment.id}`}>
                 <h3>{assignment.title}</h3>

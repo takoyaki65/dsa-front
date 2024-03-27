@@ -4,12 +4,13 @@ import { Assignment, SubAssignmentDropdown, SubAssignmentDetail } from '../types
 export const fetchAssignments = async (): Promise<Assignment[]> => {
     try {
         const response = await fetch('http://localhost:8000/api/v1/assignments/', { mode: 'cors' });
+        if (!response.ok) {
+            throw new Error('課題データの取得に失敗しました');
+        }
         const data = await response.json();
-        console.log(data);
-        return data; // 修正箇所
+        return data;
     } catch (error) {
-        console.error('課題データの取得に失敗しました', error);
-        return [];
+        throw error;
     }
 };
 
@@ -17,12 +18,14 @@ export const fetchAssignments = async (): Promise<Assignment[]> => {
 export const fetchSubAssignments = async (id: string): Promise<SubAssignmentDropdown[]> => {
     try {
         const response = await fetch(`http://localhost:8000/api/v1/assignments/${id}`, { mode: 'cors' });
+        if (!response.ok) {
+            throw new Error('課題データの取得に失敗しました');
+        }
         const data = await response.json();
-        console.log(data);
-        return data; // 修正箇所
+        return data;
     } catch (error) {
         console.error('課題データの取得に失敗しました', error);
-        return [];
+        throw error;
     }
 };
 
@@ -30,11 +33,12 @@ export const fetchSubAssignments = async (id: string): Promise<SubAssignmentDrop
 export const fetchSubAssignmentDetail = async (id: string, sub_id: string): Promise<SubAssignmentDetail | null> => {
     try {
         const response = await fetch(`http://localhost:8000/api/v1/assignments/${id}/${sub_id}`, { mode: 'cors' });
+        if (!response.ok) {
+            throw new Error('課題データの取得に失敗しました');
+        }
         const data = await response.json();
-        console.log(data);
-        return data; // 修正箇所
+        return data;
     } catch (error) {
-        console.error('課題データの取得に失敗しました', error);
-        return null;
+        throw error;
     }
 };

@@ -19,10 +19,16 @@ const SubmissionPage: React.FC = () => {
 	const { problemNum } = useParams<{ problemNum: string }>();
 	const [subAssignmentsDropdown, setSubAssignmentsDropdown] = useState<SubAssignmentDropdown[]>([]);
 	const [subAssignmentDetail, setSubAssignmentDetail] = useState<SubAssignmentDetail | null>(null);
+	const [hasError, setHasError] = useState(false);
 	useEffect(() => {
 		const getSubAssignmentsDropdown = async () => {
-			const data = await fetchSubAssignments(problemNum ?? '');
-			setSubAssignmentsDropdown(data);
+			try {
+				const data = await fetchSubAssignments(problemNum ?? '');
+				setSubAssignmentsDropdown(data);
+				setHasError(false); // 成功した場合はエラー状態をリセット
+			} catch (error) {
+				setHasError(true); // エラーが発生した場合はエラー状態をtrueに
+			}
 		};
 		setSubAssignmentsDropdown([]);
 		setSubAssignmentDetail(null);
@@ -34,9 +40,22 @@ const SubmissionPage: React.FC = () => {
 			setSubAssignmentDetail(null);
 			return;
 		}
-		const detail = await fetchSubAssignmentDetail(id.toString(), subId.toString());
-		setSubAssignmentDetail(detail);
+		try {
+			const detail = await fetchSubAssignmentDetail(id.toString(), subId.toString());
+			setSubAssignmentDetail(detail);
+			setHasError(false); // 成功した場合はエラー状態をリセット
+		} catch (error) {
+			setHasError(true); // エラーが発生した場合はエラー状態をtrueに
+		}
 	};
+
+	if (hasError) {
+		// エラーがある場合はNotFoundメッセージを表示
+		return <>
+		<h1>Not Found</h1>
+		<div>指定された課題は存在しないか，未公開です．</div>
+		</>;
+	}
 
 	return (
 		<div>
@@ -56,6 +75,7 @@ const SubmissionPage: React.FC = () => {
 					<h3>テストに使用するmainファイル</h3>
 					<Accordion title={subAssignmentDetail.test_file_name} content={codeLines} />
 					<h3>期待する出力</h3>
+					<CodeBlock lines={subAssignmentDetail.test_output.split('\n')} />
 				</div>
 			)}
 		</div>
