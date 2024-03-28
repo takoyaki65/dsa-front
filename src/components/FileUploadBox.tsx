@@ -2,11 +2,13 @@ import React, { useState, useRef } from 'react';
 import { uploadFile } from '../api/PostAPI';
 
 interface FileUploadProps {
+    id: number;
+    sub_id: number;
     fileName: string;
     fileNum?: number;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ fileName, fileNum }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ id, sub_id, fileName, fileNum }) => {
     const [file, setFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,7 +54,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ fileName, fileNum }) => {
         event.preventDefault();
         if (file && !error) { // Only attempt to upload if there's a file and no error
             try {
-                const filename = await uploadFile(file);
+                const filename = await uploadFile(file, id, sub_id);
                 console.log(`File uploaded: ${filename}`);
                 setError(null);
             } catch (error) {
