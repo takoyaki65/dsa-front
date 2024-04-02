@@ -6,17 +6,18 @@ import Dropdown from '../components/Dropdown';
 import CodeBlock from '../components/CodeBlock';
 import Accordion from '../components/Accordion';
 import FileUploadBox from '../components/FileUploadBox';
-
+import {useAuth} from '../context/AuthContext';
 
 const SubmissionPage: React.FC = () => {
 	const { problemNum } = useParams<{ problemNum: string }>();
 	const [subAssignmentsDropdown, setSubAssignmentsDropdown] = useState<SubAssignmentDropdown[]>([]);
 	const [subAssignmentDetail, setSubAssignmentDetail] = useState<SubAssignmentDetail | null>(null);
 	const [hasError, setHasError] = useState(false);
+	const { token } = useAuth();
 	useEffect(() => {
 		const getSubAssignmentsDropdown = async () => {
 			try {
-				const data = await fetchSubAssignments(problemNum ?? '');
+				const data = await fetchSubAssignments(problemNum ?? '', token);
 				setSubAssignmentsDropdown(data);
 				setHasError(false); // 成功した場合はエラー状態をリセット
 			} catch (error) {
@@ -34,7 +35,7 @@ const SubmissionPage: React.FC = () => {
 			return;
 		}
 		try {
-			const detail = await fetchSubAssignmentDetail(id.toString(), subId.toString());
+			const detail = await fetchSubAssignmentDetail(id.toString(), subId.toString(), token);
 			setSubAssignmentDetail(detail);
 			setHasError(false); // 成功した場合はエラー状態をリセット
 		} catch (error) {
