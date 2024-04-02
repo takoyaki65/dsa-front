@@ -11,7 +11,6 @@ const Dropdown: React.FC<DropdownProps> = ({ subAssignmentsDropdown, onSelect })
     
     // ページ遷移した時に選択肢をリセット
     useEffect(() => {
-        console.log(subAssignmentsDropdown);
         setSelected('');
     }, [subAssignmentsDropdown]);
 
