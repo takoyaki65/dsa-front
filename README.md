@@ -1,17 +1,14 @@
 2024/03/22 updated
 # installation（for Mac）
-1. homebrewのインストール  
-   [homebrewのページ](https://brew.sh/ja/)を開いてインストールコマンドをターミナルにコピペ&実行．  
-   パス等の設定ができていない場合はそれも行う．
 
-2. nodebrewのインストール
+1. nodebrewのインストール
    ```sh
    brew install nodebrew  
    # nodebrewインストール用ディレクトリ作成
    mkdir ~/.nodebrew
    mkdir ~/.nodebrew/src
    ```
-3. nodeインストール
+2. nodeインストール
    ```sh
    # 安定版インストール
    nodebrew install-binary stable
@@ -33,19 +30,8 @@
    node -v
    npm -v
    ```
-4. gitのインストール
-   ```sh
-   # インストール
-   brew install git
 
-   # パスを通す
-   # zshrcの部分は設定が書いてあるファイル
-   echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
-
-   # ターミナルを再起動するか以下で設定リロード
-   source ~/.zshrc
-   ```
-5. リポジトリをクローン
+3. リポジトリをクローン(dsa_projectのクローンでまとめて行われるはずなので基本的には不要)
    ```sh
    # 作業したいディレクトリへ移動
    cd {ディレクトリのパス}
@@ -54,7 +40,7 @@
    git clone https://github.com/zakkii-k/dsa_front.git
    ```
 
-6. アプリケーションの起動
+4. アプリケーションの起動(dsa_projectのdocker起動時に起動されるので基本的には不要)
    ```sh
    # ディレクトリ移動
    cd dsa_front
