@@ -34,7 +34,6 @@ const UserDeletePage: React.FC = () => {
         
         try {
             await deleteUsers({user_ids: selectedUsers}, token);
-            console.log(`Deleting users with IDs: ${selectedUsers.join(', ')}`);
             alert('選択されたユーザーが正常に削除されました。');
             const updatedUserList = await fetchUserList(token);
             setUsers(updatedUserList);
@@ -48,6 +47,10 @@ const UserDeletePage: React.FC = () => {
     if (user_id === null) {
         return <p>ログインしていません。</p>;
     }
+    if (!is_admin) {
+        return <p>管理者権限がありません。</p>;
+    }
+
     return (
         <div>
             <h2>ユーザー削除</h2>

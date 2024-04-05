@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { LoginCredentials, CreateUser } from '../types/user';
 import { Token } from '../types/token';
+import { ProgressMessage } from '../types/Assignments';
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
-
-// ファイルをアップロードする関数
+// ファイルをアップロードする関数(多分uploadFileWithProgressに切り替える)
 export const uploadFile = async (file: File, id: number, sub_id: number): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -14,10 +14,8 @@ export const uploadFile = async (file: File, id: number, sub_id: number): Promis
             "Content-Type": "multipart/form-data",
             },
         });
-        console.log('File uploaded successfully', response.data);
-        return response.data.result; // または適切なレスポンスを返します。
+        return response.data.filename; // uuidが付加されたファイル名を返す
     } catch (error) {
-        console.error('Error uploading file', error);
         throw error; // エラーを呼び出し元に伝播させる
     }
 };
@@ -27,10 +25,8 @@ export const createUser = async (user: CreateUser, token: string | null): Promis
     try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await axios.post(`${API_PREFIX}/users/register`, user, { headers });
-        console.log('User created successfully', response.data);
         return response.data.result;
     } catch (error) {
-        console.error('Error creating user', error);
         throw error;
     }
 }
@@ -45,7 +41,6 @@ export const login = async (credentials: LoginCredentials): Promise<Token> => {
         const response = await axios.post<Token>(`${API_PREFIX}/authorize/token`, formData);
         return response.data; 
     } catch (error) {
-        console.error('Error logging in', error);
         throw error;
     }
 }
@@ -55,7 +50,6 @@ export const logout = async (token: string): Promise<void> => {
         const headers = { Authorization: `Bearer ${token}` };
         await axios.post(`${API_PREFIX}/authorize/logout`, {}, { headers });
     } catch (error) {
-        console.error('Error logging out', error);
         throw error;
     }
 }

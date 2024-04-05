@@ -16,7 +16,6 @@ const LoginPage: React.FC = () => {
         e.preventDefault();
         try {
             const result = await login(credentials);
-            console.log('Login successful:', result);
             setError('');
             setToken(result.access_token); 
             setUserId(result.user_id);

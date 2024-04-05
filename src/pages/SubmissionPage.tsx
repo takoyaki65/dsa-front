@@ -7,11 +7,13 @@ import CodeBlock from '../components/CodeBlock';
 import Accordion from '../components/Accordion';
 import FileUploadBox from '../components/FileUploadBox';
 import {useAuth} from '../context/AuthContext';
-
+import { ProgressMessage } from '../types/Assignments';
+import ProgressBar from '../components/ProgressBar';
 const SubmissionPage: React.FC = () => {
 	const { problemNum } = useParams<{ problemNum: string }>();
 	const [subAssignmentsDropdown, setSubAssignmentsDropdown] = useState<SubAssignmentDropdown[]>([]);
 	const [subAssignmentDetail, setSubAssignmentDetail] = useState<SubAssignmentDetail | null>(null);
+	const [progressMessage, setProgressMessage] = useState<ProgressMessage | null>(null);
 	const [hasError, setHasError] = useState(false);
 	const { token } = useAuth();
 	useEffect(() => {
@@ -24,6 +26,7 @@ const SubmissionPage: React.FC = () => {
 				setHasError(true); // エラーが発生した場合はエラー状態をtrueに
 			}
 		};
+		setProgressMessage(null);
 		setSubAssignmentsDropdown([]);
 		setSubAssignmentDetail(null);
 		getSubAssignmentsDropdown();
@@ -80,17 +83,13 @@ const SubmissionPage: React.FC = () => {
 					)}
 					<h3>提出</h3>
 					<p>指定されたファイルを選択し，アップロードしてください．ファイルはドラッグ&ドロップでも選択可能です．</p>
-					<FileUploadBox id={subAssignmentDetail.id} sub_id={subAssignmentDetail.sub_id} fileName={subAssignmentDetail.required_file_name} fileNum={1} />
+					<FileUploadBox id={subAssignmentDetail.id} sub_id={subAssignmentDetail.sub_id} fileName={subAssignmentDetail.required_file_name} onProgressUpdate={setProgressMessage} isProcessing={!!progressMessage && progressMessage.progress_percentage >= 0 && progressMessage.progress_percentage < 100}/>
+					{progressMessage && <ProgressBar progress={progressMessage} />}
 				</div>
 			)}
 		</div>
 	);
-	return (
-		<div>
-		<h1>課題{problemNum}確認ページ</h1>
-		<p>問題番号 {problemNum} に対する提出作業を行ってください。</p>
-		</div>
-	);
+	
 };
 
 export default SubmissionPage;
