@@ -14,19 +14,23 @@ export const startProcessingWithProgress = (
 ) => {
     const ws = new WebSocket(`${API_WS_PREFIX}/assignments/ws/${id}/${sub_id}`);
     let lastHeartbeat = Date.now();
+    let processingCompleted = false;
+    let heartbeatTimerId: NodeJS.Timeout | null = null;
 
     const checkHeartbeat = () => {
-        if (ws.readyState === WebSocket.CLOSED) {
+        if (ws.readyState === WebSocket.CLOSED && processingCompleted) {
             return; // WebSocketが閉じている場合は、チェックを中止
         }
-    
+        if (heartbeatTimerId !== null) {
+            clearTimeout(heartbeatTimerId);
+        }
         const now = Date.now();
         if (now - lastHeartbeat > 20000) {  // 最後のハートビートから20秒以上経過している場合
             console.error("Connection lost or server is down");
             onProgress({ status: 'error', message: 'サーバーとの接続が切れました. 再度アップロードボタンを押して再試行してください．', progress_percentage: -1 });
             ws.close();
         } else {
-            setTimeout(checkHeartbeat, 10000);  // 10秒後に再度チェック
+            setTimeout(checkHeartbeat, 5000);  // 5秒後に再度チェック
         }
     };
 
@@ -39,10 +43,14 @@ export const startProcessingWithProgress = (
     ws.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
+            console.log('Received message:', data);
             if (data.type === "heartbeat" && data.message === "ping") {
                 lastHeartbeat = Date.now();  // ハートビートのタイムスタンプを更新
             } else {
                 onProgress(data);
+                if (data.status === 'done') {
+                    processingCompleted = true;
+                }
             }
         } catch (error) {
             console.error('Error parsing message:', error);
@@ -56,11 +64,12 @@ export const startProcessingWithProgress = (
     };
 
     ws.onclose = (event) => {
-        if (event.wasClean) {
-            // console.log('WebSocket closed cleanly');
-        } else {
+        if (heartbeatTimerId !== null) {
+            clearTimeout(heartbeatTimerId);
+        }
+        if (!event.wasClean) {
             console.error('WebSocket closed with error:', event);
-            onProgress({ status: 'error', message: 'WebSocketが予期せず閉じました。', progress_percentage: -1 });
+            onProgress({ status: 'error', message: 'WebSocketが予期せず閉じました. 再度アップロードボタンを押して再試行してください.', progress_percentage: -1 });
         }
     };
 

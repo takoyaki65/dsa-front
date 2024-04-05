@@ -89,7 +89,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ id, sub_id, fileName, onProgres
                 <button disabled={isProcessing} type="button" onClick={() => fileInputRef.current?.click()} style={{ width: 'auto', padding: '10px', margin: '10px 0' }}>ファイルを選択</button>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
-                <button type="button" onClick={handleCancel} disabled={!file} style={{ width: 'auto', padding: '10px' }}>選択取り消し</button>
+                <button type="button" onClick={handleCancel} disabled={!file || isProcessing} style={{ width: 'auto', padding: '10px' }}>選択取り消し</button>
                 <button type="button" onClick={handleSubmit} disabled={!file || !isNameCorrect || isProcessing} style={{ width: 'auto', padding: '10px' }}>アップロード</button>
             </div>
         </>
