@@ -7,9 +7,10 @@ interface FileUploadProps {
     sub_id: number;
     fileName: string;
     onProgressUpdate: (progress: ProgressMessage | null) => void; // 進行状況を親コンポーネントに通知するためのコールバック
+    isProcessing?: boolean;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ id, sub_id, fileName, onProgressUpdate }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ id, sub_id, fileName, onProgressUpdate, isProcessing }) => {
     const [file, setFile] = useState<File | null>(null);
     const [isNameCorrect, setIsNameCorrect] = useState<boolean | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -85,11 +86,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ id, sub_id, fileName, onProgres
                 {/* Always reserve space for error message */}
                 <p style={{ color: 'red', minHeight: '20px' }}>{isNameCorrect !== null && !isNameCorrect ? `ファイル名が違います．${fileName}を提出してください．` : ''}</p>
                 <input type="file" onChange={handleFileChange} ref={fileInputRef} style={{ display: 'none' }} />
-                <button type="button" onClick={() => fileInputRef.current?.click()} style={{ width: 'auto', padding: '10px', margin: '10px 0' }}>ファイルを選択</button>
+                <button disabled={isProcessing} type="button" onClick={() => fileInputRef.current?.click()} style={{ width: 'auto', padding: '10px', margin: '10px 0' }}>ファイルを選択</button>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                 <button type="button" onClick={handleCancel} disabled={!file} style={{ width: 'auto', padding: '10px' }}>選択取り消し</button>
-                <button type="button" onClick={handleSubmit} disabled={!file || !isNameCorrect} style={{ width: 'auto', padding: '10px' }}>アップロード</button>
+                <button type="button" onClick={handleSubmit} disabled={!file || !isNameCorrect || isProcessing} style={{ width: 'auto', padding: '10px' }}>アップロード</button>
             </div>
         </>
     );

@@ -83,7 +83,7 @@ const SubmissionPage: React.FC = () => {
 					)}
 					<h3>提出</h3>
 					<p>指定されたファイルを選択し，アップロードしてください．ファイルはドラッグ&ドロップでも選択可能です．</p>
-					<FileUploadBox id={subAssignmentDetail.id} sub_id={subAssignmentDetail.sub_id} fileName={subAssignmentDetail.required_file_name} onProgressUpdate={setProgressMessage} />
+					<FileUploadBox id={subAssignmentDetail.id} sub_id={subAssignmentDetail.sub_id} fileName={subAssignmentDetail.required_file_name} onProgressUpdate={setProgressMessage} isProcessing={!!progressMessage && progressMessage.progress_percentage >= 0 && progressMessage.progress_percentage < 100}/>
 					{progressMessage && <ProgressBar progress={progressMessage} />}
 				</div>
 			)}
