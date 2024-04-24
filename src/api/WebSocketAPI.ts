@@ -10,6 +10,7 @@ export const startProcessingWithProgress = (
     id: number,
     sub_id: number,
     filename: string,
+    unique_id: string,
     { onProgress }: WebSocketCallbacks
 ) => {
     const ws = new WebSocket(`${API_WS_PREFIX}/assignments/ws/${id}/${sub_id}`);
@@ -36,7 +37,7 @@ export const startProcessingWithProgress = (
 
     ws.onopen = () => {
         // WebSocket接続が開かれたら、filenameを送信
-        ws.send(JSON.stringify({ filename }));
+        ws.send(JSON.stringify({ filename , unique_id}));
         setTimeout(checkHeartbeat, 10000);  // 接続後10秒後に最初のハートビートチェックを開始
     };
 

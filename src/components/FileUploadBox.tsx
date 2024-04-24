@@ -59,12 +59,13 @@ const FileUpload: React.FC<FileUploadProps> = ({ id, sub_id, fileName, onProgres
         event.preventDefault();
         if (file && isNameCorrect) {
             try {
-                const filename = await uploadFile(file, id, sub_id);
+                const upload_result = await uploadFile(file, id, sub_id);
                 // WebSocket 通信を開始し、進行状況を受信
                 startProcessingWithProgress(
                     id,
                     sub_id,
-                    filename,
+                    upload_result.filename,
+                    upload_result.unique_id,
                     {
                         onProgress: (progress) => {
                             onProgressUpdate(progress); // 進行状況を親コンポーネントに通知
