@@ -3,9 +3,15 @@ import { LoginCredentials, CreateUser } from '../types/user';
 import { Token } from '../types/token';
 import { ProgressMessage } from '../types/Assignments';
 
+interface UploadResult {
+    unique_id: string;
+    filename: string;
+    result: string;
+}
+
 const API_PREFIX = 'http://localhost:8000/api/v1';
 // ファイルをアップロードする関数(多分uploadFileWithProgressに切り替える)
-export const uploadFile = async (file: File, id: number, sub_id: number): Promise<string> => {
+export const uploadFile = async (file: File, id: number, sub_id: number): Promise<UploadResult> =>{
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -14,7 +20,8 @@ export const uploadFile = async (file: File, id: number, sub_id: number): Promis
             "Content-Type": "multipart/form-data",
             },
         });
-        return response.data.filename; // uuidが付加されたファイル名を返す
+        const data: UploadResult = response.data;
+        return data; // uuidが付加されたファイル名を返す
     } catch (error) {
         throw error; // エラーを呼び出し元に伝播させる
     }
