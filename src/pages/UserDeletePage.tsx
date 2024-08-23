@@ -5,8 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import { deleteUsers } from '../api/DeleteAPI';
 import { UserList } from '../components/UserList';
 import { UserDelete } from '../types/user';
+import useApiClient from '../hooks/useApiClient';
 
 const UserDeletePage: React.FC = () => {
+    const { apiClient } = useApiClient();
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
     const [error, setError] = useState('');
@@ -15,7 +17,7 @@ const UserDeletePage: React.FC = () => {
     useEffect(() => {
         const getUsers = async () => {
             try {
-                const userList = await fetchUserList(token);
+                const userList = await apiClient(fetchUserList);
                 setUsers(userList);
             } catch (error) {
                 console.error('ユーザーの取得に失敗しました。', error);
@@ -33,9 +35,9 @@ const UserDeletePage: React.FC = () => {
         }
         
         try {
-            await deleteUsers({user_ids: selectedUsers}, token);
+            await apiClient(deleteUsers, {user_ids: selectedUsers});
             alert('選択されたユーザーが正常に削除されました。');
-            const updatedUserList = await fetchUserList(token);
+            const updatedUserList = await apiClient(fetchUserList);
             setUsers(updatedUserList);
             setSelectedUsers([]);
         } catch (error) {

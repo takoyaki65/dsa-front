@@ -6,20 +6,21 @@ import Dropdown from '../components/Dropdown';
 import CodeBlock from '../components/CodeBlock';
 import Accordion from '../components/Accordion';
 import FileUploadBox from '../components/FileUploadBox';
-import {useAuth} from '../context/AuthContext';
 import { ProgressMessage } from '../types/Assignments';
 import ProgressBar from '../components/ProgressBar';
+import useApiClient from '../hooks/useApiClient';
 const SubmissionPage: React.FC = () => {
 	const { problemNum } = useParams<{ problemNum: string }>();
 	const [subAssignmentsDropdown, setSubAssignmentsDropdown] = useState<SubAssignmentDropdown[]>([]);
 	const [subAssignmentDetail, setSubAssignmentDetail] = useState<SubAssignmentDetail | null>(null);
 	const [progressMessage, setProgressMessage] = useState<ProgressMessage | null>(null);
 	const [hasError, setHasError] = useState(false);
-	const { token } = useAuth();
+	const { apiClient } = useApiClient();
+
 	useEffect(() => {
 		const getSubAssignmentsDropdown = async () => {
 			try {
-				const data = await fetchSubAssignments(problemNum ?? '', token);
+				const data = await apiClient(fetchSubAssignments, problemNum ?? '');
 				setSubAssignmentsDropdown(data);
 				setHasError(false); // 成功した場合はエラー状態をリセット
 			} catch (error) {
@@ -38,7 +39,7 @@ const SubmissionPage: React.FC = () => {
 			return;
 		}
 		try {
-			const detail = await fetchSubAssignmentDetail(id.toString(), subId.toString(), token);
+			const detail = await apiClient(fetchSubAssignmentDetail, id.toString(), subId.toString());
 			setSubAssignmentDetail(detail);
 			setHasError(false); // 成功した場合はエラー状態をリセット
 		} catch (error) {

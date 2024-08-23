@@ -1,6 +1,7 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {logout as logoutApi} from '../api/PostAPI';
+import { useLocation } from 'react-router-dom';
 
 interface AuthContextType {
     token: string | null;
@@ -9,7 +10,6 @@ interface AuthContextType {
     setToken: (token: string | null) => void;
     setUserId: (user_id: number | null) => void;
     setIsAdmin: (is_admin: boolean) => void;
-    resetTimer: () => void;
     logout: () => void;
 }
 
@@ -27,6 +27,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const [user_id, setUserId] = useState<number | null>(localStorage.getItem('user_id') ? parseInt(localStorage.getItem('user_id') as string) : null);
     const [is_admin, setIsAdmin] = useState<boolean>(localStorage.getItem('is_admin') === 'true');
+    const location = useLocation();
 
     const saveToken = (newToken: string | null) => {
         setToken(newToken);
@@ -51,35 +52,19 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         localStorage.setItem('is_admin', newIsAdmin ? 'true' : 'false');
     }   
 
-    let logoutTimer: ReturnType<typeof setTimeout>;
-
     const logout = () => {
         logoutApi(token as string);
         saveToken(null);
         saveUserId(null);
         setIsAdmin(false);
-        window.location.href = '/';
+        // window.location.href = '/login';
+        const redirectUrl = location.pathname + location.search;
+        sessionStorage.setItem('redirectUrl', redirectUrl);
     };
-
-    const resetTimer = () => {
-        clearTimeout(logoutTimer);
-        logoutTimer = setTimeout(() => {
-        logout();
-        }, 1000 * 60 * 30); // 30 minutes
-    };
-
-    useEffect(() => {
-        if (token) {
-            resetTimer();
-        }
-        return () => {
-            clearTimeout(logoutTimer);
-        };
-    }, [token]);
 
     return (
-        <AuthContext.Provider value={{ token, user_id, is_admin, setToken: saveToken, setUserId: saveUserId, setIsAdmin: saveIsAdmin, resetTimer, logout }}>
-        {children}
+        <AuthContext.Provider value={{ token, user_id, is_admin, setToken: saveToken, setUserId: saveUserId, setIsAdmin: saveIsAdmin, logout }}>
+            {children}
         </AuthContext.Provider>
     );
 };
