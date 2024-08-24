@@ -9,10 +9,14 @@ export const fetchAssignments = async (token: string | null): Promise<Assignment
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await axios.get(`${API_PREFIX}/assignments/`, { headers });
         return response.data;
-    } catch (error) {
-        throw new Error('課題データの取得に失敗しました');
+    } catch (error: any) { // error の型を any にすることで詳細情報を保持
+        const customError = new Error('課題データの取得に失敗しました');
+        customError.stack = error.stack; // 元のスタックトレースを保持
+        (customError as any).originalError = error; // 元のエラーをプロパティとして保持
+        throw customError;
     }
 };
+
 
 // APIから課題中の基本課題と発展課題を取得する関数
 export const fetchSubAssignments = async (id: string, token: string | null): Promise<SubAssignmentDropdown[]> => {
@@ -44,4 +48,19 @@ export const fetchUserList = async (token: string | null): Promise<User[]> => {
     } catch (error) {
         throw error;
     }
+};
+
+export const updateToken = async (token: string | null): Promise<string | null> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get(`${API_PREFIX}/authorize/token/update`, { headers,
+            withCredentials: true // クッキーを送信するために必要
+        });
+        if (response.data.is_valid && response.data.access_token) {
+            return response.data.access_token;
+        }
+    } catch (error) {
+        console.error('トークンの更新に失敗しました', error);
+    }
+    return null;
 };

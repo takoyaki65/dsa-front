@@ -34,6 +34,7 @@ export const UserList: React.FC<UserListProps> = ({ user_id, users, selectedUser
             <tr style={{backgroundColor: '#f2f2f2', borderBottom: '3px solid black'}}>
             <th style={{padding: '10px', borderRight: '1px solid black'}}><input type="checkbox" onChange={handleSelectAll} checked={selectedUsers.length === users.length-1 && selectedUsers.length !== 0} /></th>
             <th style={{padding: '10px', borderRight: '1px solid black'}}>id</th>
+            <th style={{padding: '10px', borderRight: '1px solid black'}}>student_id</th>
             <th style={{padding: '10px', borderRight: '1px solid black'}}>username</th>
             <th style={{padding: '10px', borderRight: '1px solid black'}}>is_admin</th>
             <th style={{padding: '10px', borderRight: '1px solid black'}}>disabled</th>
@@ -48,6 +49,7 @@ export const UserList: React.FC<UserListProps> = ({ user_id, users, selectedUser
             <tr key={user.id} style={{backgroundColor: index % 2 === 0 ? '#ffffff' : '#f9f9f9', borderBottom: '1px solid black'}}>
                 <td style={{padding: '10px', borderRight: '1px solid black'}}><input type="checkbox" checked={selectedUsers.includes(user.id)} onChange={() => handleSelectUser(user.id)} disabled={user_id === user.id} /></td>
                 <td style={{padding: '10px', borderRight: '1px solid black'}}>{user.id}</td>
+                <td style={{padding: '10px', borderRight: '1px solid black'}}>{user.student_id}</td>
                 <td style={{padding: '10px', borderRight: '1px solid black'}}>{user.username}</td>
                 <td style={{padding: '10px', borderRight: '1px solid black'}}>{user.is_admin ? 'Yes' : 'No'}</td>
                 <td style={{padding: '10px', borderRight: '1px solid black'}}>{user.disabled ? 'Yes' : 'No'}</td>

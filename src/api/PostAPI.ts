@@ -27,6 +27,31 @@ export const uploadFile = async (file: File, id: number, sub_id: number): Promis
     }
 };
 
+export const uploadStudentList = async (file: File, token: string): Promise<{ data: Blob, headers: any }> => {
+    const formData = new FormData();
+    formData.append("upload_file", file);
+
+    try {
+        const response = await axios.post(`${API_PREFIX}/users/register/multiple`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${token}`
+            },
+            responseType: 'blob' // ファイルを受け取るために blob を指定
+        });
+
+        return { data: response.data, headers: response.headers }; // Blobデータをそのまま返す
+    } catch (error: any) {
+        if (error.response) {
+            console.error("Server responded with an error:", error.response.data);
+        } else if (error.request) {
+            console.error("No response received from the server:", error.request);
+        } else {
+            console.error("Error during the request:", error.message);
+        }
+        throw error;
+    }
+};
 // 
 export const createUser = async (user: CreateUser, token: string | null): Promise<string> => {
     try {
@@ -41,11 +66,13 @@ export const createUser = async (user: CreateUser, token: string | null): Promis
 // ログイン関数
 export const login = async (credentials: LoginCredentials): Promise<Token> => {
     const formData = new FormData();
-    formData.append('username', credentials.username);
+    formData.append('username', credentials.student_id);
     formData.append('password', credentials.password);
 
     try {
-        const response = await axios.post<Token>(`${API_PREFIX}/authorize/token`, formData);
+        const response = await axios.post<Token>(`${API_PREFIX}/authorize/token`, formData, {
+            withCredentials: true // クッキーを送信するために必要
+        });
         return response.data; 
     } catch (error) {
         throw error;
@@ -55,8 +82,20 @@ export const login = async (credentials: LoginCredentials): Promise<Token> => {
 export const logout = async (token: string): Promise<void> => {
     try {
         const headers = { Authorization: `Bearer ${token}` };
-        await axios.post(`${API_PREFIX}/authorize/logout`, {}, { headers });
+        await axios.post(`${API_PREFIX}/authorize/logout`, {}, { headers,
+            withCredentials: true // クッキーを送信するために必要
+        });
     } catch (error) {
         throw error;
     }
 }
+
+export const validateToken = async (token: string): Promise<boolean> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.post(`${API_PREFIX}/authorize/token/validate`, {}, { headers });
+        return response.data.is_valid;
+    } catch (error) {
+        throw error;
+    }
+};

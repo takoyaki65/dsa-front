@@ -4,15 +4,17 @@ import styled from 'styled-components';
 import { Assignment } from '../types/Assignments';
 import { fetchAssignments } from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
+import useApiClient from '../hooks/useApiClient';
 
 const Sidebar: React.FC = () => {
 	const { token, logout } = useAuth();
 	const [assignments, setAssignments] = useState<Assignment[]>([]);
+	const { apiClient } = useApiClient();
 	
 	useEffect(() => {
 		const getAssignments = async () => {
-		const assignmentsData = await fetchAssignments(token);
-		setAssignments(assignmentsData);
+			const assignmentsData = await apiClient(fetchAssignments);
+			setAssignments(assignmentsData);
 		};
 
 		getAssignments();

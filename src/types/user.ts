@@ -1,4 +1,5 @@
 export type UserBase = {
+    student_id: string;
     username: string;
     is_admin: boolean;
     disabled: boolean;
@@ -13,12 +14,14 @@ export type User = UserBase & {
 }
 
 export type LoginCredentials = {
-    username: string;
+    student_id: string;
     password: string;
 }
 
 export type CreateUser = {
+    student_id: string;
     username: string;
+    email: string;
     password: string;
     is_admin: boolean;
     disabled: boolean;
@@ -26,7 +29,6 @@ export type CreateUser = {
     updated_at?: string | null;
     active_start_date?: string | null;
     active_end_date?: string | null;
-    // auth_code: string;
 }
 
 export type UserDelete = {
