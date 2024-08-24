@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { createUser } from '../api/PostAPI';
 import { CreateUser } from '../types/user';
-import {useAuth} from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import StudentListUploadBox from '../components/StudentListUploadBox';
+import useApiClient from '../hooks/useApiClient';
 
 const RegisterPage: React.FC = () => {
     const [student_id, setStudentId] = useState('');
@@ -14,8 +15,8 @@ const RegisterPage: React.FC = () => {
     const [disabled, setDisabled] = useState(false);
     const [activeStartDate, setActiveStartDate] = useState('');
     const [activeEndDate, setActiveEndDate] = useState('');
-    const { token, user_id, is_admin: is_admin_user } = useAuth(); // useAuthから現在のユーザー情報も取得する
-    // const [authCode, setAuthCode] = useState('');
+    const { apiClient } = useApiClient();
+    const { user_id, is_admin: is_admin_user, logout } = useAuth(); // useAuthから現在のユーザー情報も取得する
     const [error, setError] = useState('');
 
     const handleRegister = async (e: React.FormEvent) => {
@@ -48,13 +49,12 @@ const RegisterPage: React.FC = () => {
             password,
             is_admin,
             disabled,
-            active_start_date: activeStartDate || null, // 空文字列の場合はnullを設定
-            active_end_date: activeEndDate || null, // 空文字列の場合はnullを設定
-            // auth_code: '', // auth_codeは空文字列で設定
+            active_start_date: activeStartDate || null,
+            active_end_date: activeEndDate || null,
         };
 
         try {
-            await createUser(newUser, token);
+            await apiClient(createUser, newUser);
             alert('アカウントが正常に作成されました。');
             setUsername('');
             setEmail('');
@@ -73,7 +73,7 @@ const RegisterPage: React.FC = () => {
     };
 
     if (user_id === null) {
-        return <p>ログインしていません。</p>;
+        logout();
     }
     if (!is_admin_user) {
         return <p>管理者権限がありません。</p>;

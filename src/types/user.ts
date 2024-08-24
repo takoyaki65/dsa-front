@@ -29,7 +29,6 @@ export type CreateUser = {
     updated_at?: string | null;
     active_start_date?: string | null;
     active_end_date?: string | null;
-    // auth_code: string;
 }
 
 export type UserDelete = {
