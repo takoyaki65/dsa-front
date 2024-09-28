@@ -28,7 +28,7 @@ const App: React.FC = () => {
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/users/register" element={<PrivateRoute element={<RegisterPage />} />} />
 					<Route path="/" element={<PrivateRoute element={<Home />} />} />
-					<Route path="/submission/:problemNum" element={<PrivateRoute element={<SubmissionPage />} />} />
+					<Route path="/submission/:lectureId/:assignmentId" element={<PrivateRoute element={<SubmissionPage />} />} />
 					<Route path="/users/delete" element={<PrivateRoute element={<UserDeletePage />} />} />
 					<Route path="*" element={<h1>Not Found</h1>} />
 				</Routes>

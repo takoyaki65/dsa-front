@@ -1,43 +1,104 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Assignment } from '../types/Assignments';
-import { fetchAssignments } from '../api/GetAPI';
+import { Lecture, Problem } from '../types/Assignments';
+import { fetchPublicLectures, fetchPublicProblems } from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 
 const Sidebar: React.FC = () => {
 	const { token, logout } = useAuth();
-	const [assignments, setAssignments] = useState<Assignment[]>([]);
+	const [publicLectures, setPublicLectures] = useState<Lecture[]>([]);
+	// どの授業の課題が展開されているかを管理する状態変数
+	const [expandedLectures, setExpandedLectures] = useState<{ [key: number]: boolean }>({});
+	// 授業ごとの課題を管理する状態変数
+	const [problemsByLecture, setProblemsByLecture] = useState<{ [key: number]: Problem[] }>({});
 	const { apiClient } = useApiClient();
-	
+
 	useEffect(() => {
-		const getAssignments = async () => {
-			const assignmentsData = await apiClient(fetchAssignments);
-			setAssignments(assignmentsData);
+		// 公開されている授業エントリ(第1回課題、第2回課題、...)を取得
+		const fetchLectures = async () => {
+			try {
+				const lectures = await apiClient(fetchPublicLectures);
+				setPublicLectures(lectures);
+			} catch (error) {
+				console.error('Failed to fetch lectures:', error);
+			}
 		};
 
-		getAssignments();
-	}, []);
-	
+		// 公開されている授業エントリ(第1回課題、第2回課題、...)に紐づく課題(課題1-1、課題1-2、...)を取得
+		const fetchProblemsForEachLecture = async () => {
+			for (const lecture of publicLectures) {
+				try {
+					const problems = await apiClient(fetchPublicProblems, lecture.id, token);
+					setProblemsByLecture(prevProblemsByLecture => ({
+						...prevProblemsByLecture,
+						[lecture.id]: problems
+					}));
+				} catch (error) {
+					console.error(`Failed to fetch problems for lecture ${lecture.id}:`, error);
+				}
+			}
+		};
+
+		fetchLectures();
+		fetchProblemsForEachLecture();
+	}, [apiClient]);
+
+	const toggleLecture = (lectureId: number) => {
+		setExpandedLectures(prev => (
+			{ ...prev, [lectureId]: !prev[lectureId] }
+		)
+		);
+	};
+
 	return (
 		<SidebarContainer>
-		<SidebarList>
-			<Link to="/"><h3>ホーム</h3></Link>
-			{assignments.map(assignment => (
-			<SidebarItem key={assignment.id}>
-				<Link to={`/submission/${assignment.id}`}>
-				<h3>{assignment.title}</h3>
-				</Link>
-			</SidebarItem>
-			))}
-		</SidebarList>
-		{token && <LogoutButton onClick={logout}>ログアウト</LogoutButton>}
+			<SidebarList>
+				<Link to="/"><h3>ホーム</h3></Link>
+				{publicLectures.map(
+					lecture => (
+						<SidebarItem key={lecture.id}>
+							<h3 onClick={() => toggleLecture(lecture.id)}>
+								{expandedLectures[lecture.id] ? '▼' : '▶'} {lecture.title}
+							</h3>
+							{expandedLectures[lecture.id] && problemsByLecture[lecture.id] && (
+								<ProblemList>
+									{problemsByLecture[lecture.id].map(problem => (
+										<ProblemItem key={problem.assignment_id}>
+											<Link to={`/submission/${lecture.id}/${problem.assignment_id}`}>
+												{problem.title}
+											</Link>
+										</ProblemItem>
+									))}
+								</ProblemList>
+							)}
+						</SidebarItem>
+					)
+				)}
+			</SidebarList>
+			{token && <LogoutButton onClick={logout}>ログアウト</LogoutButton>}
 		</SidebarContainer>
 	);
 }
 
 export default Sidebar;
+
+
+const ProblemList = styled.ul`
+	list-style-type: none;
+	padding-left: 20px;
+`;
+
+const ProblemItem = styled.li`
+  margin: 5px 0;
+	a {
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+`;
+
 
 const SidebarContainer = styled.div`
 	display: flex;
