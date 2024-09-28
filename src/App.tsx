@@ -8,11 +8,15 @@ import LoginPage from './pages/LoginPage';
 import UserDeletePage from './pages/UserDeletePage';
 import { useAuth } from './context/AuthContext';
 
+// ログインしているユーザーのみがアクセスできるページを作成するためのコンポーネント
+// ログインしていないユーザーはログインページにリダイレクトされる
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
 		const { token } = useAuth();
 		return token ? element : <Navigate to="/login" replace />;
 };
 
+
+// アプリケーションのルートコンポーネント
 const App: React.FC = () => {
 	const { token } = useAuth();
     return (
