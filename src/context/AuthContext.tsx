@@ -1,20 +1,24 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import {logout as logoutApi} from '../api/PostAPI';
+import { logout as logoutApi } from '../api/PostAPI';
 import { useLocation } from 'react-router-dom';
+import { UserRole } from '../types/token';
 
 interface AuthContextType {
     token: string | null;
-    user_id: number | null;
-    is_admin: boolean;
+    user_id: string | null;
+    role: UserRole | null;
     setToken: (token: string | null) => void;
-    setUserId: (user_id: number | null) => void;
-    setIsAdmin: (is_admin: boolean) => void;
+    setUserId: (user_id: string | null) => void;
+    setRole: (role: UserRole) => void;
     logout: () => void;
 }
 
+// 呼び出したコンポーネントより上位のコンポーネントでAuthProviderを使用してない場合、undefinedが返される
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// AuthContextTypeを返す関数。
+// 呼び出したコンポーネントより上位のコンポーネントでAuthProviderを使用してない場合、例外がスローされる
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -23,10 +27,10 @@ export const useAuth = () => {
     return context;
 };
 
-export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-    const [user_id, setUserId] = useState<number | null>(localStorage.getItem('user_id') ? parseInt(localStorage.getItem('user_id') as string) : null);
-    const [is_admin, setIsAdmin] = useState<boolean>(localStorage.getItem('is_admin') === 'true');
+    const [user_id, setUserId] = useState<string | null>(localStorage.getItem('user_id'));
+    const [role, setRole] = useState<UserRole | null>(localStorage.getItem('role') as UserRole);
     const location = useLocation();
 
     const saveToken = (newToken: string | null) => {
@@ -38,32 +42,36 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         }
     };
 
-    const saveUserId = (newUserId: number | null) => {
+    const saveUserId = (newUserId: string | null) => {
         setUserId(newUserId);
-        if (newUserId === null || newUserId < 0) {
+        if (newUserId === null) {
             localStorage.removeItem('user_id');
         } else {
-            localStorage.setItem('user_id', newUserId.toString());
+            localStorage.setItem('user_id', newUserId);
         }
     };
 
-    const saveIsAdmin = (newIsAdmin: boolean) => {
-        setIsAdmin(newIsAdmin);
-        localStorage.setItem('is_admin', newIsAdmin ? 'true' : 'false');
-    }   
+    const saveRole = (newRole: UserRole | null) => {
+        setRole(newRole);
+        if (newRole === null) {
+            localStorage.removeItem('role');
+        } else {
+            localStorage.setItem('role', newRole);
+        }
+    };
 
     const logout = () => {
         logoutApi(token as string);
         saveToken(null);
         saveUserId(null);
-        setIsAdmin(false);
+        saveRole(null);
         // window.location.href = '/login';
         const redirectUrl = location.pathname + location.search;
         sessionStorage.setItem('redirectUrl', redirectUrl);
     };
 
     return (
-        <AuthContext.Provider value={{ token, user_id, is_admin, setToken: saveToken, setUserId: saveUserId, setIsAdmin: saveIsAdmin, logout }}>
+        <AuthContext.Provider value={{ token, user_id, role, setToken: saveToken, setUserId: saveUserId, setRole: saveRole, logout }}>
             {children}
         </AuthContext.Provider>
     );

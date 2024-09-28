@@ -66,7 +66,7 @@ export const createUser = async (user: CreateUser, token: string | null): Promis
 // ログイン関数
 export const login = async (credentials: LoginCredentials): Promise<Token> => {
     const formData = new FormData();
-    formData.append('username', credentials.student_id);
+    formData.append('username', credentials.user_id);
     formData.append('password', credentials.password);
 
     try {
@@ -96,6 +96,7 @@ export const validateToken = async (token: string): Promise<boolean> => {
         const response = await axios.post(`${API_PREFIX}/authorize/token/validate`, {}, { headers });
         return response.data.is_valid;
     } catch (error) {
+        console.error('Token validation error:', error);
         throw error;
     }
 };

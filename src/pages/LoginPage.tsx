@@ -8,9 +8,9 @@ import { validateToken } from '../api/PostAPI';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
-    const [credentials, setCredentials] = useState<LoginCredentials>({ student_id: '', password: '' });
+    const [credentials, setCredentials] = useState<LoginCredentials>({ user_id: '', password: '' });
     const [error, setError] = useState<string>('');
-    const { token, setToken, setUserId, setIsAdmin } = useAuth();
+    const { token, setToken, setUserId, setRole } = useAuth();
     const { apiClient } = useApiClient();
     const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null); // トークンの有効性を保持
     const navigate = useNavigate();
@@ -34,7 +34,11 @@ const LoginPage: React.FC = () => {
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setCredentials({ ...credentials, [e.target.name]: e.target.value });
+        const { name, value } = e.target
+        // 入力時に記録されているユーザIDとパスワードを更新
+        // name: user_idまたはpassword
+        // value: 入力された値
+        setCredentials({ ...credentials, [name]: value });
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -44,7 +48,7 @@ const LoginPage: React.FC = () => {
             setError('');
             setToken(result.access_token); 
             setUserId(result.user_id);
-            setIsAdmin(result.is_admin); 
+            setRole(result.role);
             const redirectUrl = sessionStorage.getItem("redirectUrl");
 
             // リダイレクトURLがあればそのページへ、なければホームへ
@@ -61,7 +65,8 @@ const LoginPage: React.FC = () => {
     };
 
     if (isTokenValid) {
-        return <Navigate to="/" replace />;
+        // トークンが有効な場合、ホームページへリダイレクト
+        return <Navigate to="/" />;
     }
 
     // トークンの検証中は何も表示しない
@@ -76,12 +81,12 @@ const LoginPage: React.FC = () => {
                     <h2>ログイン</h2>
                     {error && <ErrorMessage>{error}</ErrorMessage>}
                     <FormGroup>
-                        <Label htmlFor="student_id">学籍番号（例: 202312345）:</Label>
+                        <Label htmlFor="user_id">学籍番号（例: 202312345）:</Label>
                         <Input
                             type="text"
-                            id="student_id"
-                            name="student_id"
-                            value={credentials.student_id}
+                            id="username"
+                            name="user_id"
+                            value={credentials.user_id}
                             onChange={handleChange}
                             autoComplete="username"
                             required

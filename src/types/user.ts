@@ -14,7 +14,7 @@ export type User = UserBase & {
 }
 
 export type LoginCredentials = {
-    student_id: string;
+    user_id: string;
     password: string;
 }
 
