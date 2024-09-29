@@ -10,4 +10,5 @@ export type Token = {
     login_time: string;
     user_id: string;
     role: UserRole;
+    refresh_count: number;
 };

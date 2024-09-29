@@ -1,43 +1,51 @@
 import axios from 'axios';
 import { SubAssignmentDropdown, SubAssignmentDetail, Lecture, Problem } from '../types/Assignments';
 import { User } from '../types/user';
+import { Token } from '../types/token';
+import { TextResponse } from '../types/response';
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
 
-// "/api/v1/public"を通して、公開期間内の授業エントリを全て取得する関数
-export const fetchPublicLectures = async (token: string | null): Promise<Lecture[]> => {
+// "/api/v1/assignments/?open={true|false}"を通して、{公開期間内|公開期間外}の授業エントリを全て取得する関数
+export const fetchLectures = async (open: boolean, token: string | null): Promise<Lecture[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get(`${API_PREFIX}/assignments/public/`, { headers });
+        const response = await axios.get(`${API_PREFIX}/assignments/?open=${open}`, { headers });
         return response.data;
-    } catch (error) {
-        throw error;
+    } catch (error: any) {
+        const customError = new Error('授業の取得に失敗しました');
+        customError.stack = error.stack;
+        (customError as any).originalError = error;
+        throw customError;
     }
 };
 
 
-// "/api/v1/public/{lecture_id}"を通して、授業の回に紐づく課題(公開期間内、フォーマットチェック用)を取得する関数
-export const fetchPublicProblems = async (lecture_id: string, token: string | null): Promise<Problem[]> => {
+// "/api/v1/public/assignments/{lecture_id}?evaluation={true|false}"を通して、{評価用|テスト用}の課題のリストを取得する関数
+export const fetchProblems = async (lecture_id: number, evaluation: boolean, token: string | null): Promise<Problem[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get(`${API_PREFIX}/assignments/public/${lecture_id}`, { headers });
+        const response = await axios.get(`${API_PREFIX}/assignments/${lecture_id}?evaluation=${evaluation}`, { headers });
         return response.data;
-    } catch (error) {
-        throw error;
+    } catch (error: any) {
+        const customError = new Error('課題の取得に失敗しました');
+        customError.stack = error.stack;
+        (customError as any).originalError = error;
+        throw customError;
     }
 };
 
 
-// APIから課題データを取得する関数
-export const fetchAssignments = async (token: string | null): Promise<Assignment[]> => {
+// "/api/v1/assignments/{lecture_id}/{assignment_id}/description?evaluation={true|false}"を通して、{評価用|テスト用}の課題の説明(Markdown)を取得する関数
+export const fetchAssignmentDescription = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<string> => {
     try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_PREFIX}/assignments/`, { headers });
-        return response.data;
-    } catch (error: any) { // error の型を any にすることで詳細情報を保持
-        const customError = new Error('課題データの取得に失敗しました');
-        customError.stack = error.stack; // 元のスタックトレースを保持
-        (customError as any).originalError = error; // 元のエラーをプロパティとして保持
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<TextResponse>(`${API_PREFIX}/assignments/${lecture_id}/${assignment_id}/description?evaluation=${evaluation}`, { headers });
+        return response.data.text;
+    } catch (error: any) {
+        const customError = new Error('課題の説明の取得に失敗しました');
+        customError.stack = error.stack;
+        (customError as any).originalError = error;
         throw customError;
     }
 };
@@ -75,17 +83,16 @@ export const fetchUserList = async (token: string | null): Promise<User[]> => {
     }
 };
 
-export const updateToken = async (token: string | null): Promise<string | null> => {
+export const updateToken = async (token: string | null): Promise<string> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_PREFIX}/authorize/token/update`, { headers,
+        const response = await axios.get<Token>(`${API_PREFIX}/authorize/token/update`, {
+            headers,
             withCredentials: true // クッキーを送信するために必要
         });
-        if (response.data.is_valid && response.data.access_token) {
-            return response.data.access_token;
-        }
+        return response.data.access_token;
     } catch (error) {
         console.error('トークンの更新に失敗しました', error);
+        throw error;
     }
-    return null;
 };

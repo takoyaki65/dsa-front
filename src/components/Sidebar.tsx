@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { Lecture, Problem } from '../types/Assignments';
-import { fetchPublicLectures, fetchPublicProblems } from '../api/GetAPI';
+import { fetchLectures, fetchProblems } from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 
@@ -12,14 +12,14 @@ const Sidebar: React.FC = () => {
 	// どの授業の課題が展開されているかを管理する状態変数
 	const [expandedLectures, setExpandedLectures] = useState<{ [key: number]: boolean }>({});
 	// 授業ごとの課題を管理する状態変数
-	const [problemsByLecture, setProblemsByLecture] = useState<{ [key: number]: Problem[] }>({});
+	const [trainingProblemsByLecture, setTrainingProblemsByLecture] = useState<{ [key: number]: Problem[] }>({});
 	const { apiClient } = useApiClient();
 
 	useEffect(() => {
 		// 公開されている授業エントリ(第1回課題、第2回課題、...)を取得
-		const fetchLectures = async () => {
+		const fetchPublicLectures = async () => {
 			try {
-				const lectures = await apiClient(fetchPublicLectures);
+				const lectures = await apiClient({apiFunc: fetchLectures, args: [true]});
 				setPublicLectures(lectures);
 			} catch (error) {
 				console.error('Failed to fetch lectures:', error);
@@ -27,11 +27,11 @@ const Sidebar: React.FC = () => {
 		};
 
 		// 公開されている授業エントリ(第1回課題、第2回課題、...)に紐づく課題(課題1-1、課題1-2、...)を取得
-		const fetchProblemsForEachLecture = async () => {
+		const fetchTrainProblemsForEachLecture = async () => {
 			for (const lecture of publicLectures) {
 				try {
-					const problems = await apiClient(fetchPublicProblems, lecture.id, token);
-					setProblemsByLecture(prevProblemsByLecture => ({
+					const problems = await apiClient({apiFunc: fetchProblems, args: [lecture.id, false]});
+					setTrainingProblemsByLecture(prevProblemsByLecture => ({
 						...prevProblemsByLecture,
 						[lecture.id]: problems
 					}));
@@ -41,8 +41,8 @@ const Sidebar: React.FC = () => {
 			}
 		};
 
-		fetchLectures();
-		fetchProblemsForEachLecture();
+		fetchPublicLectures();
+		fetchTrainProblemsForEachLecture();
 	}, [apiClient]);
 
 	const toggleLecture = (lectureId: number) => {
@@ -52,6 +52,7 @@ const Sidebar: React.FC = () => {
 		);
 	};
 
+	// TODO: Manager, Adminの場合は、公開していない課題や、評価用の課題も表示する
 	return (
 		<SidebarContainer>
 			<SidebarList>
@@ -62,9 +63,9 @@ const Sidebar: React.FC = () => {
 							<h3 onClick={() => toggleLecture(lecture.id)}>
 								{expandedLectures[lecture.id] ? '▼' : '▶'} {lecture.title}
 							</h3>
-							{expandedLectures[lecture.id] && problemsByLecture[lecture.id] && (
+							{expandedLectures[lecture.id] && trainingProblemsByLecture[lecture.id] && (
 								<ProblemList>
-									{problemsByLecture[lecture.id].map(problem => (
+									{trainingProblemsByLecture[lecture.id].map(problem => (
 										<ProblemItem key={problem.assignment_id}>
 											<Link to={`/submission/${lecture.id}/${problem.assignment_id}`}>
 												{problem.title}
