@@ -1,17 +1,9 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown'
-import { SubAssignmentDropdown, SubAssignmentDetail } from '../types/Assignments';
-import { fetchAssignmentDescription, fetchRequiredFiles, fetchSubAssignmentDetail, fetchSubAssignments } from '../api/GetAPI';
-import Dropdown from '../components/Dropdown';
-import CodeBlock from '../components/CodeBlock';
-import Accordion from '../components/Accordion';
+import { fetchAssignmentDescription, fetchRequiredFiles } from '../api/GetAPI';
 import FileUploadBox from '../components/FileUploadBox';
-import { ProgressMessage } from '../types/Assignments';
-import ProgressBar from '../components/ProgressBar';
 import useApiClient from '../hooks/useApiClient';
-import { kStringMaxLength } from 'buffer';
-import { stringify } from 'querystring';
 import { submitAssignment } from 'api/PostAPI';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -23,14 +15,19 @@ const SubmissionPage: React.FC = () => {
 	const { apiClient } = useApiClient();
 	const [hasError, setHasError] = useState<boolean>(false);
 
+	// ?evaluation={true|false}のパラメータを取得
+	const location = useLocation();
+	const searchParams = new URLSearchParams(location.search);
+	const evaluation = searchParams.get('evaluation') === 'true';
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				if (lectureId && assignmentId) {
-					const description = await apiClient({ apiFunc: fetchAssignmentDescription, args: [parseInt(lectureId), parseInt(assignmentId), false] });
+					const description = await apiClient({ apiFunc: fetchAssignmentDescription, args: [parseInt(lectureId), parseInt(assignmentId), evaluation] });
 					setDescription(description);
 
-					const filesData = await apiClient({ apiFunc: fetchRequiredFiles, args: [parseInt(lectureId), parseInt(assignmentId), false] });
+					const filesData = await apiClient({ apiFunc: fetchRequiredFiles, args: [parseInt(lectureId), parseInt(assignmentId), evaluation] });
 					setRequiredFiles(filesData);
 				}
 			} catch (error) {
@@ -44,7 +41,7 @@ const SubmissionPage: React.FC = () => {
 	const handleSubmit = async (files: File[]) => {
 		if (lectureId && assignmentId) {
 			try {
-				const submissionRecord = await apiClient({ apiFunc: submitAssignment, args: [parseInt(lectureId), parseInt(assignmentId), false, files] });
+				const submissionRecord = await apiClient({ apiFunc: submitAssignment, args: [parseInt(lectureId), parseInt(assignmentId), evaluation, files] });
 			} catch (error) {
 				console.error('提出エラー: ', error);
 			}
