@@ -160,6 +160,16 @@ export type SubmissionSummary = {
   evaluation_summary_list: EvaluationSummary[],
 }
 
+
+export type JudgeProgressAndStatus = SubmissionRecord & {
+  result: SubmissionSummaryStatus | null,
+  message: string | null,
+  score: number | null,
+  timeMS: number | null,
+  memoryKB: number | null,
+}
+
+
 // プルダウンで使用する型定義（問題名のみ）
 export type SubAssignmentDropdown = Pick<Problem, 'lecture_id' | 'assignment_id' | 'title'>;
 

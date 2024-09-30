@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { SubAssignmentDropdown, SubAssignmentDetail, Lecture, Problem } from '../types/Assignments';
+import { SubAssignmentDropdown, SubAssignmentDetail, Lecture, Problem, SubmissionRecord, JudgeProgressAndStatus } from '../types/Assignments';
 import { User } from '../types/user';
 import { Token } from '../types/token';
 import { TextResponse } from '../types/response';
@@ -65,25 +65,32 @@ export const fetchRequiredFiles = async (lecture_id: number, assignment_id: numb
     }
 };
 
-// APIから課題中の基本課題と発展課題を取得する関数
-export const fetchSubAssignments = async (id: string, token: string | null): Promise<SubAssignmentDropdown[]> => {
+
+// "api/v1/assignments/submissions/{submission_id}"を通じて、指定された提出の進捗状況を取得する関数
+export const fetchSubmissionStatus = async (submission_id: number, token: string | null): Promise<JudgeProgressAndStatus> => {
     try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_PREFIX}/assignments/${id}`, { headers });
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<JudgeProgressAndStatus>(`${API_PREFIX}/assignments/submissions/${submission_id}`, { headers });
         return response.data;
-    } catch (error) {
-        throw error;
+    } catch (error: any) {
+        const customError = new Error('提出の進捗状況の取得に失敗しました');
+        customError.stack = error.stack;
+        (customError as any).originalError = error;
+        throw customError;
     }
 };
 
-// APIからドロップダウンで選択された課題の詳細情報を取得する関数
-export const fetchSubAssignmentDetail = async (id: string, sub_id: string, token: string | null): Promise<SubAssignmentDetail | null> => {
+// "/api/v1/assignments/submissions/me?page={page}"を通じて、自分の提出の進捗状況を取得する関数
+export const fetchMySubmissionList = async (page: number, token: string | null): Promise<JudgeProgressAndStatus[]> => {
     try {
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_PREFIX}/assignments/${id}/${sub_id}`, { headers });
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<JudgeProgressAndStatus[]>(`${API_PREFIX}/assignments/submissions/me?page=${page}`, { headers });
         return response.data;
-    } catch (error) {
-        throw error;
+    } catch (error: any) {
+        const customError = new Error('自分の提出の進捗状況の取得に失敗しました');
+        customError.stack = error.stack;
+        (customError as any).originalError = error;
+        throw customError;
     }
 };
 
