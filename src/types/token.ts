@@ -12,3 +12,7 @@ export type Token = {
     role: UserRole;
     refresh_count: number;
 };
+
+export type TokenResponse = {
+    is_valid: boolean;
+}

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { LoginCredentials, CreateUser } from '../types/user';
-import { Token } from '../types/token';
+import { Token, TokenResponse } from '../types/token';
 import { ProgressMessage } from '../types/Assignments';
 
 interface UploadResult {
@@ -93,7 +93,7 @@ export const logout = async (token: string): Promise<void> => {
 export const validateToken = async (token: string): Promise<boolean> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.post(`${API_PREFIX}/authorize/token/validate`, {}, { headers });
+        const response = await axios.post<TokenResponse>(`${API_PREFIX}/authorize/token/validate`, {}, { headers });
         return response.data.is_valid;
     } catch (error) {
         console.error('Token validation error:', error);

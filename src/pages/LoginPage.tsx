@@ -19,7 +19,7 @@ const LoginPage: React.FC = () => {
         const validate = async () => {
             if (token) {
                 try {
-                    const isValid = await apiClient(validateToken);
+                    const isValid = await apiClient({ apiFunc: validateToken });
                     setIsTokenValid(isValid);
                 } catch (error) {
                     console.error('トークン検証エラー:', error);
