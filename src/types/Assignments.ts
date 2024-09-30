@@ -51,6 +51,26 @@ export type Problem = {
   evaluation_item_list: EvaluationItem[];
 }
 
+export enum SubmissionProgressStatus {
+  Pending = "pending",
+  Queued = "queued",
+  Running = "running",
+  Done = "done"
+}
+
+export type SubmissionRecord = {
+  id: number,
+  ts: Date,
+  batch_id: number | null,
+  user_id: string,
+  lecture_id: number,
+  assignment_id: number,
+  for_evaluation: boolean,
+  progress: SubmissionProgressStatus,
+  total_task: number,
+  completed_task: number,
+}
+
 export enum SingleJudgeStatus {
   AC = "AC", // Accepted
   WA = "WA", // Wrong Answer
