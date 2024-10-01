@@ -1,4 +1,4 @@
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown'
 import { fetchAssignmentDescription, fetchRequiredFiles } from '../api/GetAPI';
@@ -14,6 +14,7 @@ const SubmissionPage: React.FC = () => {
 	const [requiredFiles, setRequiredFiles] = useState<string[]>([]);
 	const { apiClient } = useApiClient();
 	const [hasError, setHasError] = useState<boolean>(false);
+	const navigate = useNavigate();
 
 	// ?evaluation={true|false}のパラメータを取得
 	const location = useLocation();
@@ -42,6 +43,7 @@ const SubmissionPage: React.FC = () => {
 		if (lectureId && assignmentId) {
 			try {
 				const submissionRecord = await apiClient({ apiFunc: submitAssignment, args: [parseInt(lectureId), parseInt(assignmentId), evaluation, files] });
+				navigate('/status/me');
 			} catch (error) {
 				console.error('提出エラー: ', error);
 			}
