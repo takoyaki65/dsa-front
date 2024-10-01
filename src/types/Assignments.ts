@@ -170,6 +170,14 @@ export type JudgeProgressAndStatus = SubmissionRecord & {
 }
 
 
+export type FileRecord = {
+  name: string,
+  type: "uploaded" | "arranged",
+  url: string | null,
+  text: string | null,
+}
+
+
 // プルダウンで使用する型定義（問題名のみ）
 export type SubAssignmentDropdown = Pick<Problem, 'lecture_id' | 'assignment_id' | 'title'>;
 
