@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import SubmissionStatusOfMe from './pages/SubmissionStatusOfMe';
 import UserDeletePage from './pages/UserDeletePage';
 import { useAuth } from './context/AuthContext';
+import SubmissionDetail from './pages/SubmissionDetail';
 
 // ログインしているユーザーのみがアクセスできるページを作成するためのコンポーネント
 // ログインしていないユーザーはログインページにリダイレクトされる
@@ -31,6 +32,7 @@ const App: React.FC = () => {
 					<Route path="/" element={<PrivateRoute element={<Home />} />} />
 					<Route path="/submission/:lectureId/:assignmentId" element={<PrivateRoute element={<SubmissionPage />} />} />
 					<Route path="/status/me" element={<PrivateRoute element={<SubmissionStatusOfMe />} />} />
+					<Route path="/result/:submissionId" element={<PrivateRoute element={<SubmissionDetail />} />} />
 					<Route path="/users/delete" element={<PrivateRoute element={<UserDeletePage />} />} />
 					<Route path="*" element={<h1>Not Found</h1>} />
 				</Routes>

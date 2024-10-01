@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { SubAssignmentDropdown, SubAssignmentDetail, Lecture, Problem, SubmissionRecord, JudgeProgressAndStatus, FileRecord } from '../types/Assignments';
+import { SubAssignmentDropdown, SubAssignmentDetail, Lecture, Problem, SubmissionRecord, JudgeProgressAndStatus, FileRecord, SubmissionSummary } from '../types/Assignments';
 import { User } from '../types/user';
 import { Token } from '../types/token';
 import { TextResponse } from '../types/response';
@@ -136,6 +136,18 @@ export const fetchSubmissionFiles = async (submission_id: number, token: string 
         customError.stack = error.stack;
         (customError as any).originalError = error;
         throw customError;
+    }
+};
+
+
+// "/api/v1/assignments/result/submissions/{submission_id}/detail"を通じて、提出されたジャッジの結果の詳細を取得する関数
+export const fetchSubmissionResultDetail = async (submission_id: number, token: string | null): Promise<SubmissionSummary | null> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<SubmissionSummary>(`${API_PREFIX}/assignments/result/submissions/${submission_id}/detail`, { headers });
+        return response.data;
+    } catch (error: any) {
+        return null;
     }
 };
 

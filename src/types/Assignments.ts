@@ -126,6 +126,8 @@ export type EvaluationSummary = {
   message: string | null,
   detail: string | null,
   score: number,
+  timeMS: number,
+  memoryKB: number,
   eval_title: string,
   eval_description: string | null,
   eval_type: EvaluationType,
@@ -157,6 +159,8 @@ export type SubmissionSummary = {
   message: string | null,
   detail: string | null,
   score: number,
+  timeMS: number,
+  memoryKB: number,
   evaluation_summary_list: EvaluationSummary[],
 }
 
