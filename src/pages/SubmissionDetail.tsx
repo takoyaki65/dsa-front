@@ -6,7 +6,8 @@ import useApiClient from '../hooks/useApiClient';
 import CodeBlock from '../components/CodeBlock';
 import { fetchSubmissionResultDetail } from '../api/GetAPI';
 import { Problem } from '../types/Assignments';
-
+import styled from 'styled-components';
+import JudgeResultsViewer from '../components/JudgeResultsViewer';
 const SubmissionDetail: React.FC = () => {
     const { submissionId } = useParams<{ submissionId: string }>();
     const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([]);
@@ -100,6 +101,16 @@ const SubmissionDetail: React.FC = () => {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
+    const [expandedRows, setExpandedRows] = useState<number[]>([]);
+
+    const toggleRow = (id: number) => {
+        setExpandedRows(prevExpandedRows =>
+            prevExpandedRows.includes(id)
+                ? prevExpandedRows.filter(rowId => rowId !== id)
+                : [...prevExpandedRows, id]
+        );
+    };
+
     return (
         <div>
             <h1>提出 #{submissionId}</h1>
@@ -182,8 +193,65 @@ const SubmissionDetail: React.FC = () => {
                 <h2>メッセージ</h2>
                 <p>{submissionSummary?.message || 'なし'}</p>
             </div>
+
+            <h2>チェックリスト</h2>
+            <CheckListTable>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>チェック項目</th>
+                        <th>結果</th>
+                        <th>実行時間</th>
+                        <th>メモリ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {submissionSummary?.evaluation_summary_list.map((evaluation, index) => (
+                        <React.Fragment key={evaluation.id}>
+                            <CheckListRow>
+                                <td>
+                                    <ExpandButton onClick={() => toggleRow(evaluation.id)}>
+                                        {expandedRows.includes(evaluation.id) ? '▼' : '▶'}
+                                    </ExpandButton>
+                                </td>
+                                <td>{evaluation.eval_description}</td>
+                                <td>{evaluation.result}</td>
+                                <td>{evaluation.timeMS}ms</td>
+                                <td>{evaluation.memoryKB}KB</td>
+                            </CheckListRow>
+                            {expandedRows.includes(evaluation.id) && (
+                                <ExpandedRow>
+                                    <td colSpan={5}>
+                                        <JudgeResultsViewer results={evaluation.judge_result_list} />
+                                    </td>
+                                </ExpandedRow>
+                            )}
+                        </React.Fragment>
+                    ))}
+                </tbody>
+            </CheckListTable>
         </div>
     );
 };
 
 export default SubmissionDetail;
+
+const CheckListTable = styled.table`
+    width: 100%;
+    border-collapse: collapse;
+`;
+
+const CheckListRow = styled.tr`
+    border-bottom: 1px solid #ddd;
+`;
+
+const ExpandedRow = styled.tr`
+    background-color: #f9f9f9;
+`;
+
+const ExpandButton = styled.button`
+    background-color: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+`;
