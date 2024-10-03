@@ -7,6 +7,8 @@ import useApiClient from '../hooks/useApiClient';
 import { submitAssignment } from 'api/PostAPI';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
+import remarkGfm from 'remark-gfm';
 import { useAuth } from '../context/AuthContext';
 const SubmissionPage: React.FC = () => {
 	const { token } = useAuth();
@@ -61,7 +63,7 @@ const SubmissionPage: React.FC = () => {
 	return (
 		<div style={{ paddingBottom: '100px' }}>
 			<div>
-				<ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+				<ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
 					{description}
 				</ReactMarkdown>
 			</div>
