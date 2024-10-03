@@ -6,7 +6,7 @@ import { deleteUsers } from '../api/DeleteAPI';
 import { UserList } from '../components/UserList';
 import { UserDelete } from '../types/user';
 import useApiClient from '../hooks/useApiClient';
-import { UserRole } from 'types/token';
+import { UserRole } from '../types/token';
 
 const UserDeletePage: React.FC = () => {
     const { apiClient } = useApiClient();

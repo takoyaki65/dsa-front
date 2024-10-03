@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import { fetchAssignmentDescription, fetchRequiredFiles } from '../api/GetAPI';
 import FileUploadBox from '../components/FileUploadBox';
 import useApiClient from '../hooks/useApiClient';
-import { submitAssignment } from 'api/PostAPI';
+import { submitAssignment } from '../api/PostAPI';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
