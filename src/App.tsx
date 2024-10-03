@@ -1,18 +1,24 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import React from 'react';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Sidebar from './components/Sidebar';
 import SubmissionPage from './pages/SubmissionPage';
 import RegisterPage from './pages/UserRegisterationPage';
 import LoginPage from './pages/LoginPage';
+import SubmissionStatusOfMe from './pages/SubmissionStatusOfMe';
 import UserDeletePage from './pages/UserDeletePage';
 import { useAuth } from './context/AuthContext';
+import SubmissionDetail from './pages/SubmissionDetail';
 
+// ログインしているユーザーのみがアクセスできるページを作成するためのコンポーネント
+// ログインしていないユーザーはログインページにリダイレクトされる
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
 		const { token } = useAuth();
 		return token ? element : <Navigate to="/login" replace />;
 };
 
+
+// アプリケーションのルートコンポーネント
 const App: React.FC = () => {
 	const { token } = useAuth();
     return (
@@ -24,7 +30,9 @@ const App: React.FC = () => {
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/users/register" element={<PrivateRoute element={<RegisterPage />} />} />
 					<Route path="/" element={<PrivateRoute element={<Home />} />} />
-					<Route path="/submission/:problemNum" element={<PrivateRoute element={<SubmissionPage />} />} />
+					<Route path="/submission/:lectureId/:assignmentId" element={<PrivateRoute element={<SubmissionPage />} />} />
+					<Route path="/status/me" element={<PrivateRoute element={<SubmissionStatusOfMe />} />} />
+					<Route path="/result/:submissionId" element={<PrivateRoute element={<SubmissionDetail />} />} />
 					<Route path="/users/delete" element={<PrivateRoute element={<UserDeletePage />} />} />
 					<Route path="*" element={<h1>Not Found</h1>} />
 				</Routes>

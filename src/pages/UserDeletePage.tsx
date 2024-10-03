@@ -6,18 +6,19 @@ import { deleteUsers } from '../api/DeleteAPI';
 import { UserList } from '../components/UserList';
 import { UserDelete } from '../types/user';
 import useApiClient from '../hooks/useApiClient';
+import { UserRole } from '../types/token';
 
 const UserDeletePage: React.FC = () => {
     const { apiClient } = useApiClient();
     const [users, setUsers] = useState<User[]>([]);
-    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [error, setError] = useState('');
-    const { token, user_id, is_admin } = useAuth(); // useAuthから現在のユーザー情報も取得する
+    const { token, user_id, role } = useAuth(); // useAuthから現在のユーザー情報も取得する
 
     useEffect(() => {
         const getUsers = async () => {
             try {
-                const userList = await apiClient(fetchUserList);
+                const userList = await apiClient({ apiFunc: fetchUserList });
                 setUsers(userList);
             } catch (error) {
                 console.error('ユーザーの取得に失敗しました。', error);
@@ -35,9 +36,9 @@ const UserDeletePage: React.FC = () => {
         }
         
         try {
-            await apiClient(deleteUsers, {user_ids: selectedUsers});
+            await apiClient({ apiFunc: deleteUsers, args: [selectedUsers] });
             alert('選択されたユーザーが正常に削除されました。');
-            const updatedUserList = await apiClient(fetchUserList);
+            const updatedUserList = await apiClient({ apiFunc: fetchUserList });
             setUsers(updatedUserList);
             setSelectedUsers([]);
         } catch (error) {
@@ -49,7 +50,7 @@ const UserDeletePage: React.FC = () => {
     if (user_id === null) {
         return <p>ログインしていません。</p>;
     }
-    if (!is_admin) {
+    if (role !== UserRole.admin) {
         return <p>管理者権限がありません。</p>;
     }
 
@@ -58,7 +59,7 @@ const UserDeletePage: React.FC = () => {
             <h2>ユーザー削除</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <UserList user_id={user_id} users={users} selectedUsers={selectedUsers} setSelectedUsers={setSelectedUsers} />
-            <button onClick={handleDelete} disabled={!is_admin}>選択したユーザーを削除</button>
+            <button onClick={handleDelete} disabled={role !== UserRole.admin}>選択したユーザーを削除</button>
         </div>
     );
 };

@@ -4,19 +4,28 @@ import { CreateUser } from '../types/user';
 import { useAuth } from '../context/AuthContext';
 import StudentListUploadBox from '../components/StudentListUploadBox';
 import useApiClient from '../hooks/useApiClient';
+import { UserRole } from '../types/token';
 
 const RegisterPage: React.FC = () => {
-    const [student_id, setStudentId] = useState('');
+    const [user_id, setUserId] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState<UserRole>(UserRole.student);
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [is_admin, setIsAdmin] = useState(false);
     const [disabled, setDisabled] = useState(false);
-    const [activeStartDate, setActiveStartDate] = useState('');
-    const [activeEndDate, setActiveEndDate] = useState('');
+    const [activeStartYear, setActiveStartYear] = useState(2024);
+    const [activeStartMonth, setActiveStartMonth] = useState(10);
+    const [activeStartDay, setActiveStartDay] = useState(17);
+    const [activeStartHour, setActiveStartHour] = useState(9);
+    const [activeStartMinute, setActiveStartMinute] = useState(0);
+    const [activeEndYear, setActiveEndYear] = useState(2025);
+    const [activeEndMonth, setActiveEndMonth] = useState(3);
+    const [activeEndDay, setActiveEndDay] = useState(1);
+    const [activeEndHour, setActiveEndHour] = useState(23);
+    const [activeEndMinute, setActiveEndMinute] = useState(59);
     const { apiClient } = useApiClient();
-    const { user_id, is_admin: is_admin_user, logout } = useAuth(); // useAuthから現在のユーザー情報も取得する
+    const { user_id: login_user_id, role: login_user_role, logout } = useAuth(); // useAuthから現在のユーザー情報も取得する
     const [error, setError] = useState('');
 
     const handleRegister = async (e: React.FormEvent) => {
@@ -37,33 +46,46 @@ const RegisterPage: React.FC = () => {
             return;
         }
 
+        // 有効開始日時と有効終了日時のチェック
+        // activeStartYear/Month/Day/Hour/Minute/SecondからDateを作成
+        const activeStartDate = new Date(activeStartYear, activeStartMonth, activeStartDay, activeStartHour, activeStartMinute, 0);
+        const activeEndDate = new Date(activeEndYear, activeEndMonth, activeEndDay, activeEndHour, activeEndMinute, 0);
+
         if (activeStartDate && activeEndDate && new Date(activeStartDate) > new Date(activeEndDate)) {
             setError('有効開始日時は有効終了日時より前でなければなりません。');
             return;
         }
 
         const newUser: CreateUser = {
-            student_id,
-            username,
-            email,
-            password,
-            is_admin,
-            disabled,
+            user_id: user_id,
+            username: username,
+            email: email,
+            plain_password: password,
+            role: role,
+            disabled: disabled,
             active_start_date: activeStartDate || null,
             active_end_date: activeEndDate || null,
         };
 
         try {
-            await apiClient(createUser, newUser);
+            await apiClient({apiFunc: createUser, args: [newUser]});
             alert('アカウントが正常に作成されました。');
             setUsername('');
             setEmail('');
             setPassword('');
             setConfirmPassword('');
-            setIsAdmin(false);
+            setRole(UserRole.student);
             setDisabled(false);
-            setActiveStartDate('');
-            setActiveEndDate('');
+            setActiveStartYear(2024);
+            setActiveStartMonth(10);
+            setActiveStartDay(17);
+            setActiveStartHour(9);
+            setActiveStartMinute(0);
+            setActiveEndYear(2025);
+            setActiveEndMonth(3);
+            setActiveEndDay(1);
+            setActiveEndHour(23);
+            setActiveEndMinute(59);
             setError('');
             // 登録後の処理（例：ログインページへのリダイレクト）
         } catch (error) {
@@ -72,10 +94,10 @@ const RegisterPage: React.FC = () => {
         }
     };
 
-    if (user_id === null) {
+    if (login_user_id === null) {
         logout();
     }
-    if (!is_admin_user) {
+    if (login_user_role !== UserRole.admin) {
         return <p>管理者権限がありません。</p>;
     }
 
@@ -86,7 +108,7 @@ const RegisterPage: React.FC = () => {
             <form onSubmit={handleRegister}>
                 <div>
                     <label>学籍番号:</label>
-                    <input type="text" value={student_id} onChange={(e) => setStudentId(e.target.value)} required />
+                    <input type="text" value={user_id} onChange={(e) => setUserId(e.target.value)} required />
                 </div>
                 <div>
                     <label>ユーザー名:</label>
@@ -105,9 +127,9 @@ const RegisterPage: React.FC = () => {
                     <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                 </div>
                 <div>
-                    <label>管理者:</label>
-                    <input type="radio" name="is_admin" value="true" onChange={() => setIsAdmin(true)} /> はい
-                    <input type="radio" name="is_admin" value="false" onChange={() => setIsAdmin(false)} checked /> いいえ
+                    <label>役職:</label>
+                    <input type="radio" name="role" value="student" onChange={() => setRole(UserRole.student)} /> 学生
+                    <input type="radio" name="role" value="manager" onChange={() => setRole(UserRole.manager)} /> 採点者
                 </div>
                 {/* <div>
                     <label>有効化: </label>
@@ -116,12 +138,22 @@ const RegisterPage: React.FC = () => {
                 </div> */}
                 <div>
                     <label>有効開始日時:</label>
-                    <input type="datetime-local" value={activeStartDate} onChange={(e) => setActiveStartDate(e.target.value)} />
+                    <div>
+                        <input type="number" value={activeStartYear} onChange={(e) => setActiveStartYear(Number(e.target.value))} placeholder="年" />
+                        <input type="number" value={activeStartDay} onChange={(e) => setActiveStartDay(Number(e.target.value))} placeholder="日" />
+                        <input type="number" value={activeStartHour} onChange={(e) => setActiveStartHour(Number(e.target.value))} placeholder="時" />
+                        <input type="number" value={activeStartMinute} onChange={(e) => setActiveStartMinute(Number(e.target.value))} placeholder="分" />
+                    </div>
                     <small>指定しない場合は無期限として扱われます。</small>
                 </div>
                 <div>
                     <label>有効終了日時:</label>
-                    <input type="datetime-local" value={activeEndDate} onChange={(e) => setActiveEndDate(e.target.value)} />
+                    <div>
+                        <input type="number" value={activeEndYear} onChange={(e) => setActiveEndYear(Number(e.target.value))} placeholder="年" />
+                        <input type="number" value={activeEndDay} onChange={(e) => setActiveEndDay(Number(e.target.value))} placeholder="日" />
+                        <input type="number" value={activeEndHour} onChange={(e) => setActiveEndHour(Number(e.target.value))} placeholder="時" />
+                        <input type="number" value={activeEndMinute} onChange={(e) => setActiveEndMinute(Number(e.target.value))} placeholder="分" />
+                    </div>
                     <small>指定しない場合は無期限として扱われます。</small>
                 </div>
                 <button type="submit">登録</button>

@@ -1,18 +1,32 @@
 import React from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface CodeBlockProps {
-  lines: string[];
+  code: string;
+  fileName: string;
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({ lines }) => {
+const CodeBlock: React.FC<CodeBlockProps> = ({ code, fileName }) => {
+  const getLanguage = (fileName: string): string => {
+    if (fileName.endsWith('.c')) {
+      return 'c';
+    } else if (fileName.endsWith('.h')) {
+      return 'c';
+    } else if (fileName === 'Makefile') {
+      return 'makefile';
+    } else if (fileName.endsWith('.py')) {
+      return 'python';
+    }
+    return 'text';
+  };
+
+  const language = getLanguage(fileName);
+
   return (
-    <div style={{ backgroundColor: '#f0f0f0', padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }}>
-      {lines.map((line, index) => (
-        <pre key={index} style={{ margin: 0 }}>
-          {line}
-        </pre>
-      ))}
-    </div>
+    <SyntaxHighlighter language={language} style={oneLight}>
+      {code}
+    </SyntaxHighlighter>
   );
 };
 

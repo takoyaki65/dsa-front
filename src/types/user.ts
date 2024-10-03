@@ -1,37 +1,34 @@
-export type UserBase = {
-    student_id: string;
-    username: string;
-    is_admin: boolean;
-    disabled: boolean;
-}
+import { UserRole } from "./token";
 
-export type User = UserBase & {
-    id: number;
-    created_at: string | null;
-    updated_at: string | null;
-    active_start_date: string | null;
-    active_end_date: string | null;
+export type User = {
+    user_id: string;
+    username: string;
+    email: string;
+    role: UserRole;
+    disabled: boolean;
+    created_at: Date;
+    updated_at: Date;
+    active_start_date: Date;
+    active_end_date: Date;
 }
 
 export type LoginCredentials = {
-    student_id: string;
+    user_id: string;
     password: string;
 }
 
 export type CreateUser = {
-    student_id: string;
+    user_id: string;
     username: string;
     email: string;
-    password: string;
-    is_admin: boolean;
+    plain_password: string;
+    role: UserRole;
     disabled: boolean;
-    created_at?: string | null;
-    updated_at?: string | null;
-    active_start_date?: string | null;
-    active_end_date?: string | null;
+    active_start_date?: Date | null;
+    active_end_date?: Date | null;
 }
 
 export type UserDelete = {
-    user_ids: number[];
+    user_ids: string[];
 }
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { LoginCredentials, CreateUser } from '../types/user';
-import { Token } from '../types/token';
-import { ProgressMessage } from '../types/Assignments';
+import { Token, TokenResponse } from '../types/token';
+import { SubmissionRecord } from '../types/Assignments';
 
 interface UploadResult {
     unique_id: string;
@@ -10,6 +10,36 @@ interface UploadResult {
 }
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
+
+// "/api/v1/assignments/{lecture_id}/{assignment_id}/judge?evaluation={true|false}"を通して、課題のジャッジリクエストを送信する関数
+export const submitAssignment = async (lecture_id: number, assignment_id: number, evaluation: boolean, files: File[], token: string | null) : Promise<SubmissionRecord> => {
+    const formData = new FormData();
+    files.forEach(file => {
+        formData.append('file_list', file);
+    });
+
+    try {
+        const headers = token ? {
+            Authorization: `Bearer ${token}`,
+            accept: 'application/json',
+            'Content-Type': 'multipart/form-data'
+        } : {};
+        const response = await axios.post<SubmissionRecord>(`${API_PREFIX}/assignments/${lecture_id}/${assignment_id}/judge?evaluation=${evaluation}`, formData, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error('Error submitting assignment:', error);
+        if (error.response) {
+            console.error('Server responded with an error:', error.response.data);
+        } else if (error.request) {
+            console.error('No response received from the server:', error.request);
+        } else {
+            console.error('Error during the request:', error.message);
+        }
+        throw error;
+    }
+}
+
+
 // ファイルをアップロードする関数(多分uploadFileWithProgressに切り替える)
 export const uploadFile = async (file: File, id: number, sub_id: number): Promise<UploadResult> =>{
     const formData = new FormData();
@@ -27,7 +57,7 @@ export const uploadFile = async (file: File, id: number, sub_id: number): Promis
     }
 };
 
-export const uploadStudentList = async (file: File, token: string): Promise<{ data: Blob, headers: any }> => {
+export const uploadStudentList = async (file: File, token: string | null): Promise<{ data: Blob, headers: any }> => {
     const formData = new FormData();
     formData.append("upload_file", file);
 
@@ -66,7 +96,7 @@ export const createUser = async (user: CreateUser, token: string | null): Promis
 // ログイン関数
 export const login = async (credentials: LoginCredentials): Promise<Token> => {
     const formData = new FormData();
-    formData.append('username', credentials.student_id);
+    formData.append('username', credentials.user_id);
     formData.append('password', credentials.password);
 
     try {
@@ -93,9 +123,10 @@ export const logout = async (token: string): Promise<void> => {
 export const validateToken = async (token: string): Promise<boolean> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.post(`${API_PREFIX}/authorize/token/validate`, {}, { headers });
+        const response = await axios.post<TokenResponse>(`${API_PREFIX}/authorize/token/validate`, {}, { headers });
         return response.data.is_valid;
     } catch (error) {
+        console.error('Token validation error:', error);
         throw error;
     }
 };

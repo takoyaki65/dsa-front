@@ -5,11 +5,13 @@ FROM node:20
 WORKDIR /app
 
 # アプリケーションの依存関係をインストール
-COPY package*.json ./
-RUN npm install
+# COPY package*.json ./
+# RUN npm install
 
-# アプリケーションのソースをバンドル
-COPY . .
+# アプリケーションのソースをバンドル (.venv, .vnodeenv, node_modulesフォルダを除く)
+# COPY . .
+# RUN rm -rf .venv .vnodeenv node_modules
 
-# アプリを起動
+EXPOSE 3000
+
 CMD ["npm", "start"]

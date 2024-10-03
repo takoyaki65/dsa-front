@@ -48,3 +48,18 @@
    # スタート
    npm start
    ```
+
+## ホスト環境でIntellisenseなどを有効にする方法(環境をいじらずに)
+1. venv環境の作成
+   ```sh
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+2. nodeenvのインストール
+   ```sh
+   pip install nodeenv
+   ```
+3. nodeenvの実行
+   ```sh
+   nodeenv -p
+   ```
