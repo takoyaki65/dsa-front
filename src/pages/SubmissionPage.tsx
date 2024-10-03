@@ -7,8 +7,9 @@ import useApiClient from '../hooks/useApiClient';
 import { submitAssignment } from 'api/PostAPI';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-
+import { useAuth } from '../context/AuthContext';
 const SubmissionPage: React.FC = () => {
+	const { token } = useAuth();
 	const { lectureId, assignmentId } = useParams<{ lectureId: string; assignmentId: string }>();
 	const [description, setDescription] = useState<string>('');
 	const [requiredFiles, setRequiredFiles] = useState<string[]>([]);
@@ -37,7 +38,7 @@ const SubmissionPage: React.FC = () => {
 			}
 		};
 		fetchData();
-	}, [lectureId, assignmentId, apiClient]);
+	}, [lectureId, assignmentId, token]);
 
 	const handleSubmit = async (files: File[]) => {
 		if (lectureId && assignmentId) {

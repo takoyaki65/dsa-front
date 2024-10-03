@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { SubAssignmentDropdown, SubAssignmentDetail, Lecture, Problem, SubmissionRecord, JudgeProgressAndStatus, FileRecord, SubmissionSummary } from '../types/Assignments';
+import { Lecture, Problem, JudgeProgressAndStatus, FileRecord, SubmissionSummary } from '../types/Assignments';
 import { User } from '../types/user';
 import { Token } from '../types/token';
 import { TextResponse } from '../types/response';
@@ -96,11 +96,11 @@ export const fetchRequiredFiles = async (lecture_id: number, assignment_id: numb
 };
 
 
-// "api/v1/assignments/submissions/{submission_id}"を通じて、指定された提出の進捗状況を取得する関数
+// "api/v1/assignments/status/submissions/{submission_id}"を通じて、指定された提出の進捗状況を取得する関数
 export const fetchSubmissionStatus = async (submission_id: number, token: string | null): Promise<JudgeProgressAndStatus> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<JudgeProgressAndStatus>(`${API_PREFIX}/assignments/submissions/${submission_id}`, { headers });
+        const response = await axios.get<JudgeProgressAndStatus>(`${API_PREFIX}/assignments/status/submissions/${submission_id}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('提出の進捗状況の取得に失敗しました');
@@ -110,11 +110,11 @@ export const fetchSubmissionStatus = async (submission_id: number, token: string
     }
 };
 
-// "/api/v1/assignments/submissions/me?page={page}"を通じて、自分の提出の進捗状況を取得する関数
+// "/api/v1/assignments/status/submissions/me?page={page}"を通じて、自分の提出の進捗状況を取得する関数
 export const fetchMySubmissionList = async (page: number, token: string | null): Promise<JudgeProgressAndStatus[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<JudgeProgressAndStatus[]>(`${API_PREFIX}/assignments/submissions/me?page=${page}`, { headers });
+        const response = await axios.get<JudgeProgressAndStatus[]>(`${API_PREFIX}/assignments/status/submissions/me?page=${page}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('自分の提出の進捗状況の取得に失敗しました');
@@ -125,11 +125,11 @@ export const fetchMySubmissionList = async (page: number, token: string | null):
 };
 
 
-// "/api/v1/assignments/submissions/{submission_id}/files"を通じて、ジャッジリクエストに関連するファイルのリストを取得する関数
+// "/api/v1/assignments/status/submissions/{submission_id}/files"を通じて、ジャッジリクエストに関連するファイルのリストを取得する関数
 export const fetchSubmissionFiles = async (submission_id: number, token: string | null): Promise<FileRecord[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<FileRecord[]>(`${API_PREFIX}/assignments/submissions/${submission_id}/files`, { headers });
+        const response = await axios.get<FileRecord[]>(`${API_PREFIX}/assignments/status/submissions/${submission_id}/files`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('提出ファイルの取得に失敗しました');

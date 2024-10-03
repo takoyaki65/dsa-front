@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import React from 'react';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Sidebar from './components/Sidebar';
 import SubmissionPage from './pages/SubmissionPage';

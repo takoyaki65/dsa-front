@@ -8,7 +8,10 @@ import { fetchSubmissionResultDetail } from '../api/GetAPI';
 import { Problem } from '../types/Assignments';
 import styled from 'styled-components';
 import JudgeResultsViewer from '../components/JudgeResultsViewer';
+import { useAuth } from '../context/AuthContext';
+
 const SubmissionDetail: React.FC = () => {
+    const { token } = useAuth();
     const { submissionId } = useParams<{ submissionId: string }>();
     const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([]);
     const [arrangedFiles, setArrangedFiles] = useState<FileRecord[]>([]);
@@ -18,6 +21,8 @@ const SubmissionDetail: React.FC = () => {
     const [submissionSummary, setSubmissionSummary] = useState<SubmissionSummary | null>(null);
     const [submissionStatus, setSubmissionStatus] = useState<JudgeProgressAndStatus>();
     const [problem, setProblem] = useState<Problem>();
+    
+    const [expandedRows, setExpandedRows] = useState<number[]>([]);
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -50,35 +55,35 @@ const SubmissionDetail: React.FC = () => {
             }
         };
 
-        const fetchStatus = async () => {
+        const fetchStatusAndProblemEntry = async () => {
             try {
                 const status = await apiClient({ apiFunc: fetchSubmissionStatus, args: [parseInt(submissionId!)] });
                 setSubmissionStatus(status);
+
+                if (status) {
+                    const problem = await apiClient({ apiFunc: fetchProblemEntry, args: [status.lecture_id, status.assignment_id, status.for_evaluation] });
+                    setProblem(problem);
+                }
             } catch (error) {
                 setError('Failed to fetch status');
             }
         };
 
-        const fetchProblem = async () => {
+        const fetchData = async () => {
             try {
-                const problem = await apiClient({ apiFunc: fetchProblemEntry, args: [submissionStatus?.lecture_id!, submissionStatus?.assignment_id!, submissionStatus?.for_evaluation!] });
-                setProblem(problem);
+                setLoading(true);
+                fetchFiles();
+                fetchSummary();
+                fetchStatusAndProblemEntry();
             } catch (error) {
-                setError('Failed to fetch problem');
+                setError('Failed to fetch data');
+            } finally {
+                setLoading(false);
             }
-        };
-
-        try {
-            fetchFiles();
-            fetchSummary();
-            fetchStatus();
-            fetchProblem();
-        } catch (error) {
-            setError('Failed to fetch data');
-        } finally {
-            setLoading(false);
         }
-    }, [submissionId]);
+
+        fetchData();
+    }, [submissionId, token]);
 
     const handleUploadedFileSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedUploadedFile(event.target.value);
@@ -100,8 +105,6 @@ const SubmissionDetail: React.FC = () => {
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
-
-    const [expandedRows, setExpandedRows] = useState<number[]>([]);
 
     const toggleRow = (id: number) => {
         setExpandedRows(prevExpandedRows =>

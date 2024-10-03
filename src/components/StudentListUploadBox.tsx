@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { uploadStudentList } from '../api/PostAPI';
-import { ProgressMessage } from '../types/Assignments';
 import useApiClient from '../hooks/useApiClient';
 
 const StudentListUpload: React.FC = () => {
@@ -61,13 +60,13 @@ const StudentListUpload: React.FC = () => {
             setDownloadUrl(null);
 
             try {
-                const { data: blob, headers } = await apiClient(uploadStudentList, file);
+                const { data: blob, headers } = await apiClient({ apiFunc: uploadStudentList, args: [file] });
                 
                 // Content-Dispositionヘッダーからファイル名を取得
                 const contentDisposition = headers['content-disposition'];
                 const fileName = contentDisposition
                     ? contentDisposition.split('filename=')[1].replace(/['"]/g, '')
-                    : 'downloaded_file.xlsx'; // デフォルトのファイル名
+                    : 'downloaded_file.csv'; // デフォルトのファイル名
 
                 setDownloadFileName(fileName); // 動的に取得したファイル名を設定
                 const url = window.URL.createObjectURL(blob);

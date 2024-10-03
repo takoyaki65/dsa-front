@@ -57,7 +57,7 @@ export const uploadFile = async (file: File, id: number, sub_id: number): Promis
     }
 };
 
-export const uploadStudentList = async (file: File, token: string): Promise<{ data: Blob, headers: any }> => {
+export const uploadStudentList = async (file: File, token: string | null): Promise<{ data: Blob, headers: any }> => {
     const formData = new FormData();
     formData.append("upload_file", file);
 

@@ -47,7 +47,7 @@ const useApiClient = () => {
                     logout();
                     throw new Error('セッションが切れました。再度ログインしてください。');
                 }
-            } else {
+            } else if (error.response?.status !== 200){
                 console.error('APIリクエストエラー:', error);
                 const errorMessage = '予期せぬエラーが発生しました。再度ログインしてください。';
                 alert(errorMessage);

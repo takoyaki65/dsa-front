@@ -26,6 +26,10 @@ const Sidebar: React.FC = () => {
 			}
 		};
 
+		fetchPublicLectures();
+	}, [token]);
+
+	useEffect(() => {
 		// 公開されている授業エントリ(第1回課題、第2回課題、...)に紐づく課題(課題1-1、課題1-2、...)を取得
 		const fetchTrainProblemsForEachLecture = async () => {
 			for (const lecture of publicLectures) {
@@ -41,9 +45,10 @@ const Sidebar: React.FC = () => {
 			}
 		};
 
-		fetchPublicLectures();
-		fetchTrainProblemsForEachLecture();
-	}, [apiClient]);
+		if (publicLectures.length > 0) {
+			fetchTrainProblemsForEachLecture();
+		};
+	}, [publicLectures, token]);
 
 	const toggleLecture = (lectureId: number) => {
 		setExpandedLectures(prev => (

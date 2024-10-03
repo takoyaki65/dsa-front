@@ -3,8 +3,9 @@ import { fetchMySubmissionList, fetchSubmissionStatus, fetchProblemEntry } from 
 import { JudgeProgressAndStatus, SubmissionProgressStatus } from '../types/Assignments'
 import { Link } from 'react-router-dom';
 import useApiClient from '../hooks/useApiClient';
-
+import { useAuth } from '../context/AuthContext';
 const SubmissionStatusOfMe: React.FC = () => {
+  const { token } = useAuth();
   const [submissions, setSubmissions] = useState<JudgeProgressAndStatus[]>([]);
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
@@ -46,7 +47,7 @@ const SubmissionStatusOfMe: React.FC = () => {
       }
     };
     fetchSubmissions();
-  }, [page]);
+  }, [page, token]);
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -59,8 +60,9 @@ const SubmissionStatusOfMe: React.FC = () => {
               console.error('提出状況の取得に失敗しました．リロードしても失敗する場合はTAに連絡してください．', err);
               return submission;
             }
+          } else {
+            return submission;
           }
-          return submission;
         })
       );
       setSubmissions(updateSubmissions);
@@ -68,7 +70,7 @@ const SubmissionStatusOfMe: React.FC = () => {
 
     // クリーンアップ関数
     return () => clearInterval(interval);
-  }, [submissions]);
+  }, [submissions, token]);
 
   const handlePrev = () => {
     if (page > 1) setPage(page - 1);
