@@ -10,6 +10,8 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import remarkGfm from 'remark-gfm';
 import { useAuth } from '../context/AuthContext';
+import MarkdownRenderer from '../components/MarkdownRenderer';
+
 const SubmissionPage: React.FC = () => {
 	const { token } = useAuth();
 	const { lectureId, assignmentId } = useParams<{ lectureId: string; assignmentId: string }>();
@@ -63,9 +65,7 @@ const SubmissionPage: React.FC = () => {
 	return (
 		<div style={{ paddingBottom: '100px' }}>
 			<div>
-				<ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
-					{description}
-				</ReactMarkdown>
+				<MarkdownRenderer content={description} />
 			</div>
 			<div>
 				<h2>必要なファイル</h2>
