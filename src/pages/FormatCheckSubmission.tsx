@@ -94,10 +94,12 @@ const FormatCheckSubmission: React.FC = () => {
         </div>
       )}
 
-      <FileUploadBox 
-        onSubmit={handleSubmit}
-        descriptionOnBox={`class${selectedLectureId || `{lecture_id}`}.zipをアップロードしてください`}
-      />
+      {selectedLectureId &&
+        <FileUploadBox 
+          onSubmit={handleSubmit}
+          descriptionOnBox={`class${selectedLectureId}.zipをアップロードしてください`}
+        />
+      }
     </div>
   )
 };
