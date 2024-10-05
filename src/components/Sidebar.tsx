@@ -77,6 +77,9 @@ const Sidebar: React.FC = () => {
 											</Link>
 										</ProblemItem>
 									))}
+									<ProblemItem>
+										<Link to={`/format-check?lecture_id=${lecture.id}`}>フォーマットチェック</Link>
+									</ProblemItem>
 								</ProblemList>
 							)}
 						</SidebarItem>

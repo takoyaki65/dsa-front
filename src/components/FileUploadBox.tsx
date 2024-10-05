@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaFile } from 'react-icons/fa';
 import './FileUploadBox.css';
 
 interface FileUploadFormProps {
@@ -39,8 +39,11 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnB
                 {files.length > 0 && (
                     <ul className='file-list'>
                         {files.map((file, index) => (
-                            <li key={index}>
-                                {file.name}
+                            <li key={index} className='file-item'>
+                                <div className='file-info'>
+                                    <FaFile style={{ marginRight: '5px' }} />
+                                    <span>{file.name}</span>
+                                </div>
                                 <button onClick={() => handleRemoveFile(index)} className='remove-file'>
                                     <FaTrash />
                                 </button>

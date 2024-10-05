@@ -1,14 +1,9 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import ReactMarkdown from 'react-markdown'
 import { fetchAssignmentDescription, fetchRequiredFiles } from '../api/GetAPI';
 import FileUploadBox from '../components/FileUploadBox';
 import useApiClient from '../hooks/useApiClient';
 import { submitAssignment } from '../api/PostAPI';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import 'katex/dist/katex.min.css';
-import remarkGfm from 'remark-gfm';
 import { useAuth } from '../context/AuthContext';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 
@@ -46,6 +41,16 @@ const SubmissionPage: React.FC = () => {
 
 	const handleSubmit = async (files: File[]) => {
 		if (lectureId && assignmentId) {
+			// 必要なファイルが全てアップロードされているか確認
+			const uploadedFileNames = files.map(file => file.name);
+			const missingFiles = requiredFiles.filter(file => !uploadedFileNames.includes(file));
+
+			if (missingFiles.length > 0) {
+				console.error('以下のファイルがアップロードされていません：', missingFiles.join(', '));
+				alert(`以下のファイルがアップロードされていません：${missingFiles.join(', ')}`);
+				return;
+			}
+
 			try {
 				const submissionRecord = await apiClient({ apiFunc: submitAssignment, args: [parseInt(lectureId), parseInt(assignmentId), evaluation, files] });
 				navigate('/status/me');

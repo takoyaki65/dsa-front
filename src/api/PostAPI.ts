@@ -40,6 +40,34 @@ export const submitAssignment = async (lecture_id: number, assignment_id: number
 }
 
 
+// "/api/v1/assignments/judge/{lecture_id}?evaluation={true|false}"を通じて、学生のzip提出を受け付ける関数(学生はevaluation=falseの場合しか提出できない)
+export const submitStudentZip = async (lecture_id: number, evaluation: boolean, upload_zip_file: File, token: string | null): Promise<SubmissionRecord[]> => {
+    const formData = new FormData();
+    formData.append('uploaded_zip_file', upload_zip_file);
+
+    try {
+        const headers = token ? {
+            Authorization: `Bearer ${token}`,
+            accept: 'application/json',
+            'Content-Type': 'multipart/form-data'
+        } : {};
+        const response = await axios.post<SubmissionRecord[]>(`${API_PREFIX}/assignments/judge/${lecture_id}/?evaluation=${evaluation}`, formData, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error('Error submitting student zip:', error);
+        if (error.response) {
+            console.error('Server responded with an error:', error.response.data);
+        } else if (error.request) {
+            console.error('No response received from the server:', error.request);
+        } else {
+            console.error('Error during the request:', error.message);
+        }
+        throw error;
+    }
+}
+
+
+
 export const uploadStudentList = async (file: File, token: string | null): Promise<{ data: Blob, headers: any }> => {
     const formData = new FormData();
     formData.append("upload_file", file);
