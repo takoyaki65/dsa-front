@@ -77,7 +77,7 @@ const SubmissionPage: React.FC = () => {
 			</div>
 			<div>
 				<h2>提出フォーム</h2>
-				<FileUploadBox onSubmit={handleSubmit} requiredFiles={requiredFiles} />
+				<FileUploadBox onSubmit={handleSubmit} descriptionOnBox={'zipではなく各ファイルを提出してください．'} />
 			</div>
 		</div>
 	);
