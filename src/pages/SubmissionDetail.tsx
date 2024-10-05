@@ -195,6 +195,7 @@ const SubmissionDetail: React.FC = () => {
             <div>
                 <h2>メッセージ</h2>
                 <p>{submissionSummary?.message || 'なし'}</p>
+                <p>{'detail: ' +submissionSummary?.detail || ''}</p>
             </div>
 
             <h2>チェックリスト</h2>
