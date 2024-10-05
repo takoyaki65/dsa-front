@@ -11,7 +11,7 @@ interface UploadResult {
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
 
-// "/api/v1/assignments/{lecture_id}/{assignment_id}/judge?evaluation={true|false}"を通して、課題のジャッジリクエストを送信する関数
+// "/api/v1/assignments/judge/{lecture_id}/{assignment_id}/?evaluation={true|false}"を通して、課題のジャッジリクエストを送信する関数
 export const submitAssignment = async (lecture_id: number, assignment_id: number, evaluation: boolean, files: File[], token: string | null) : Promise<SubmissionRecord> => {
     const formData = new FormData();
     files.forEach(file => {
@@ -24,7 +24,7 @@ export const submitAssignment = async (lecture_id: number, assignment_id: number
             accept: 'application/json',
             'Content-Type': 'multipart/form-data'
         } : {};
-        const response = await axios.post<SubmissionRecord>(`${API_PREFIX}/assignments/${lecture_id}/${assignment_id}/judge?evaluation=${evaluation}`, formData, { headers });
+        const response = await axios.post<SubmissionRecord>(`${API_PREFIX}/assignments/judge/${lecture_id}/${assignment_id}/?evaluation=${evaluation}`, formData, { headers });
         return response.data;
     } catch (error: any) {
         console.error('Error submitting assignment:', error);
@@ -39,23 +39,6 @@ export const submitAssignment = async (lecture_id: number, assignment_id: number
     }
 }
 
-
-// ファイルをアップロードする関数(多分uploadFileWithProgressに切り替える)
-export const uploadFile = async (file: File, id: number, sub_id: number): Promise<UploadResult> =>{
-    const formData = new FormData();
-    formData.append("upload_file", file);
-    try {
-        const response = await axios.post(`${API_PREFIX}/assignments/upload/${id}/${sub_id}`, formData, {
-            headers: {
-            "Content-Type": "multipart/form-data",
-            },
-        });
-        const data: UploadResult = response.data;
-        return data; // uuidが付加されたファイル名を返す
-    } catch (error) {
-        throw error; // エラーを呼び出し元に伝播させる
-    }
-};
 
 export const uploadStudentList = async (file: File, token: string | null): Promise<{ data: Blob, headers: any }> => {
     const formData = new FormData();

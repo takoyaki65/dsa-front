@@ -6,11 +6,11 @@ import { TextResponse } from '../types/response';
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
 
-// "/api/v1/assignments/?open={true|false}"を通して、{公開期間内|公開期間外}の授業エントリを全て取得する関数
+// "/api/v1/assignments/info?open={true|false}"を通して、{公開期間内|公開期間外}の授業エントリを全て取得する関数
 export const fetchLectures = async (open: boolean, token: string | null): Promise<Lecture[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Lecture[]>(`${API_PREFIX}/assignments/?open=${open}`, { headers });
+        const response = await axios.get<Lecture[]>(`${API_PREFIX}/assignments/info?open=${open}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('授業の取得に失敗しました');
@@ -21,11 +21,11 @@ export const fetchLectures = async (open: boolean, token: string | null): Promis
 };
 
 
-// "/api/v1/public/assignments/{lecture_id}?evaluation={true|false}"を通して、{評価用|テスト用}の課題のリストを取得する関数
+// "/api/v1/assignments/info/{lecture_id}?evaluation={true|false}"を通して、{評価用|テスト用}の課題のリストを取得する関数
 export const fetchProblems = async (lecture_id: number, evaluation: boolean, token: string | null): Promise<Problem[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Problem[]>(`${API_PREFIX}/assignments/${lecture_id}?evaluation=${evaluation}`, { headers });
+        const response = await axios.get<Problem[]>(`${API_PREFIX}/assignments/info/${lecture_id}?evaluation=${evaluation}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('課題の取得に失敗しました');
@@ -36,11 +36,11 @@ export const fetchProblems = async (lecture_id: number, evaluation: boolean, tok
 };
 
 
-// "/api/v1/assignments/{lecture_id}/{assignment_id}?evaluation={true|false}"を通して、{評価用|テスト用}の課題のエントリを取得する関数
+// "/api/v1/assignments/info/{lecture_id}/{assignment_id}?evaluation={true|false}"を通して、{評価用|テスト用}の課題のエントリを取得する関数
 export const fetchProblemEntry = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<Problem> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Problem>(`${API_PREFIX}/assignments/${lecture_id}/${assignment_id}?evaluation=${evaluation}`, { headers });
+        const response = await axios.get<Problem>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}?evaluation=${evaluation}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('課題のエントリの取得に失敗しました');
@@ -51,11 +51,11 @@ export const fetchProblemEntry = async (lecture_id: number, assignment_id: numbe
 }
 
 
-// "/api/v1/assignments/{lecture_id}/{assignment_id}/detail?evaluation={true|false}"を通して、{評価用|テスト用}の課題のエントリの詳細を取得する関数
+// "/api/v1/assignments/info/{lecture_id}/{assignment_id}/detail?evaluation={true|false}"を通して、{評価用|テスト用}の課題のエントリの詳細を取得する関数
 export const fetchProblemDetail = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<Problem> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Problem>(`${API_PREFIX}/assignments/${lecture_id}/${assignment_id}/detail?evaluation=${evaluation}`, { headers });
+        const response = await axios.get<Problem>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/detail?evaluation=${evaluation}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('課題のエントリの詳細の取得に失敗しました');
@@ -66,11 +66,11 @@ export const fetchProblemDetail = async (lecture_id: number, assignment_id: numb
 };
 
 
-// "/api/v1/assignments/{lecture_id}/{assignment_id}/description?evaluation={true|false}"を通して、{評価用|テスト用}の課題の説明(Markdown)を取得する関数
+// "/api/v1/assignments/info/{lecture_id}/{assignment_id}/description?evaluation={true|false}"を通して、{評価用|テスト用}の課題の説明(Markdown)を取得する関数
 export const fetchAssignmentDescription = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<string> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<TextResponse>(`${API_PREFIX}/assignments/${lecture_id}/${assignment_id}/description?evaluation=${evaluation}`, { headers });
+        const response = await axios.get<TextResponse>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/description?evaluation=${evaluation}`, { headers });
         return response.data.text;
     } catch (error: any) {
         const customError = new Error('課題の説明の取得に失敗しました');
@@ -81,11 +81,11 @@ export const fetchAssignmentDescription = async (lecture_id: number, assignment_
 };
 
 
-// "/api/v1/assignments/{lecture_id}/{assignment_id}/required-files?evaluation={true|false}"を通して、{評価用|テスト用}の課題の必要ファイルのリストを取得する関数
+// "/api/v1/assignments/info/{lecture_id}/{assignment_id}/required-files?evaluation={true|false}"を通して、{評価用|テスト用}の課題の必要ファイルのリストを取得する関数
 export const fetchRequiredFiles = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<string[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<string[]>(`${API_PREFIX}/assignments/${lecture_id}/${assignment_id}/required-files?evaluation=${evaluation}`, { headers });
+        const response = await axios.get<string[]>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/required-files?evaluation=${evaluation}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('必要ファイルの取得に失敗しました');
