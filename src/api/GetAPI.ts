@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Lecture, Problem, JudgeProgressAndStatus, FileRecord, SubmissionSummary } from '../types/Assignments';
+import { Lecture, Problem, JudgeProgressAndStatus, FileRecord, SubmissionSummary, BatchSubmissionRecord, BatchEvaluationDetail, EvaluationDetail } from '../types/Assignments';
 import { User } from '../types/user';
 import { Token } from '../types/token';
 import { TextResponse } from '../types/response'
@@ -171,13 +171,102 @@ export const fetchSubmissionFiles = async (submission_id: number, type: "uploade
 
 
 // "/api/v1/assignments/result/submissions/{submission_id}/detail"を通じて、提出されたジャッジの結果の詳細を取得する関数
-export const fetchSubmissionResultDetail = async (submission_id: number, token: string | null): Promise<SubmissionSummary | null> => {
+export const fetchSubmissionResultDetail = async (submission_id: number, token: string | null): Promise<SubmissionSummary> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
         const response = await axios.get<SubmissionSummary>(`${API_PREFIX}/assignments/result/submissions/${submission_id}/detail`, { headers });
         return response.data;
     } catch (error: any) {
-        return null;
+        throw error;
+    }
+};
+
+
+// "api/v1/assignments/status/batch/{batch_id}"を通じて、指定されたバッチ採点の結果を取得する関数
+export const fetchBatchSubmission = async (batch_id: number, token: string | null): Promise<BatchSubmissionRecord> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<BatchSubmissionRecord>(`${API_PREFIX}/assignments/status/batch/${batch_id}`, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error("指定されたバッチ採点の結果の取得に失敗しました", error);
+        throw error;
+    }
+};
+
+
+// "/api/v1/assignments/status/batch/all?page={page}"を通じて、バッチ採点の結果のリストを取得する関数
+export const fetchBatchSubmissionList = async (page: number, token: string | null): Promise<BatchSubmissionRecord[]> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<BatchSubmissionRecord[]>(`${API_PREFIX}/assignments/status/batch/all?page=${page}`, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error("バッチ採点の結果のリストの取得に失敗しました", error);
+        throw error;
+    }
+};
+
+
+// "/api/v1/assignments/result/batch/{batch_id}"を通じて、指定されたバッチ採点の結果の詳細を取得する関数
+export const fetchBatchSubmissionDetail = async (batch_id: number, token: string | null): Promise<BatchEvaluationDetail> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<BatchEvaluationDetail>(`${API_PREFIX}/assignments/result/batch/${batch_id}`, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error("指定されたバッチ採点の結果の詳細の取得に失敗しました", error);
+        throw error;
+    }
+};
+
+
+// "/api/v1/assignments/result/batch/{batch_id}/user/{user_id}"を通じて、指定されたバッチ採点の結果の詳細を取得する関数
+export const fetchBatchEvaluationUserDetail = async (batch_id: number, user_id: string, token: string | null): Promise<EvaluationDetail> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<EvaluationDetail>(`${API_PREFIX}/assignments/result/batch/${batch_id}/user/${user_id}`, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error("指定されたバッチ採点の結果の詳細の取得に失敗しました", error);
+        throw error;
+    }
+};
+
+
+// "/api/v1/assignments/result/batch/{batch_id}/files/uploaded/{user_id}"を通じて、特定のバッチ採点の特定の学生が提出したファイルを取得する関数
+export const fetchBatchSubmissionUserUploadedFile = async (batch_id: number, user_id: string, token: string | null): Promise<FileRecord[]> => {
+    try {
+        // ZIPで受け取る
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/zip' } : {};
+        const response = await axios.get(`${API_PREFIX}/assignments/result/batch/${batch_id}/files/uploaded/${user_id}`, { headers, responseType: 'arraybuffer' });
+        
+
+        const zip = new JSZip();
+        const loadedZip = await zip.loadAsync(response.data);
+
+        const files: FileRecord[] = await Promise.all(
+            Object.keys(loadedZip.files).map(async (fileName) => {
+                let file = loadedZip.files[fileName];
+                let content: string | Blob;
+                if (fileName.endsWith(".txt") || fileName.endsWith(".json") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".json") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r")) {
+                    content = await file.async('string');
+                    //console.log("ファイルの名前[string]: ", fileName);
+                } else if (fileName === "Makefile") {
+                    content = await file.async('string');
+                    //console.log("ファイルの名前[string]: ", fileName);
+                } else {
+                    content = await file.async('blob');
+                    //console.log("ファイルの名前[blob]: ", fileName);
+                }
+                return { name: fileName, content };
+            })
+        );
+
+        return files;
+    } catch (error: any) {
+        console.error("特定のバッチ採点の特定の学生が提出したファイルの取得に失敗しました", error);
+        throw error;
     }
 };
 
@@ -191,6 +280,29 @@ export const fetchUserList = async (token: string | null): Promise<User[]> => {
         throw error;
     }
 };
+
+
+export const fetchUserInfo = async (user_id: string, token: string | null): Promise<User> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<User>(`${API_PREFIX}/users/info/${user_id}`, { headers });
+        return response.data;
+    } catch (error: any) {
+        throw error;
+    }
+};
+
+
+export const fetchMyUserInfo = async (token: string | null): Promise<User> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
+        const response = await axios.get<User>(`${API_PREFIX}/users/me`, { headers });
+        return response.data;
+    } catch (error: any) {
+        throw error;
+    }
+};
+
 
 export const updateToken = async (token: string | null): Promise<string> => {
     try {
