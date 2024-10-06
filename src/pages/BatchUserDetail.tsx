@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import JudgeResultsViewer from '../components/JudgeResultsViewer';
 import { User } from '../types/user';
 
+
 const BatchUserDetail: React.FC = () => {
   const { batchId, userId } = useParams<{ batchId: string; userId: string }>();
   console.log("batchId: ", batchId);
@@ -16,51 +17,64 @@ const BatchUserDetail: React.FC = () => {
   const { apiClient } = useApiClient();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [lectureId, setLectureId] = useState<number | null>(null);
-  const [batchDetail, setBatchDetail] = useState<EvaluationDetail | null>(null);
+  const [batchDetail, setBatchDetail] = useState<EvaluationDetail>();
   const [assignmentId2SubmissionSummary, setAssignmentId2SubmissionSummary] = useState<{ [key: number]: SubmissionSummary | null }>({});
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<number | null>(null);
   const [currentSubmissionSummary, setCurrentSubmissionSummary] = useState<SubmissionSummary | null>(null);
   const [userInfo, setUserInfo] = useState<User | null>(null);
-
-  const [expandedRows, setExpandedRows] = useState<number[]>([]);
-
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [expandedRows, setExpandedRows] = useState<number[]>([]);  
 
   useEffect(() => {
+    setIsLoading(true);
     const fetchData = async () => {
       if (!batchId || !userId) return;
+      try {
+        // バッチ採点のエントリを取得
+        const batchSubmission = await apiClient({ apiFunc: fetchBatchSubmission, args: [parseInt(batchId)] });
+        if (batchSubmission) {
+          setLectureId(batchSubmission.lecture_id);
+        }
 
-      // バッチ採点のエントリを取得
-      const batchSubmission = await apiClient({ apiFunc: fetchBatchSubmission, args: [parseInt(batchId)]});
-      if (batchSubmission) {
-        setLectureId(batchSubmission.lecture_id);
-      }
-
-      if (lectureId) {
+        let problemsData: Problem[] = [];
         // 課題情報を取得
-        const problemsData = await apiClient({apiFunc: fetchProblems, args: [lectureId, true]});
+        problemsData = await apiClient({ apiFunc: fetchProblems, args: [batchSubmission.lecture_id, true] });
         setProblems(problemsData);
-      }
+        
 
-      // 特定のバッチ採点の特定の学生の詳細を取得
-      const userBatchDetail = await apiClient({apiFunc: fetchBatchEvaluationUserDetail, args: [parseInt(batchId), parseInt(userId)]});
-      if (userBatchDetail) {
+        // 特定のバッチ採点の特定の学生の詳細を取得
+        const userBatchDetail = await apiClient({ apiFunc: fetchBatchEvaluationUserDetail, args: [parseInt(batchId), parseInt(userId)] });
         setBatchDetail(userBatchDetail);
+        const submissionPromises = userBatchDetail.submission_summary_list.map(summary =>
+          apiClient({ apiFunc: fetchSubmissionResultDetail, args: [summary.submission_id] })
+        );
+        const submissionResults = await Promise.all(submissionPromises);
 
-        // 各課題の採点結果の詳細を取得
-        userBatchDetail.submission_summary_list.forEach(async (SubmissionSummaryStatus) => {
-          const submission_summary_with_detail = await apiClient({apiFunc: fetchSubmissionResultDetail, args: [SubmissionSummaryStatus.submission_id]});
-          setAssignmentId2SubmissionSummary(prev => ({...prev, [SubmissionSummaryStatus.assignment_id]: submission_summary_with_detail}));
+        const newAssignmentId2SubmissionSummary: { [key: number]: SubmissionSummary } = {};
+
+        submissionResults.forEach((result, index) => {
+          newAssignmentId2SubmissionSummary[result.assignment_id] = result;
         });
-      }
+        setAssignmentId2SubmissionSummary(newAssignmentId2SubmissionSummary);
 
-      // ユーザー情報を取得
-      const userInfo = await apiClient({apiFunc: fetchUserInfo, args: [parseInt(userId)]});
-      if (userInfo) {
-        setUserInfo(userInfo);
+        //console.log("newAssignmentId2SubmissionSummary: ", newAssignmentId2SubmissionSummary);
+
+        const newUserInfo = await apiClient({ apiFunc: fetchUserInfo, args: [parseInt(userId)] });
+        setUserInfo(newUserInfo);
+        //console.log("assignmentId2SubmissionSummary: ", assignmentId2SubmissionSummary);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
     fetchData();
+    //console.log("assignmentId2SubmissionSummary: ", assignmentId2SubmissionSummary);
   }, [batchId, userId]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   const handleCheckListRowClick = (assignmentId: number) => {
     setSelectedAssignmentId(assignmentId);
@@ -75,17 +89,17 @@ const BatchUserDetail: React.FC = () => {
     );
   }
 
-  if (!batchDetail) return <div>Loading...</div>;
-
-  console.log("submit_date: ", batchDetail.submit_date);
-  console.log("type of submit_date: ", typeof batchDetail.submit_date);
+  console.log("lectureId: ", lectureId);
+  console.log("assignmentId2SubmissionSummary: ", assignmentId2SubmissionSummary);
+  console.log("problems: ", problems);
 
   return (
     <div>
       <h1>バッチ採点結果: ユーザー {userId} ({userInfo?.username})</h1>
       <p>バッチID: {batchId}</p>
-      <p>提出日時: {batchDetail.submit_date instanceof Date ? batchDetail.submit_date.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-') : new Date(batchDetail.submit_date!).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-')} </p>
+      <p>提出日時: {batchDetail?.submit_date instanceof Date ? batchDetail?.submit_date.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-') : new Date(batchDetail?.submit_date!).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-')} </p>
       <h2>課題別結果</h2>
+      { problems.length > 0 && (
       <table>
         <thead>
           <tr>
@@ -106,6 +120,7 @@ const BatchUserDetail: React.FC = () => {
           </tr>
         </tbody>
       </table>
+      )}
 
       <h2>チェックリスト</h2>
       <CheckListTable>
