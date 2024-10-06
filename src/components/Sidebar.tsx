@@ -5,15 +5,26 @@ import { Lecture, Problem } from '../types/Assignments';
 import { fetchLectures, fetchProblems } from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
+import { UserRole } from '../types/token';
 
 const Sidebar: React.FC = () => {
-	const { token, logout } = useAuth();
+	const { token, user_id, role, logout } = useAuth();
 	const [publicLectures, setPublicLectures] = useState<Lecture[]>([]);
 	// どの授業の課題が展開されているかを管理する状態変数
-	const [expandedLectures, setExpandedLectures] = useState<{ [key: number]: boolean }>({});
+	const [expandedPublicLectures, setExpandedPublicLectures] = useState<{ [key: number]: boolean }>({});
+
 	// 授業ごとの課題を管理する状態変数
 	const [trainingProblemsByLecture, setTrainingProblemsByLecture] = useState<{ [key: number]: Problem[] }>({});
 	const { apiClient } = useApiClient();
+
+	// 管理者用
+	const [privateLectures, setPrivateLectures] = useState<Lecture[]>([]);
+	const [expandedPrivateLectures, setExpandedPrivateLectures] = useState<{ [key: number]: boolean }>({});
+
+	const [managerLectures, setManagerLectures] = useState<Lecture[]>([]);
+	const [expandedManagerLectures, setExpandedManagerLectures] = useState<{ [key: number]: boolean }>({});
+
+	const isAdminOrManager = role === UserRole.admin || role === UserRole.manager;
 
 	useEffect(() => {
 		// 公開されている授業エントリ(第1回課題、第2回課題、...)を取得
@@ -26,7 +37,20 @@ const Sidebar: React.FC = () => {
 			}
 		};
 
+		// 管理者用の授業エントリを取得
+		const fetchPrivateLectures = async () => {
+			try {
+				const lectures = await apiClient({apiFunc: fetchLectures, args: [false]});
+				setPrivateLectures(lectures);
+			} catch (error) {
+				console.error('Failed to fetch lectures:', error);
+			}
+		};
 		fetchPublicLectures();
+
+		if (isAdminOrManager) {
+			fetchPrivateLectures();
+		};
 	}, [token]);
 
 	useEffect(() => {
@@ -45,13 +69,38 @@ const Sidebar: React.FC = () => {
 			}
 		};
 
+		// 管理者用の授業エントリに紐づく課題を取得
+		const fetchManagerProblemsForEachLecture = async () => {
+			for (const lecture of privateLectures) {
+				try {
+					const problems = await apiClient({apiFunc: fetchProblems, args: [lecture.id, true]});
+					setTrainingProblemsByLecture(prevProblemsByLecture => ({
+						...prevProblemsByLecture,
+						[lecture.id]: problems
+					}));
+				} catch (error) {
+					console.error(`Failed to fetch problems for lecture ${lecture.id}:`, error);
+				}
+			}
+		};
+
 		if (publicLectures.length > 0) {
 			fetchTrainProblemsForEachLecture();
 		};
-	}, [publicLectures, token]);
+		if (isAdminOrManager) {
+			fetchManagerProblemsForEachLecture();
+		};
+	}, [publicLectures, privateLectures, token]);
 
 	const toggleLecture = (lectureId: number) => {
-		setExpandedLectures(prev => (
+		setExpandedPublicLectures(prev => (
+			{ ...prev, [lectureId]: !prev[lectureId] }
+		)
+		);
+	};
+
+	const togglePrivateLecture = (lectureId: number) => {
+		setExpandedPrivateLectures(prev => (
 			{ ...prev, [lectureId]: !prev[lectureId] }
 		)
 		);
@@ -61,14 +110,15 @@ const Sidebar: React.FC = () => {
 	return (
 		<SidebarContainer>
 			<SidebarList>
+				<Link to="/status/me"><h3>{user_id}</h3></Link>
 				<Link to="/"><h3>ホーム</h3></Link>
 				{publicLectures.map(
 					lecture => (
 						<SidebarItem key={lecture.id}>
 							<h3 onClick={() => toggleLecture(lecture.id)}>
-								{expandedLectures[lecture.id] ? '▼' : '▶'} {lecture.title}
+								{expandedPublicLectures[lecture.id] ? '▼' : '▶'} {lecture.title}
 							</h3>
-							{expandedLectures[lecture.id] && trainingProblemsByLecture[lecture.id] && (
+							{expandedPublicLectures[lecture.id] && trainingProblemsByLecture[lecture.id] && (
 								<ProblemList>
 									{trainingProblemsByLecture[lecture.id].map(problem => (
 										<ProblemItem key={problem.assignment_id}>
@@ -85,7 +135,33 @@ const Sidebar: React.FC = () => {
 						</SidebarItem>
 					)
 				)}
+
+				{isAdminOrManager && <h3>非公開課題リスト↓</h3>}
+				{isAdminOrManager &&
+					privateLectures.map(
+						lecture => (
+							<SidebarItem key={lecture.id}>
+								<h3 onClick={() => togglePrivateLecture(lecture.id)}>
+									{expandedPrivateLectures[lecture.id] ? '▼' : '▶'} {lecture.title}
+								</h3>
+								{expandedPrivateLectures[lecture.id] && trainingProblemsByLecture[lecture.id] && (
+									<ProblemList>
+										{trainingProblemsByLecture[lecture.id].map(problem => (
+											<ProblemItem key={problem.assignment_id}>
+												<Link to={`/submission/${lecture.id}/${problem.assignment_id}`}>
+													{problem.title}
+												</Link>
+											</ProblemItem>
+										))}
+									</ProblemList>
+								)}
+							</SidebarItem>
+						)
+					)
+				}
 			</SidebarList>
+
+			{isAdminOrManager && <Link to="/users/"><h3>ユーザー管理</h3></Link>}
 			{token && <LogoutButton onClick={logout}>ログアウト</LogoutButton>}
 		</SidebarContainer>
 	);
