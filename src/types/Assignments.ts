@@ -175,10 +175,8 @@ export type JudgeProgressAndStatus = SubmissionRecord & {
 
 
 export type FileRecord = {
-  name: string,
-  type: "uploaded" | "arranged",
-  url: string | null,
-  text: string | null,
+  name: string
+  content: string | Blob;
 }
 
 

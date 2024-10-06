@@ -9,6 +9,7 @@ import { Problem } from '../types/Assignments';
 import styled from 'styled-components';
 import JudgeResultsViewer from '../components/JudgeResultsViewer';
 import { useAuth } from '../context/AuthContext';
+import OfflineFileDownloadButton from '../components/OfflineFileDownloadButton';
 
 const SubmissionDetail: React.FC = () => {
     const { token } = useAuth();
@@ -31,16 +32,10 @@ const SubmissionDetail: React.FC = () => {
         const fetchFiles = async () => {
             try {
                 setLoading(true);
-                const data = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!)] });
-                setUploadedFiles(data.filter((file) => file.type === 'uploaded'));
-                setArrangedFiles(data.filter((file) => file.type === 'arranged'));
-
-                if (uploadedFiles.length > 0 && uploadedFiles[0].text) {
-                    setSelectedUploadedFile(uploadedFiles[0].text);
-                }
-                if (arrangedFiles.length > 0 && arrangedFiles[0].text) {
-                    setSelectedArrangedFile(arrangedFiles[0].text);
-                }
+                const uploadedData = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!), 'uploaded']})
+                const arrangedData = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!), 'arranged']})
+                setUploadedFiles(uploadedData);
+                setArrangedFiles(arrangedData);
             } catch (error) {
                 setError('Failed to fetch files');
             }
@@ -95,12 +90,12 @@ const SubmissionDetail: React.FC = () => {
 
     const getSelectedUploadedFileContent = () => {
         const file = uploadedFiles.find((file) => file.name === selectedUploadedFile);
-        return file?.text || '';
+        return file?.content as string;
     };
 
     const getSelectedArrangedFileContent = () => {
         const file = arrangedFiles.find((file) => file.name === selectedArrangedFile);
-        return file?.text || '';
+        return file?.content as string;
     };
 
     if (loading) return <div>Loading...</div>;
@@ -120,34 +115,30 @@ const SubmissionDetail: React.FC = () => {
             <h2>提出されたファイル一覧</h2>
             <select onChange={handleUploadedFileSelect} value={selectedUploadedFile}>
                 <option value="">ファイルを選択してください</option>
-                {uploadedFiles.filter(file => file.text).map(file => (
+                {uploadedFiles.filter(file => typeof file.content === 'string').map(file => (
                     <option key={file.name} value={file.name}>{file.name}</option>
                 ))}
             </select>
             <CodeBlock code={getSelectedUploadedFileContent()} fileName={selectedUploadedFile} />
             <ul>
-                {uploadedFiles.filter(file => file.url).map(file => (
+                {uploadedFiles.filter(file => file.content instanceof Blob).map(file => (
                     <li key={file.name}>
-                        <a href={`http://localhost:8000/api/v1/${file.url}`} target="_blank" rel="noopener noreferrer">
-                            {file.name}
-                        </a>
+                        <OfflineFileDownloadButton file={file} />
                     </li>
                 ))}
             </ul>
             <h2>用意されたファイル一覧</h2>
             <select onChange={handleArrangedFileSelect} value={selectedArrangedFile}>
                 <option value="">ファイルを選択してください</option>
-                {arrangedFiles.filter(file => file.text).map(file => (
+                {arrangedFiles.filter(file => typeof file.content === 'string').map(file => (
                     <option key={file.name} value={file.name}>{file.name}</option>
                 ))}
             </select>
             <CodeBlock code={getSelectedArrangedFileContent()} fileName={selectedArrangedFile} />
             <ul>
-                {arrangedFiles.filter(file => file.url).map(file => (
+                {arrangedFiles.filter(file => file.content instanceof Blob).map(file => (
                     <li key={file.name}>
-                        <a href={`http://localhost:8000/api/v1/${file.url}`} target="_blank" rel="noopener noreferrer">
-                            {file.name}
-                        </a>
+                        <OfflineFileDownloadButton file={file} />
                     </li>
                 ))}
             </ul>

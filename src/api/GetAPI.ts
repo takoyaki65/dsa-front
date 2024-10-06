@@ -2,7 +2,8 @@ import axios from 'axios';
 import { Lecture, Problem, JudgeProgressAndStatus, FileRecord, SubmissionSummary } from '../types/Assignments';
 import { User } from '../types/user';
 import { Token } from '../types/token';
-import { TextResponse } from '../types/response';
+import { TextResponse } from '../types/response'
+import JSZip from 'jszip';
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
 
@@ -125,17 +126,46 @@ export const fetchMySubmissionList = async (page: number, token: string | null):
 };
 
 
-// "/api/v1/assignments/status/submissions/{submission_id}/files"を通じて、ジャッジリクエストに関連するファイルのリストを取得する関数
-export const fetchSubmissionFiles = async (submission_id: number, token: string | null): Promise<FileRecord[]> => {
+// "/api/v1/assignments/status/submissions/{submission_id}/files/zip?type={uploaded|arranged}"を通じて、ジャッジリクエストに関連するファイルのリストを取得する関数
+export const fetchSubmissionFiles = async (submission_id: number, type: "uploaded" | "arranged", token: string | null): Promise<FileRecord[]> => {
     try {
-        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<FileRecord[]>(`${API_PREFIX}/assignments/status/submissions/${submission_id}/files`, { headers });
-        return response.data;
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/zip' } : {};
+        const response = await axios.get(`${API_PREFIX}/assignments/status/submissions/${submission_id}/files/zip?type=${type}`, { headers, responseType: 'arraybuffer' });
+
+        //console.log("response.data", response.data);
+        
+        const zip = new JSZip();
+        const loadedZip = await zip.loadAsync(response.data);
+
+        //console.log("解凍したファイルの数", Object.keys(loadedZip.files).length);
+
+        // ファイルの名前をconsole.logする
+        Object.keys(loadedZip.files).forEach((fileName) => {
+            //console.log("ファイルの名前", fileName);
+        });
+
+        const files: FileRecord[] = await Promise.all(
+            Object.keys(loadedZip.files).map(async (fileName) => {
+                let file = loadedZip.files[fileName];
+                let content: string | Blob;
+                if (fileName.endsWith(".txt") || fileName.endsWith(".json") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".json") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r")) {
+                    content = await file.async('string');
+                    //console.log("ファイルの名前[string]: ", fileName);
+                } else if (fileName === "Makefile") {
+                    content = await file.async('string');
+                    //console.log("ファイルの名前[string]: ", fileName);
+                } else {
+                    content = await file.async('blob');
+                    //console.log("ファイルの名前[blob]: ", fileName);
+                }
+                return { name: fileName, content };
+            })
+        );
+        return files;
+ 
     } catch (error: any) {
-        const customError = new Error('提出ファイルの取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
+        console.error("提出ファイルの取得に失敗しました", error);
+        throw error;
     }
 };
 
