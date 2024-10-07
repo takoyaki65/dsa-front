@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css"
 import { createUser } from '../api/PostAPI';
 import { CreateUser } from '../types/user';
 import { useAuth } from '../context/AuthContext';
@@ -14,16 +16,8 @@ const RegisterPage: React.FC = () => {
     const [role, setRole] = useState<UserRole>(UserRole.student);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [disabled, setDisabled] = useState(false);
-    const [activeStartYear, setActiveStartYear] = useState(2024);
-    const [activeStartMonth, setActiveStartMonth] = useState(10);
-    const [activeStartDay, setActiveStartDay] = useState(17);
-    const [activeStartHour, setActiveStartHour] = useState(9);
-    const [activeStartMinute, setActiveStartMinute] = useState(0);
-    const [activeEndYear, setActiveEndYear] = useState(2025);
-    const [activeEndMonth, setActiveEndMonth] = useState(3);
-    const [activeEndDay, setActiveEndDay] = useState(1);
-    const [activeEndHour, setActiveEndHour] = useState(23);
-    const [activeEndMinute, setActiveEndMinute] = useState(59);
+    const [activeStartDate, setActiveStartDate] = useState<Date | null>(new Date(2024, 10, 1, 9, 0, 0));
+    const [activeEndDate, setActiveEndDate] = useState<Date | null>(new Date(2025, 3, 1, 23, 59, 59));
     const { apiClient } = useApiClient();
     const { user_id: login_user_id, role: login_user_role, logout } = useAuth(); // useAuthから現在のユーザー情報も取得する
     const [error, setError] = useState('');
@@ -45,11 +39,6 @@ const RegisterPage: React.FC = () => {
             setError('パスワードが一致しません。');
             return;
         }
-
-        // 有効開始日時と有効終了日時のチェック
-        // activeStartYear/Month/Day/Hour/Minute/SecondからDateを作成
-        const activeStartDate = new Date(activeStartYear, activeStartMonth, activeStartDay, activeStartHour, activeStartMinute, 0);
-        const activeEndDate = new Date(activeEndYear, activeEndMonth, activeEndDay, activeEndHour, activeEndMinute, 0);
 
         if (activeStartDate && activeEndDate && new Date(activeStartDate) > new Date(activeEndDate)) {
             setError('有効開始日時は有効終了日時より前でなければなりません。');
@@ -76,16 +65,8 @@ const RegisterPage: React.FC = () => {
             setConfirmPassword('');
             setRole(UserRole.student);
             setDisabled(false);
-            setActiveStartYear(2024);
-            setActiveStartMonth(10);
-            setActiveStartDay(17);
-            setActiveStartHour(9);
-            setActiveStartMinute(0);
-            setActiveEndYear(2025);
-            setActiveEndMonth(3);
-            setActiveEndDay(1);
-            setActiveEndHour(23);
-            setActiveEndMinute(59);
+            setActiveStartDate(new Date(2024, 10, 1, 9, 0, 0));
+            setActiveEndDate(new Date(2025, 3, 1, 23, 59, 59));
             setError('');
             // 登録後の処理（例：ログインページへのリダイレクト）
         } catch (error) {
@@ -139,20 +120,24 @@ const RegisterPage: React.FC = () => {
                 <div>
                     <label>有効開始日時:</label>
                     <div>
-                        <input type="number" value={activeStartYear} onChange={(e) => setActiveStartYear(Number(e.target.value))} placeholder="年" />
-                        <input type="number" value={activeStartDay} onChange={(e) => setActiveStartDay(Number(e.target.value))} placeholder="日" />
-                        <input type="number" value={activeStartHour} onChange={(e) => setActiveStartHour(Number(e.target.value))} placeholder="時" />
-                        <input type="number" value={activeStartMinute} onChange={(e) => setActiveStartMinute(Number(e.target.value))} placeholder="分" />
+                        <DatePicker 
+                            selected={activeStartDate}
+                            onChange={(date: Date | null) => setActiveStartDate(date)}
+                            showTimeSelect
+                            dateFormat="yyyy/MM/dd HH:mm"
+                        />
                     </div>
                     <small>指定しない場合は無期限として扱われます。</small>
                 </div>
                 <div>
                     <label>有効終了日時:</label>
                     <div>
-                        <input type="number" value={activeEndYear} onChange={(e) => setActiveEndYear(Number(e.target.value))} placeholder="年" />
-                        <input type="number" value={activeEndDay} onChange={(e) => setActiveEndDay(Number(e.target.value))} placeholder="日" />
-                        <input type="number" value={activeEndHour} onChange={(e) => setActiveEndHour(Number(e.target.value))} placeholder="時" />
-                        <input type="number" value={activeEndMinute} onChange={(e) => setActiveEndMinute(Number(e.target.value))} placeholder="分" />
+                        <DatePicker 
+                            selected={activeEndDate}
+                            onChange={(date: Date | null) => setActiveEndDate(date)}
+                            showTimeSelect
+                            dateFormat="yyyy/MM/dd HH:mm"
+                        />
                     </div>
                     <small>指定しない場合は無期限として扱われます。</small>
                 </div>

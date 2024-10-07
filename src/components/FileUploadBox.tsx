@@ -1,19 +1,22 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { FaTrash, FaFile } from 'react-icons/fa';
+import './FileUploadBox.css';
 
 interface FileUploadFormProps {
     onSubmit: (files: File[]) => void;
-    requiredFiles: string[];
+    descriptionOnBox: string;
 }
 
-const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, requiredFiles }) => {
+const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnBox }) => {
     const [files, setFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            setFiles(prevFiles => [...prevFiles, ...Array.from(event.target.files!)]);
-        }
-    };
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
     const handleRemoveFile = (index: number) => {
         setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
@@ -29,25 +32,31 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, requiredFiles 
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input 
-                type="file" 
-                onChange={handleFileChange} 
-                multiple 
-                style={{display: 'none'}}
-                ref={fileInputRef}
-            />
-            <button type="button" onClick={handleAddFile}>+ファイル追加</button>
-            <ul>
-                {files.map((file, index) => (
-                    <li key={index}>
-                        {file.name}
-                        <button type="button" onClick={() => handleRemoveFile(index)}>削除</button>
-                    </li>
-                ))}
-            </ul>
-            <button type="submit" disabled={files.length === 0}>提出</button>
-        </form>
+        <div className="file-upload-box">
+            <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
+                <input {...getInputProps()} ref={fileInputRef} />
+                <p>{descriptionOnBox}</p>
+                {files.length > 0 && (
+                    <ul className='file-list'>
+                        {files.map((file, index) => (
+                            <li key={index} className='file-item'>
+                                <div className='file-info'>
+                                    <FaFile style={{ marginRight: '5px' }} />
+                                    <span>{file.name}</span>
+                                </div>
+                                <button onClick={() => handleRemoveFile(index)} className='remove-file'>
+                                    <FaTrash />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+            <div className="button-container">
+                <button type="button" onClick={handleAddFile} className="add-file">ファイルを追加</button>
+                <button type="submit" onClick={handleSubmit} disabled={files.length === 0} className="submit">提出</button>
+            </div>
+        </div>
     );
 };
 

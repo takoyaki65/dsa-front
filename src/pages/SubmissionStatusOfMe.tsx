@@ -115,8 +115,8 @@ const SubmissionStatusOfMe: React.FC = () => {
               <td>{submission.user_id}</td>
               <td>{submission.score}</td>
               <td>{submission.result}</td>
-              <td>{submission.timeMS}</td>
-              <td>{submission.memoryKB}</td>
+              <td>{submission.timeMS}ms</td>
+              <td>{submission.memoryKB}KB</td>
               <td>
                 <Link to={`/result/${submission.id}`}>詳細</Link>
               </td>

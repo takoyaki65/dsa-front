@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { LoginCredentials, CreateUser } from '../types/user';
 import { Token, TokenResponse } from '../types/token';
-import { SubmissionRecord } from '../types/Assignments';
+import { SubmissionRecord, BatchSubmissionRecord } from '../types/Assignments';
 
 interface UploadResult {
     unique_id: string;
@@ -11,7 +11,7 @@ interface UploadResult {
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
 
-// "/api/v1/assignments/{lecture_id}/{assignment_id}/judge?evaluation={true|false}"を通して、課題のジャッジリクエストを送信する関数
+// "/api/v1/assignments/judge/{lecture_id}/{assignment_id}/?evaluation={true|false}"を通して、課題のジャッジリクエストを送信する関数
 export const submitAssignment = async (lecture_id: number, assignment_id: number, evaluation: boolean, files: File[], token: string | null) : Promise<SubmissionRecord> => {
     const formData = new FormData();
     files.forEach(file => {
@@ -24,7 +24,7 @@ export const submitAssignment = async (lecture_id: number, assignment_id: number
             accept: 'application/json',
             'Content-Type': 'multipart/form-data'
         } : {};
-        const response = await axios.post<SubmissionRecord>(`${API_PREFIX}/assignments/${lecture_id}/${assignment_id}/judge?evaluation=${evaluation}`, formData, { headers });
+        const response = await axios.post<SubmissionRecord>(`${API_PREFIX}/assignments/judge/${lecture_id}/${assignment_id}/?evaluation=${evaluation}`, formData, { headers });
         return response.data;
     } catch (error: any) {
         console.error('Error submitting assignment:', error);
@@ -40,22 +40,58 @@ export const submitAssignment = async (lecture_id: number, assignment_id: number
 }
 
 
-// ファイルをアップロードする関数(多分uploadFileWithProgressに切り替える)
-export const uploadFile = async (file: File, id: number, sub_id: number): Promise<UploadResult> =>{
+// "/api/v1/assignments/judge/{lecture_id}?evaluation={true|false}"を通じて、学生のzip提出を受け付ける関数(学生はevaluation=falseの場合しか提出できない)
+export const submitStudentZip = async (lecture_id: number, evaluation: boolean, upload_zip_file: File, token: string | null): Promise<SubmissionRecord[]> => {
     const formData = new FormData();
-    formData.append("upload_file", file);
+    formData.append('uploaded_zip_file', upload_zip_file);
+
     try {
-        const response = await axios.post(`${API_PREFIX}/assignments/upload/${id}/${sub_id}`, formData, {
-            headers: {
-            "Content-Type": "multipart/form-data",
-            },
-        });
-        const data: UploadResult = response.data;
-        return data; // uuidが付加されたファイル名を返す
-    } catch (error) {
-        throw error; // エラーを呼び出し元に伝播させる
+        const headers = token ? {
+            Authorization: `Bearer ${token}`,
+            accept: 'application/json',
+            'Content-Type': 'multipart/form-data'
+        } : {};
+        const response = await axios.post<SubmissionRecord[]>(`${API_PREFIX}/assignments/judge/${lecture_id}/?evaluation=${evaluation}`, formData, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error('Error submitting student zip:', error);
+        if (error.response) {
+            console.error('Server responded with an error:', error.response.data);
+        } else if (error.request) {
+            console.error('No response received from the server:', error.request);
+        } else {
+            console.error('Error during the request:', error.message);
+        }
+        throw error;
     }
-};
+}
+
+
+// "/api/v1/assignments/batch/{lecture_id}?evaluation={true|false}"を通じて、バッチ採点をリクエストする関数
+export const submitBatchEvaluation = async (lecture_id: number, evaluation: boolean, uploaded_zip_file: File, token: string | null): Promise<BatchSubmissionRecord> => {
+    const formData = new FormData();
+    formData.append('uploaded_zip_file', uploaded_zip_file);
+
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}` , accept: 'application/json', 'Content-Type': 'multipart/form-data'} : {};
+        const response = await axios.post<BatchSubmissionRecord>(`${API_PREFIX}/assignments/batch/${lecture_id}/?evaluation=${evaluation}`, formData, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error('Error submitting batch evaluation:', error);
+        if (error.response) {
+            console.error('Server responded with an error:', error.response.data);
+        } else if (error.request) {
+            console.error('No response received from the server:', error.request);
+        } else {
+            console.error('Error during the request:', error.message);
+        }
+        throw error;
+    }
+}
+
+
+
+
 
 export const uploadStudentList = async (file: File, token: string | null): Promise<{ data: Blob, headers: any }> => {
     const formData = new FormData();

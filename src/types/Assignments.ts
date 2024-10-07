@@ -165,6 +165,17 @@ export type SubmissionSummary = {
 }
 
 
+export type BatchSubmissionRecord = {
+  id: number,
+  ts: Date,
+  user_id: string,
+  lecture_id: number,
+  message: string | null,
+  complete_judge: number | null,
+  total_judge: number | null,
+}
+
+
 export type JudgeProgressAndStatus = SubmissionRecord & {
   result: SubmissionSummaryStatus | null,
   message: string | null,
@@ -174,11 +185,39 @@ export type JudgeProgressAndStatus = SubmissionRecord & {
 }
 
 
+export enum StudentSubmissionStatus {
+  SUBMITTED = "submitted",
+  DELAY = "delay",
+  NON_SUBMITTED = "non-submitted"
+}
+
+
+export type EvaluationDetail = {
+  user_id: string,
+  status: StudentSubmissionStatus,
+  result: SubmissionSummaryStatus | null,
+  uploaded_file_url: string | null,
+  report_url: string | null,
+  submit_date: Date | null,
+  submission_summary_list: SubmissionSummary[],
+}
+
+
+export type BatchEvaluationDetail = {
+  batch_id: number,
+  ts: Date,
+  user_id: string,
+  lecture_id: number,
+  message: string | null,
+  complete_judge: number | null,
+  total_judge: number | null,
+  evaluation_detail_list: EvaluationDetail[],
+}
+
+
 export type FileRecord = {
-  name: string,
-  type: "uploaded" | "arranged",
-  url: string | null,
-  text: string | null,
+  name: string
+  content: string | Blob;
 }
 
 

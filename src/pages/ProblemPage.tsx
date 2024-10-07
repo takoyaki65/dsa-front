@@ -1,15 +1,12 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import ReactMarkdown from 'react-markdown'
 import { fetchAssignmentDescription, fetchRequiredFiles } from '../api/GetAPI';
 import FileUploadBox from '../components/FileUploadBox';
 import useApiClient from '../hooks/useApiClient';
 import { submitAssignment } from '../api/PostAPI';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import 'katex/dist/katex.min.css';
-import remarkGfm from 'remark-gfm';
 import { useAuth } from '../context/AuthContext';
+import MarkdownRenderer from '../components/MarkdownRenderer';
+
 const SubmissionPage: React.FC = () => {
 	const { token } = useAuth();
 	const { lectureId, assignmentId } = useParams<{ lectureId: string; assignmentId: string }>();
@@ -44,6 +41,16 @@ const SubmissionPage: React.FC = () => {
 
 	const handleSubmit = async (files: File[]) => {
 		if (lectureId && assignmentId) {
+			// 必要なファイルが全てアップロードされているか確認
+			const uploadedFileNames = files.map(file => file.name);
+			const missingFiles = requiredFiles.filter(file => !uploadedFileNames.includes(file));
+
+			if (missingFiles.length > 0) {
+				console.error('以下のファイルがアップロードされていません：', missingFiles.join(', '));
+				alert(`以下のファイルがアップロードされていません：${missingFiles.join(', ')}`);
+				return;
+			}
+
 			try {
 				const submissionRecord = await apiClient({ apiFunc: submitAssignment, args: [parseInt(lectureId), parseInt(assignmentId), evaluation, files] });
 				navigate('/status/me');
@@ -63,9 +70,7 @@ const SubmissionPage: React.FC = () => {
 	return (
 		<div style={{ paddingBottom: '100px' }}>
 			<div>
-				<ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
-					{description}
-				</ReactMarkdown>
+				<MarkdownRenderer content={description} />
 			</div>
 			<div>
 				<h2>必要なファイル</h2>
@@ -77,7 +82,7 @@ const SubmissionPage: React.FC = () => {
 			</div>
 			<div>
 				<h2>提出フォーム</h2>
-				<FileUploadBox onSubmit={handleSubmit} requiredFiles={requiredFiles} />
+				<FileUploadBox onSubmit={handleSubmit} descriptionOnBox={'zipではなく各ファイルを提出してください．'} />
 			</div>
 		</div>
 	);
