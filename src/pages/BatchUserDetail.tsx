@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchBatchEvaluationUserDetail, fetchSubmissionResultDetail, fetchProblems, fetchBatchSubmission, fetchUserInfo } from '../api/GetAPI';
+import { fetchBatchSubmissionUserUploadedFile, fetchSubmissionResultDetail, fetchProblems, fetchBatchSubmission, fetchUserInfo , fetchBatchEvaluationUserDetail} from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 import { EvaluationDetail, Problem, SubmissionSummary, BatchSubmissionRecord, SubmissionSummaryStatus } from '../types/Assignments';
 import styled from 'styled-components';
 import JudgeResultsViewer from '../components/JudgeResultsViewer';
 import { User } from '../types/user';
+import { FileRecord } from '../types/Assignments';
+import CodeBlock from '../components/CodeBlock';
+import OfflineFileDownloadButton from '../components/OfflineFileDownloadButton';
 
 
 const BatchUserDetail: React.FC = () => {
@@ -27,11 +30,19 @@ const BatchUserDetail: React.FC = () => {
   const [assignmentId2Problems, setAssignmentId2Problems] = useState<{ [key: number]: Problem }>({});
 
 
+  const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([]);
+  const [selectedUploadedFile, setSelectedUploadedFile] = useState<string>('');
+
+
   useEffect(() => {
     setIsLoading(true);
     const fetchData = async () => {
       if (!batchId || !userId) return;
       try {
+        // アップロードされたファイルを取得
+        const file_list = await apiClient({ apiFunc: fetchBatchSubmissionUserUploadedFile, args: [parseInt(batchId), parseInt(userId)] });
+        setUploadedFiles(file_list);
+
         // バッチ採点のエントリを取得
         const batchSubmission = await apiClient({ apiFunc: fetchBatchSubmission, args: [parseInt(batchId)] });
         if (batchSubmission) {
@@ -100,6 +111,15 @@ const BatchUserDetail: React.FC = () => {
           : [...prevExpandedRows, id]
     );
   }
+
+  const handleUploadedFileSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedUploadedFile(event.target.value);
+  };
+
+  const getSelectedUploadedFileContent = () => {
+    const file = uploadedFiles.find((file) => file.name === selectedUploadedFile);
+    return file?.content as string;
+  };
 
   console.log("lectureId: ", lectureId);
   console.log("assignmentId2SubmissionSummary: ", assignmentId2SubmissionSummary);
@@ -170,6 +190,22 @@ const BatchUserDetail: React.FC = () => {
           ))}
         </tbody>
       </CheckListTable>
+
+      <h2>提出されたファイル一覧</h2>
+      <ul>
+        {uploadedFiles.filter(file => file.content instanceof Blob).map(file => (
+          <li key={file.name}>
+            <OfflineFileDownloadButton file={file} />
+          </li>
+        ))}
+      </ul>
+      <select onChange={handleUploadedFileSelect} value={selectedUploadedFile}>
+        <option value="">ファイルを選択してください</option>
+        {uploadedFiles.filter(file => typeof file.content === 'string').map(file => (
+          <option key={file.name} value={file.name}>{file.name}</option>
+        ))}
+      </select>
+      <CodeBlock code={getSelectedUploadedFileContent()} fileName={selectedUploadedFile} />
     </div>
   );
 
