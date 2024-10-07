@@ -23,7 +23,9 @@ const BatchUserDetail: React.FC = () => {
   const [currentSubmissionSummary, setCurrentSubmissionSummary] = useState<SubmissionSummary | null>(null);
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [expandedRows, setExpandedRows] = useState<number[]>([]);  
+  const [expandedRows, setExpandedRows] = useState<number[]>([]);
+  const [assignmentId2Problems, setAssignmentId2Problems] = useState<{ [key: number]: Problem }>({});
+
 
   useEffect(() => {
     setIsLoading(true);
@@ -57,6 +59,12 @@ const BatchUserDetail: React.FC = () => {
         });
         setAssignmentId2SubmissionSummary(newAssignmentId2SubmissionSummary);
 
+        const newAssignmentId2Problems: { [key: number]: Problem } = {};
+        problemsData.forEach((problem, index) => {
+          newAssignmentId2Problems[problem.assignment_id] = problem;
+        });
+        setAssignmentId2Problems(newAssignmentId2Problems);
+
         //console.log("newAssignmentId2SubmissionSummary: ", newAssignmentId2SubmissionSummary);
 
         const newUserInfo = await apiClient({ apiFunc: fetchUserInfo, args: [parseInt(userId)] });
@@ -65,6 +73,10 @@ const BatchUserDetail: React.FC = () => {
       } catch (error) {
         console.error("Error fetching data: ", error);
       } finally {
+        if (problems.length > 0) {
+          setCurrentSubmissionSummary(assignmentId2SubmissionSummary[problems[0].assignment_id]);
+          setSelectedAssignmentId(problems[0].assignment_id);
+        }
         setIsLoading(false);
       }
     };
@@ -122,7 +134,7 @@ const BatchUserDetail: React.FC = () => {
       </table>
       )}
 
-      <h2>チェックリスト</h2>
+      <h2>チェックリスト ({selectedAssignmentId && assignmentId2Problems[selectedAssignmentId]?.title})</h2>
       <CheckListTable>
         <thead>
           <tr>
