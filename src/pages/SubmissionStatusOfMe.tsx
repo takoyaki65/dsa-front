@@ -118,7 +118,9 @@ const SubmissionStatusOfMe: React.FC = () => {
               <td>{submission.timeMS}ms</td>
               <td>{submission.memoryKB}KB</td>
               <td>
-                <Link to={`/result/${submission.id}`}>詳細</Link>
+                {submission.progress === SubmissionProgressStatus.Done ?
+                  <Link to={`/result/${submission.id}`}>詳細</Link> :
+                  `${submission.completed_task}/${submission.total_task}...`}
               </td>
             </tr>
           ))}
