@@ -24,7 +24,7 @@ export const submitAssignment = async (lecture_id: number, assignment_id: number
             accept: 'application/json',
             'Content-Type': 'multipart/form-data'
         } : {};
-        const response = await axios.post<SubmissionRecord>(`${API_PREFIX}/assignments/judge/${lecture_id}/${assignment_id}/?evaluation=${evaluation}`, formData, { headers });
+        const response = await axios.post<SubmissionRecord>(`${API_PREFIX}/assignments/judge/${lecture_id}/${assignment_id}?evaluation=${evaluation}`, formData, { headers });
         return response.data;
     } catch (error: any) {
         console.error('Error submitting assignment:', error);
@@ -51,7 +51,7 @@ export const submitStudentZip = async (lecture_id: number, evaluation: boolean, 
             accept: 'application/json',
             'Content-Type': 'multipart/form-data'
         } : {};
-        const response = await axios.post<SubmissionRecord[]>(`${API_PREFIX}/assignments/judge/${lecture_id}/?evaluation=${evaluation}`, formData, { headers });
+        const response = await axios.post<SubmissionRecord[]>(`${API_PREFIX}/assignments/judge/${lecture_id}?evaluation=${evaluation}`, formData, { headers });
         return response.data;
     } catch (error: any) {
         console.error('Error submitting student zip:', error);
@@ -74,7 +74,7 @@ export const submitBatchEvaluation = async (lecture_id: number, evaluation: bool
 
     try {
         const headers = token ? { Authorization: `Bearer ${token}` , accept: 'application/json', 'Content-Type': 'multipart/form-data'} : {};
-        const response = await axios.post<BatchSubmissionRecord>(`${API_PREFIX}/assignments/batch/${lecture_id}/?evaluation=${evaluation}`, formData, { headers });
+        const response = await axios.post<BatchSubmissionRecord>(`${API_PREFIX}/assignments/batch/${lecture_id}?evaluation=${evaluation}`, formData, { headers });
         return response.data;
     } catch (error: any) {
         console.error('Error submitting batch evaluation:', error);
