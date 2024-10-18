@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Lecture, Problem, JudgeProgressAndStatus, FileRecord, SubmissionSummary, BatchSubmissionRecord, BatchEvaluationDetail, EvaluationDetail } from '../types/Assignments';
+import { Lecture, Problem, Submission, FileRecord, BatchSubmission, EvaluationStatus } from '../types/Assignments';
 import { User } from '../types/user';
 import { Token } from '../types/token';
 import { TextResponse } from '../types/response'
@@ -7,11 +7,11 @@ import JSZip from 'jszip';
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
 
-// "/api/v1/assignments/info?open={true|false}"を通して、{公開期間内|公開期間外}の授業エントリを全て取得する関数
-export const fetchLectures = async (open: boolean, token: string | null): Promise<Lecture[]> => {
+// "/api/v1/assignments/info?all={true|false}"を通して、{全て|公開期間内}の授業エントリを全て取得する関数
+export const fetchLectures = async (all: boolean, token: string | null): Promise<Lecture[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Lecture[]>(`${API_PREFIX}/assignments/info?open=${open}`, { headers });
+        const response = await axios.get<Lecture[]>(`${API_PREFIX}/assignments/info?all=${all}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('授業の取得に失敗しました');
@@ -22,14 +22,14 @@ export const fetchLectures = async (open: boolean, token: string | null): Promis
 };
 
 
-// "/api/v1/assignments/info/{lecture_id}?evaluation={true|false}"を通して、{評価用|テスト用}の課題のリストを取得する関数
-export const fetchProblems = async (lecture_id: number, evaluation: boolean, token: string | null): Promise<Problem[]> => {
+// "/api/v1/assignments/info/{lecture_id}"を通して、授業のエントリの詳細を取得する関数
+export const fetchLectureEntry = async (lecture_id: number, token: string | null): Promise<Lecture> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Problem[]>(`${API_PREFIX}/assignments/info/${lecture_id}?evaluation=${evaluation}`, { headers });
+        const response = await axios.get<Lecture>(`${API_PREFIX}/assignments/info/${lecture_id}`, { headers });
         return response.data;
     } catch (error: any) {
-        const customError = new Error('課題の取得に失敗しました');
+        const customError = new Error('授業のエントリの詳細の取得に失敗しました');
         customError.stack = error.stack;
         (customError as any).originalError = error;
         throw customError;
@@ -37,26 +37,12 @@ export const fetchProblems = async (lecture_id: number, evaluation: boolean, tok
 };
 
 
-// "/api/v1/assignments/info/{lecture_id}/{assignment_id}?evaluation={true|false}"を通して、{評価用|テスト用}の課題のエントリを取得する関数
-export const fetchProblemEntry = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<Problem> => {
+// "/api/v1/assignments/info/{lecture_id}/{assignment_id}/entry"を通して、課題のエントリの詳細を取得する関数。
+// eval=Trueなら評価用の追加リソース(テストケースなど)も取得される
+export const fetchProblemEntry = async (lecture_id: number, assignment_id: number, token: string | null): Promise<Problem> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Problem>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}?evaluation=${evaluation}`, { headers });
-        return response.data;
-    } catch (error: any) {
-        const customError = new Error('課題のエントリの取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
-    }
-}
-
-
-// "/api/v1/assignments/info/{lecture_id}/{assignment_id}/detail?evaluation={true|false}"を通して、{評価用|テスト用}の課題のエントリの詳細を取得する関数
-export const fetchProblemDetail = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<Problem> => {
-    try {
-        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Problem>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/detail?evaluation=${evaluation}`, { headers });
+        const response = await axios.get<Problem>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/entry`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('課題のエントリの詳細の取得に失敗しました');
@@ -67,29 +53,15 @@ export const fetchProblemDetail = async (lecture_id: number, assignment_id: numb
 };
 
 
-// "/api/v1/assignments/info/{lecture_id}/{assignment_id}/description?evaluation={true|false}"を通して、{評価用|テスト用}の課題の説明(Markdown)を取得する関数
-export const fetchAssignmentDescription = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<string> => {
+// "/api/v1/assignments/info/{lecture_id}/{assignment_id}/detail?eval={true|false}"を通して、課題のエントリの詳細を取得する関数。
+// eval=Trueなら評価用の追加リソース(テストケースなど)も取得される
+export const fetchProblemDetail = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<Problem> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<TextResponse>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/description?evaluation=${evaluation}`, { headers });
-        return response.data.text;
-    } catch (error: any) {
-        const customError = new Error('課題の説明の取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
-    }
-};
-
-
-// "/api/v1/assignments/info/{lecture_id}/{assignment_id}/required-files?evaluation={true|false}"を通して、{評価用|テスト用}の課題の必要ファイルのリストを取得する関数
-export const fetchRequiredFiles = async (lecture_id: number, assignment_id: number, evaluation: boolean, token: string | null): Promise<string[]> => {
-    try {
-        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<string[]>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/required-files?evaluation=${evaluation}`, { headers });
+        const response = await axios.get<Problem>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/detail?eval=${evaluation}`, { headers });
         return response.data;
     } catch (error: any) {
-        const customError = new Error('必要ファイルの取得に失敗しました');
+        const customError = new Error('課題のエントリの詳細の取得に失敗しました');
         customError.stack = error.stack;
         (customError as any).originalError = error;
         throw customError;
@@ -97,11 +69,11 @@ export const fetchRequiredFiles = async (lecture_id: number, assignment_id: numb
 };
 
 
-// "api/v1/assignments/status/submissions/{submission_id}"を通じて、指定された提出の進捗状況を取得する関数
-export const fetchSubmissionStatus = async (submission_id: number, token: string | null): Promise<JudgeProgressAndStatus> => {
+// "api/v1/assignments/status/submissions/id/{submission_id}"を通じて、指定された提出の進捗状況を取得する関数
+export const fetchSubmissionStatus = async (submission_id: number, token: string | null): Promise<Submission> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<JudgeProgressAndStatus>(`${API_PREFIX}/assignments/status/submissions/${submission_id}`, { headers });
+        const response = await axios.get<Submission>(`${API_PREFIX}/assignments/status/submissions/id/${submission_id}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('提出の進捗状況の取得に失敗しました');
@@ -111,11 +83,11 @@ export const fetchSubmissionStatus = async (submission_id: number, token: string
     }
 };
 
-// "/api/v1/assignments/status/submissions/me?page={page}"を通じて、自分の提出の進捗状況を取得する関数
-export const fetchMySubmissionList = async (page: number, token: string | null): Promise<JudgeProgressAndStatus[]> => {
+// "/api/v1/assignments/status/submissions/view?page={page}?include_eval={true|false}?all={true|false}"を通じて、自分の提出の進捗状況を取得する関数
+export const fetchSubmissionList = async (page: number, include_eval: boolean, all: boolean, token: string | null): Promise<Submission[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<JudgeProgressAndStatus[]>(`${API_PREFIX}/assignments/status/submissions/me?page=${page}`, { headers });
+        const response = await axios.get<Submission[]>(`${API_PREFIX}/assignments/status/submissions/view?page=${page}&include_eval=${include_eval}&all=${all}`, { headers });
         return response.data;
     } catch (error: any) {
         const customError = new Error('自分の提出の進捗状況の取得に失敗しました');
@@ -126,11 +98,11 @@ export const fetchMySubmissionList = async (page: number, token: string | null):
 };
 
 
-// "/api/v1/assignments/status/submissions/{submission_id}/files/zip?type={uploaded|arranged}"を通じて、ジャッジリクエストに関連するファイルのリストを取得する関数
+// "/api/v1/assignments/status/submissions/id/{submission_id}/files/zip?type={uploaded|arranged}"を通じて、ジャッジリクエストに関連するファイルのリストを取得する関数
 export const fetchSubmissionFiles = async (submission_id: number, type: "uploaded" | "arranged", token: string | null): Promise<FileRecord[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/zip' } : {};
-        const response = await axios.get(`${API_PREFIX}/assignments/status/submissions/${submission_id}/files/zip?type=${type}`, { headers, responseType: 'arraybuffer' });
+        const response = await axios.get(`${API_PREFIX}/assignments/status/submissions/id/${submission_id}/files/zip?type=${type}`, { headers, responseType: 'arraybuffer' });
 
         //console.log("response.data", response.data);
         
@@ -170,11 +142,11 @@ export const fetchSubmissionFiles = async (submission_id: number, type: "uploade
 };
 
 
-// "/api/v1/assignments/result/submissions/{submission_id}/detail"を通じて、提出されたジャッジの結果の詳細を取得する関数
-export const fetchSubmissionResultDetail = async (submission_id: number, token: string | null): Promise<SubmissionSummary> => {
+// "/api/v1/assignments/result/submissions/id/{submission_id}"を通じて、提出されたジャッジの結果の詳細を取得する関数
+export const fetchSubmissionResultDetail = async (submission_id: number, token: string | null): Promise<Submission> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<SubmissionSummary>(`${API_PREFIX}/assignments/result/submissions/${submission_id}/detail`, { headers });
+        const response = await axios.get<Submission>(`${API_PREFIX}/assignments/result/submissions/id/${submission_id}`, { headers });
         return response.data;
     } catch (error: any) {
         throw error;
@@ -182,11 +154,11 @@ export const fetchSubmissionResultDetail = async (submission_id: number, token: 
 };
 
 
-// "api/v1/assignments/status/batch/{batch_id}"を通じて、指定されたバッチ採点の結果を取得する関数
-export const fetchBatchSubmission = async (batch_id: number, token: string | null): Promise<BatchSubmissionRecord> => {
+// "api/v1/assignments/status/batch/id/{batch_id}"を通じて、指定されたバッチ採点の結果を取得する関数
+export const fetchBatchSubmissionStatus = async (batch_id: number, token: string | null): Promise<BatchSubmission> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<BatchSubmissionRecord>(`${API_PREFIX}/assignments/status/batch/${batch_id}`, { headers });
+        const response = await axios.get<BatchSubmission>(`${API_PREFIX}/assignments/status/batch/id/${batch_id}`, { headers });
         return response.data;
     } catch (error: any) {
         console.error("指定されたバッチ採点の結果の取得に失敗しました", error);
@@ -195,11 +167,11 @@ export const fetchBatchSubmission = async (batch_id: number, token: string | nul
 };
 
 
-// "/api/v1/assignments/status/batch/all?page={page}"を通じて、バッチ採点の結果のリストを取得する関数
-export const fetchBatchSubmissionList = async (page: number, token: string | null): Promise<BatchSubmissionRecord[]> => {
+// "/api/v1/assignments/status/batch/all?page={page}"を通じて、バッチ採点の進捗状況のリストを取得する関数
+export const fetchBatchSubmissionList = async (page: number, token: string | null): Promise<BatchSubmission[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<BatchSubmissionRecord[]>(`${API_PREFIX}/assignments/status/batch/all?page=${page}`, { headers });
+        const response = await axios.get<BatchSubmission[]>(`${API_PREFIX}/assignments/status/batch/all?page=${page}`, { headers });
         return response.data;
     } catch (error: any) {
         console.error("バッチ採点の結果のリストの取得に失敗しました", error);
@@ -208,11 +180,11 @@ export const fetchBatchSubmissionList = async (page: number, token: string | nul
 };
 
 
-// "/api/v1/assignments/result/batch/{batch_id}"を通じて、指定されたバッチ採点の結果の詳細を取得する関数
-export const fetchBatchSubmissionDetail = async (batch_id: number, token: string | null): Promise<BatchEvaluationDetail> => {
+// "/api/v1/assignments/result/batch/id/{batch_id}"を通じて、指定されたバッチ採点の結果の詳細を取得する関数
+export const fetchBatchSubmissionDetail = async (batch_id: number, token: string | null): Promise<BatchSubmission> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<BatchEvaluationDetail>(`${API_PREFIX}/assignments/result/batch/${batch_id}`, { headers });
+        const response = await axios.get<BatchSubmission>(`${API_PREFIX}/assignments/result/batch/id/${batch_id}`, { headers });
         return response.data;
     } catch (error: any) {
         console.error("指定されたバッチ採点の結果の詳細の取得に失敗しました", error);
@@ -221,11 +193,11 @@ export const fetchBatchSubmissionDetail = async (batch_id: number, token: string
 };
 
 
-// "/api/v1/assignments/result/batch/{batch_id}/user/{user_id}"を通じて、指定されたバッチ採点の結果の詳細を取得する関数
-export const fetchBatchEvaluationUserDetail = async (batch_id: number, user_id: string, token: string | null): Promise<EvaluationDetail> => {
+// "/api/v1/assignments/result/batch/id/{batch_id}/user/{user_id}"を通じて、指定されたバッチ採点の結果の詳細を取得する関数
+export const fetchEvaluationStatus = async (batch_id: number, user_id: string, token: string | null): Promise<EvaluationStatus> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<EvaluationDetail>(`${API_PREFIX}/assignments/result/batch/${batch_id}/user/${user_id}`, { headers });
+        const response = await axios.get<EvaluationStatus>(`${API_PREFIX}/assignments/result/batch/id/${batch_id}/user/${user_id}`, { headers });
         return response.data;
     } catch (error: any) {
         console.error("指定されたバッチ採点の結果の詳細の取得に失敗しました", error);
@@ -269,6 +241,36 @@ export const fetchBatchSubmissionUserUploadedFile = async (batch_id: number, use
         throw error;
     }
 };
+
+
+// "/api/v1/assignments/result/batch/{batch_id}/files/report/{user_id}"を通じて、指定されたバッチ採点の特定の学生のレポートを取得する関数
+export const fetchBatchSubmissionUserReport = async (batch_id: number, user_id: string, token: string | null): Promise<FileRecord> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/pdf' } : {};
+        const response = await axios.get(`${API_PREFIX}/assignments/result/batch/${batch_id}/files/report/${user_id}`, { headers, responseType: 'arraybuffer' });
+        
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        
+        // Content-Dispositionヘッダーからファイル名を抽出
+        const contentDisposition = response.headers['content-disposition'];
+        let fileName = 'report.pdf';
+        if (contentDisposition) {
+            const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+            if (fileNameMatch) {
+                fileName = fileNameMatch[1];
+            }
+        }
+        
+        return {
+            name: fileName,
+            content: blob
+        };
+    } catch (error: any) {
+        console.error("指定されたバッチ採点の特定の学生のレポートの取得に失敗しました", error);
+        throw error;
+    }
+}
+
 
 
 export const fetchUserList = async (token: string | null): Promise<User[]> => {

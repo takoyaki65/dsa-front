@@ -1,44 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { fetchMySubmissionList, fetchSubmissionStatus, fetchProblemEntry } from '../api/GetAPI';
-import { JudgeProgressAndStatus, SubmissionProgressStatus } from '../types/Assignments'
+import { fetchSubmissionList, fetchSubmissionStatus, fetchProblemEntry } from '../api/GetAPI';
+import { Submission, Problem } from '../types/Assignments'
 import { Link } from 'react-router-dom';
 import useApiClient from '../hooks/useApiClient';
 import { useAuth } from '../context/AuthContext';
+import { UserRole } from '../types/token';
+
 const SubmissionStatusOfMe: React.FC = () => {
-  const { token } = useAuth();
-  const [submissions, setSubmissions] = useState<JudgeProgressAndStatus[]>([]);
+  const { token, role } = useAuth();
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { apiClient } = useApiClient();
 
-  const [submissionTitles, setSubmissionTitles] = useState<{[key: string]: string}>({});
+  const [id2problem, setId2Problem] = useState<{[key: string]: Problem}>({});
+
+  const include_eval = (role === UserRole.student) ? false : true;
+  const all = false;
 
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
         setLoading(true);
-        const data = await apiClient({ apiFunc: fetchMySubmissionList, args: [page] });
+        const data = await apiClient({ apiFunc: fetchSubmissionList, args: [page, include_eval, all] });
         setSubmissions(data);
 
-        const titles: {[key: string]: string} = {};
+        const dict: {[key: string]: Problem} = {};
         for (const submission of data) {
-          const key = `${submission.lecture_id}-${submission.assignment_id}-${submission.for_evaluation}`;
-          if (!titles[key]) {
+          const key = `${submission.lecture_id}-${submission.assignment_id}`;
+          if (!dict[key]) {
             try {
               const problemEntry = await apiClient({ 
                 apiFunc: fetchProblemEntry, 
-                args: [submission.lecture_id, submission.assignment_id, submission.for_evaluation] 
+                args: [submission.lecture_id, submission.assignment_id] 
               });
-              titles[key] = problemEntry.title;
+              dict[key] = problemEntry;
             } catch (err) {
               console.error('課題タイトルの取得に失敗しました', err);
-              titles[key] = '不明な課題';
+              dict[key] = {
+                lecture_id: submission.lecture_id,
+                assignment_id: submission.assignment_id,
+                title: '不明な課題',
+                timeMS: 0,
+                memoryMB: 0,
+                detail: null
+              };
             }
           }
         }
-        setSubmissionTitles(titles);
-
+        setId2Problem(dict);
         setError(null);
       } catch (err) {
         setError('提出状況の取得に失敗しました．リロードしても失敗する場合はTAに連絡してください．');
@@ -53,7 +64,7 @@ const SubmissionStatusOfMe: React.FC = () => {
     const interval = setInterval(async () => {
       const updateSubmissions = await Promise.all(
         submissions.map(async (submission) => {
-          if (submission.progress !== SubmissionProgressStatus.Done) {
+          if (submission.progress !== "done") {
             try {
               return await apiClient({ apiFunc: fetchSubmissionStatus, args: [submission.id] });
             } catch (err) {
@@ -111,14 +122,14 @@ const SubmissionStatusOfMe: React.FC = () => {
           {submissions.map((submission) => (
             <tr key={submission.id}>
               <td>{submission.ts.toString()}</td>
-              <td>{submissionTitles[`${submission.lecture_id}-${submission.assignment_id}-${submission.for_evaluation}`]}</td>
+              <td>{id2problem[`${submission.lecture_id}-${submission.assignment_id}`].title}</td>
               <td>{submission.user_id}</td>
               <td>{submission.score}</td>
               <td>{submission.result}</td>
               <td>{submission.timeMS}ms</td>
               <td>{submission.memoryKB}KB</td>
               <td>
-                {submission.progress === SubmissionProgressStatus.Done ?
+                {submission.progress === "done" ?
                   <Link to={`/result/${submission.id}`}>詳細</Link> :
                   `${submission.completed_task}/${submission.total_task}...`}
               </td>

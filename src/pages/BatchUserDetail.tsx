@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchBatchSubmissionUserUploadedFile, fetchSubmissionResultDetail, fetchProblems, fetchBatchSubmission, fetchUserInfo , fetchBatchEvaluationUserDetail} from '../api/GetAPI';
+import { fetchBatchSubmissionStatus, fetchBatchSubmissionUserUploadedFile, fetchEvaluationStatus, fetchLectureEntry, fetchProblemDetail, fetchSubmissionResultDetail, fetchUserInfo } from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
-import { EvaluationDetail, Problem, SubmissionSummary, BatchSubmissionRecord, SubmissionSummaryStatus } from '../types/Assignments';
+import { Problem, EvaluationStatus, Lecture, TestCases } from '../types/Assignments';
 import styled from 'styled-components';
 import JudgeResultsViewer from '../components/JudgeResultsViewer';
 import { User } from '../types/user';
@@ -19,15 +19,13 @@ const BatchUserDetail: React.FC = () => {
   const { token } = useAuth();
   const { apiClient } = useApiClient();
   const [problems, setProblems] = useState<Problem[]>([]);
-  const [lectureId, setLectureId] = useState<number | null>(null);
-  const [batchDetail, setBatchDetail] = useState<EvaluationDetail>();
-  const [assignmentId2SubmissionSummary, setAssignmentId2SubmissionSummary] = useState<{ [key: number]: SubmissionSummary | null }>({});
-  const [selectedAssignmentId, setSelectedAssignmentId] = useState<number | null>(null);
-  const [currentSubmissionSummary, setCurrentSubmissionSummary] = useState<SubmissionSummary | null>(null);
+  const [lectureEntry, setLectureEntry] = useState<Lecture | null>(null);
+  const [evaluationStatus, setEvaluationStatus] = useState<EvaluationStatus | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
-  const [assignmentId2Problems, setAssignmentId2Problems] = useState<{ [key: number]: Problem }>({});
+  const [testCaseId2TestCase, setTestCaseId2TestCase] = useState<Map<number, TestCases>>(new Map());
 
 
   const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([]);
@@ -39,70 +37,74 @@ const BatchUserDetail: React.FC = () => {
     const fetchData = async () => {
       if (!batchId || !userId) return;
       try {
-        // アップロードされたファイルを取得
-        const file_list = await apiClient({ apiFunc: fetchBatchSubmissionUserUploadedFile, args: [parseInt(batchId), parseInt(userId)] });
-        setUploadedFiles(file_list);
 
         // バッチ採点のエントリを取得
-        const batchSubmission = await apiClient({ apiFunc: fetchBatchSubmission, args: [parseInt(batchId)] });
-        if (batchSubmission) {
-          setLectureId(batchSubmission.lecture_id);
-        }
+        const batchSubmission = await apiClient({ apiFunc: fetchBatchSubmissionStatus, args: [parseInt(batchId)] });
+        
+        const lectureEntry = await apiClient({ apiFunc: fetchLectureEntry, args: [batchSubmission.lecture_id] });
+        setLectureEntry(lectureEntry);
 
         let problemsData: Problem[] = [];
         // 課題情報を取得
-        problemsData = await apiClient({ apiFunc: fetchProblems, args: [batchSubmission.lecture_id, true] });
+        for (const problem of lectureEntry.problems){
+          const problemDetail = await apiClient({ apiFunc: fetchProblemDetail, args: [problem.lecture_id, problem.assignment_id, true] });
+          problemsData.push(problemDetail);
+        }
         setProblems(problemsData);
-        
 
         // 特定のバッチ採点の特定の学生の詳細を取得
-        const userBatchDetail = await apiClient({ apiFunc: fetchBatchEvaluationUserDetail, args: [parseInt(batchId), parseInt(userId)] });
-        setBatchDetail(userBatchDetail);
-        const submissionPromises = userBatchDetail.submission_summary_list.map(summary =>
-          apiClient({ apiFunc: fetchSubmissionResultDetail, args: [summary.submission_id] })
-        );
-        const submissionResults = await Promise.all(submissionPromises);
+        const evaluationStatus = await apiClient({ apiFunc: fetchEvaluationStatus, args: [parseInt(batchId), parseInt(userId)] });
+        setEvaluationStatus(evaluationStatus);
 
-        const newAssignmentId2SubmissionSummary: { [key: number]: SubmissionSummary } = {};
+        if (evaluationStatus.upload_file_exists) {
+          // アップロードされたファイルを取得
+          const file_list = await apiClient({ apiFunc: fetchBatchSubmissionUserUploadedFile, args: [parseInt(batchId), parseInt(userId)] });
+          setUploadedFiles(file_list);
+        }
 
-        submissionResults.forEach((result, index) => {
-          newAssignmentId2SubmissionSummary[result.assignment_id] = result;
-        });
-        setAssignmentId2SubmissionSummary(newAssignmentId2SubmissionSummary);
-
-        const newAssignmentId2Problems: { [key: number]: Problem } = {};
-        problemsData.forEach((problem, index) => {
-          newAssignmentId2Problems[problem.assignment_id] = problem;
-        });
-        setAssignmentId2Problems(newAssignmentId2Problems);
-
-        //console.log("newAssignmentId2SubmissionSummary: ", newAssignmentId2SubmissionSummary);
+        // テストケースを取得
+        const testCaseId2TestCase = new Map<number, TestCases>();
+        for (const problem of problemsData) {
+          for (const test_case of problem.detail?.test_cases ?? []) {
+            testCaseId2TestCase.set(test_case.id, test_case);
+          }
+        }
+        setTestCaseId2TestCase(testCaseId2TestCase);
 
         const newUserInfo = await apiClient({ apiFunc: fetchUserInfo, args: [parseInt(userId)] });
         setUserInfo(newUserInfo);
-        //console.log("assignmentId2SubmissionSummary: ", assignmentId2SubmissionSummary);
       } catch (error) {
         console.error("Error fetching data: ", error);
       } finally {
-        if (problems.length > 0) {
-          setCurrentSubmissionSummary(assignmentId2SubmissionSummary[problems[0].assignment_id]);
-          setSelectedAssignmentId(problems[0].assignment_id);
+        if (problems.length > 0 && evaluationStatus?.submissions.length! > 0) {
+          setSelectedId(0);
         }
         setIsLoading(false);
       }
     };
     fetchData();
-    //console.log("assignmentId2SubmissionSummary: ", assignmentId2SubmissionSummary);
   }, [batchId, userId]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  const handleCheckListRowClick = (assignmentId: number) => {
-    setSelectedAssignmentId(assignmentId);
-    setCurrentSubmissionSummary(assignmentId2SubmissionSummary[assignmentId]);
+  const handleCheckListRowClick = (index: number) => {
+    setSelectedId(index);
   }
+
+  const getSubmissionStatus = (status: "submitted" | "delay" | "non-submitted" | null) => {
+    switch (status) {
+      case "submitted":
+        return '提出済み';
+      case "delay":
+        return '遅延';
+      case "non-submitted":
+        return '未提出';
+      default:
+        return '不明';
+    }
+  };
 
   const toggleRow = (id: number) => {
     setExpandedRows(prevExpandedRows =>
@@ -121,15 +123,16 @@ const BatchUserDetail: React.FC = () => {
     return file?.content as string;
   };
 
-  console.log("lectureId: ", lectureId);
-  console.log("assignmentId2SubmissionSummary: ", assignmentId2SubmissionSummary);
+  console.log("lectureEntry: ", lectureEntry);
   console.log("problems: ", problems);
 
   return (
     <div>
       <h1>バッチ採点結果: ユーザー {userId} ({userInfo?.username})</h1>
       <p>バッチID: {batchId}</p>
-      <p>提出日時: {batchDetail?.submit_date instanceof Date ? batchDetail?.submit_date.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-') : new Date(batchDetail?.submit_date!).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-')} </p>
+      <p>提出日時: {evaluationStatus?.submit_date instanceof Date ? evaluationStatus?.submit_date.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-') : new Date(evaluationStatus?.submit_date!).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-')} </p>
+      <p>ステータス: {getSubmissionStatus(evaluationStatus?.status ?? null)}</p>
+      <p>レポート: {evaluationStatus?.report_exists ? '提出済み' : '未提出'}</p>
       <h2>課題別結果</h2>
       { problems.length > 0 && (
       <table>
@@ -143,9 +146,9 @@ const BatchUserDetail: React.FC = () => {
         <tbody>
           <tr>
             {problems.map((problem, index) => (
-              <th key={index} onClick={() => handleCheckListRowClick(problem.assignment_id)}>
+              <th key={index} onClick={() => handleCheckListRowClick(index)}>
                 {// problem.assignment_idから該当するSubmissionSummaryのresultを取得
-                  assignmentId2SubmissionSummary[problem.assignment_id]?.result
+                  evaluationStatus?.submissions[index]?.result
                 }
               </th>
             ))}
@@ -154,7 +157,7 @@ const BatchUserDetail: React.FC = () => {
       </table>
       )}
 
-      <h2>チェックリスト ({selectedAssignmentId && assignmentId2Problems[selectedAssignmentId]?.title})</h2>
+      <h2>チェックリスト ({selectedId !== null && problems[selectedId]?.title})</h2>
       <CheckListTable>
         <thead>
           <tr>
@@ -166,23 +169,23 @@ const BatchUserDetail: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {currentSubmissionSummary?.evaluation_summary_list.map((evaluation, index) => (
-            <React.Fragment key={evaluation.id}>
-              <CheckListRow>
-                <td>
-                  <ExpandButton onClick={() => toggleRow(evaluation.id)}>
-                    {expandedRows.includes(evaluation.id) ? '▼' : '▶'}
-                  </ExpandButton>
-                </td>
-                <td>{evaluation.eval_description}</td>
-                <td>{evaluation.result}</td>
-                <td>{evaluation.timeMS}ms</td>
-                <td>{evaluation.memoryKB}KB</td>
-              </CheckListRow>
-              {expandedRows.includes(evaluation.id) && (
-                <ExpandedRow>
+          {selectedId !== null && evaluationStatus?.submissions[selectedId].judge_results.map((judge_result, index) => (
+            <React.Fragment key={judge_result.id}>
+                <CheckListRow key={judge_result.id}>
+                  <td>
+                    <ExpandButton onClick={() => toggleRow(judge_result.id)}>
+                      {expandedRows.includes(judge_result.id) ? '▼' : '▶'}
+                    </ExpandButton>
+                  </td>
+                  <td>{testCaseId2TestCase.get(judge_result.testcase_id)?.description || ''}</td>
+                  <td>{judge_result.result}</td>
+                  <td>{judge_result.timeMS}ms</td>
+                  <td>{judge_result.memoryKB}KB</td>
+                </CheckListRow>
+                {expandedRows.includes(judge_result.id) && (
+                  <ExpandedRow>
                   <td colSpan={5}>
-                    <JudgeResultsViewer results={evaluation.judge_result_list} />
+                    <JudgeResultsViewer result={judge_result} testCase={testCaseId2TestCase.get(judge_result.testcase_id)!} />
                   </td>
                 </ExpandedRow>
               )}

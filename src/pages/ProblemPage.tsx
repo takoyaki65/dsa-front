@@ -1,20 +1,23 @@
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
-import { fetchAssignmentDescription, fetchRequiredFiles } from '../api/GetAPI';
+import { Problem } from '../types/Assignments';
+import { fetchProblemDetail } from '../api/GetAPI';
 import FileUploadBox from '../components/FileUploadBox';
 import useApiClient from '../hooks/useApiClient';
 import { submitAssignment } from '../api/PostAPI';
 import { useAuth } from '../context/AuthContext';
 import MarkdownRenderer from '../components/MarkdownRenderer';
+import { UserRole } from '../types/token';
 
 const SubmissionPage: React.FC = () => {
-	const { token } = useAuth();
-	const { lectureId, assignmentId } = useParams<{ lectureId: string; assignmentId: string }>();
-	const [description, setDescription] = useState<string>('');
-	const [requiredFiles, setRequiredFiles] = useState<string[]>([]);
+	const { token, user_id, role } = useAuth();
+	let { lectureId, assignmentId } = useParams<{ lectureId: string; assignmentId: string }>();
+	const [ problem, setProblem ] = useState<Problem>();
 	const { apiClient } = useApiClient();
 	const [hasError, setHasError] = useState<boolean>(false);
 	const navigate = useNavigate();
+
+	const isAdminOrManager = role === UserRole.admin || role === UserRole.manager;
 
 	// ?evaluation={true|false}のパラメータを取得
 	const location = useLocation();
@@ -25,11 +28,11 @@ const SubmissionPage: React.FC = () => {
 		const fetchData = async () => {
 			try {
 				if (lectureId && assignmentId) {
-					const description = await apiClient({ apiFunc: fetchAssignmentDescription, args: [parseInt(lectureId), parseInt(assignmentId), evaluation] });
-					setDescription(description);
-
-					const filesData = await apiClient({ apiFunc: fetchRequiredFiles, args: [parseInt(lectureId), parseInt(assignmentId), evaluation] });
-					setRequiredFiles(filesData);
+					const problem_with_detail = await apiClient({ apiFunc: fetchProblemDetail, args: [parseInt(lectureId), parseInt(assignmentId), evaluation]});
+					setProblem(problem_with_detail);
+				} else {
+					setHasError(true);
+					console.error('データの取得に失敗しました．リロードしても失敗する場合はTAに連絡してください．');
 				}
 			} catch (error) {
 				setHasError(true);
@@ -43,7 +46,7 @@ const SubmissionPage: React.FC = () => {
 		if (lectureId && assignmentId) {
 			// 必要なファイルが全てアップロードされているか確認
 			const uploadedFileNames = files.map(file => file.name);
-			const missingFiles = requiredFiles.filter(file => !uploadedFileNames.includes(file));
+			const missingFiles = problem?.detail?.required_files.filter(file => !uploadedFileNames.includes(file.name)) || [];
 
 			if (missingFiles.length > 0) {
 				console.error('以下のファイルがアップロードされていません：', missingFiles.join(', '));
@@ -70,13 +73,13 @@ const SubmissionPage: React.FC = () => {
 	return (
 		<div style={{ paddingBottom: '100px' }}>
 			<div>
-				<MarkdownRenderer content={description} />
+				<MarkdownRenderer content={problem?.detail?.description || 'description is not found'} />
 			</div>
 			<div>
 				<h2>必要なファイル</h2>
 				<ul>
-					{requiredFiles.map((file, index) => (
-						<li key={index}>{file}</li>
+					{problem?.detail?.required_files.map((file, index) => (
+						<li key={index}>{file.name}</li>
 					))}
 				</ul>
 			</div>
