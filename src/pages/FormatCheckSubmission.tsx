@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchLectures, fetchProblems, fetchRequiredFiles } from '../api/GetAPI';
+import { fetchLectures, fetchProblemDetail } from '../api/GetAPI';
 import { Lecture } from '../types/Assignments';
 import FileUploadBox from '../components/FileUploadBox';
 import { useParams } from 'react-router-dom';
@@ -16,15 +16,38 @@ const FormatCheckSubmission: React.FC = () => {
   const [selectedLectureId, setSelectedLectureId] = useState<number | null>(
     lecture_id_from_query ? parseInt(lecture_id_from_query) : null
   );
-  const [requiredFiles, setRequiredFiles] = useState<string[]>([]);
+  const [lectureId2RequiredFiles, setLectureId2RequiredFiles] = useState<Map<number, string[]>>(new Map());
   const { apiClient } = useApiClient();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const lectureData = await apiClient({ apiFunc: fetchLectures, args: [true] });
-        setLectures(lectureData);
+        const lectureList = await apiClient({ apiFunc: fetchLectures, args: [true] });
+
+        for (const lecture of lectureList) {
+          for (const problem of lecture.problems) {
+            // problem.detailを取得
+            const problemWithDetail = await apiClient({ apiFunc: fetchProblemDetail, args: [lecture.id, problem.assignment_id, false] });
+            problem.detail = problemWithDetail.detail;
+          }
+        }
+
+        setLectures(lectureList);
+
+        const lectureId2RequiredFiles = new Map<number, string[]>();
+        for (const lecture of lectureList) {
+          const requiredFiles: string[] = [];
+          for (const problem of lecture.problems) {
+            for (const requiredFile of problem.detail?.required_files ?? []) {
+              requiredFiles.push(requiredFile.name);
+            }
+          }
+          // レポートのファイル名を追加
+          requiredFiles.push('report' + lecture.id + '.pdf');
+          lectureId2RequiredFiles.set(lecture.id, requiredFiles);
+        }
+        setLectureId2RequiredFiles(lectureId2RequiredFiles);
       } catch (error) {
         console.error('Error fetching lectures:', error);
       }
@@ -32,29 +55,8 @@ const FormatCheckSubmission: React.FC = () => {
     fetchData();
   }, [token]);
 
-  useEffect(() => {
-    const getRequiredFiles = async () => {
-      if (selectedLectureId) {
-        try {
-          const problems = await apiClient({ apiFunc: fetchProblems, args: [selectedLectureId, false] });
-          const allRequiredFiles = await Promise.all(
-            problems.map(problem =>
-              apiClient({ apiFunc: fetchRequiredFiles, args: [selectedLectureId, problem.assignment_id, false] })
-            )
-          );
-          const uniqueFiles = Array.from(new Set(allRequiredFiles.flat()));
-          // レポートのファイル名を追加
-          setRequiredFiles(['report' + selectedLectureId + '.pdf', ...uniqueFiles]);
-        } catch (error) {
-          console.error('Error fetching required files:', error);
-        }
-      }
-    };
-    getRequiredFiles();
-  }, [selectedLectureId, token]);
-
   const handleLectureChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedLectureId(event.target.value == "" ? null : parseInt(event.target.value));
+    setSelectedLectureId(event.target.value === "" ? null : parseInt(event.target.value));
   };
 
   const handleSubmit = async (files: File[]) => {
@@ -89,7 +91,7 @@ const FormatCheckSubmission: React.FC = () => {
           <h2>class{selectedLectureId}.zipの構造</h2>
           <pre style={{ textAlign: 'left' }}>
             {`class${selectedLectureId}/\n`}
-            {`  +-${requiredFiles.join('\n  +-')}`}
+            {`  +-${lectureId2RequiredFiles.get(selectedLectureId)?.join('\n  +-')}`}
           </pre>
         </div>
       )}

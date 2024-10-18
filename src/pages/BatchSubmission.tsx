@@ -18,9 +18,7 @@ const BatchSubmission: React.FC = () => {
   useEffect(() => {
     const fetchAllLectures = async () => {
       try {
-        const openLectures = await apiClient({ apiFunc: fetchLectures, args: [true]});
-        const closedLectures = await apiClient({ apiFunc: fetchLectures, args: [false]});
-        const allLectures = [...openLectures, ...closedLectures];
+        const allLectures = await apiClient({ apiFunc: fetchLectures, args: [true]});
         setLectures(allLectures);
       } catch (error) {
         console.error('Error fetching lectures:', error);

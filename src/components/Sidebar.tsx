@@ -1,164 +1,68 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Lecture, Problem } from '../types/Assignments';
-import { fetchLectures, fetchProblems } from '../api/GetAPI';
+import { Lecture } from '../types/Assignments';
+import { fetchLectures } from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 import { UserRole } from '../types/token';
 
 const Sidebar: React.FC = () => {
 	const { token, user_id, role, logout } = useAuth();
-	const [publicLectures, setPublicLectures] = useState<Lecture[]>([]);
+	const [lectures, setLectures] = useState<Lecture[]>([]);
 	// どの授業の課題が展開されているかを管理する状態変数
-	const [expandedPublicLectures, setExpandedPublicLectures] = useState<{ [key: number]: boolean }>({});
+	const [expandedLectures, setExpandedLectures] = useState<{ [key: number]: boolean }>({});
 
-	// 授業ごとの課題を管理する状態変数
-	const [trainingProblemsByLecture, setTrainingProblemsByLecture] = useState<{ [key: number]: Problem[] }>({});
 	const { apiClient } = useApiClient();
-
-	// 管理者用
-	const [privateLectures, setPrivateLectures] = useState<Lecture[]>([]);
-	const [expandedPrivateLectures, setExpandedPrivateLectures] = useState<{ [key: number]: boolean }>({});
-
-	const [managerLectures, setManagerLectures] = useState<Lecture[]>([]);
-	const [expandedManagerLectures, setExpandedManagerLectures] = useState<{ [key: number]: boolean }>({});
-
 	const isAdminOrManager = role === UserRole.admin || role === UserRole.manager;
 
 	useEffect(() => {
-		// 公開されている授業エントリ(第1回課題、第2回課題、...)を取得
-		const fetchPublicLectures = async () => {
+		const fetchLecturesGrantedByUser = async () => {
 			try {
-				const lectures = await apiClient({apiFunc: fetchLectures, args: [true]});
-				setPublicLectures(lectures);
+				const all_lectures = await apiClient({apiFunc: fetchLectures, args: [isAdminOrManager]})
+				setLectures(all_lectures);
 			} catch (error) {
 				console.error('Failed to fetch lectures:', error);
 			}
-		};
-
-		// 管理者用の授業エントリを取得
-		const fetchPrivateLectures = async () => {
-			try {
-				const lectures = await apiClient({apiFunc: fetchLectures, args: [false]});
-				setPrivateLectures(lectures);
-			} catch (error) {
-				console.error('Failed to fetch lectures:', error);
-			}
-		};
-		fetchPublicLectures();
-
-		if (isAdminOrManager) {
-			fetchPrivateLectures();
-		};
+		}	
+		fetchLecturesGrantedByUser();
 	}, [token]);
 
-	useEffect(() => {
-		// 公開されている授業エントリ(第1回課題、第2回課題、...)に紐づく課題(課題1-1、課題1-2、...)を取得
-		const fetchTrainProblemsForEachLecture = async () => {
-			for (const lecture of publicLectures) {
-				try {
-					const problems = await apiClient({apiFunc: fetchProblems, args: [lecture.id, false]});
-					setTrainingProblemsByLecture(prevProblemsByLecture => ({
-						...prevProblemsByLecture,
-						[lecture.id]: problems
-					}));
-				} catch (error) {
-					console.error(`Failed to fetch problems for lecture ${lecture.id}:`, error);
-				}
-			}
-		};
-
-		// 管理者用の授業エントリに紐づく課題を取得
-		const fetchManagerProblemsForEachLecture = async () => {
-			for (const lecture of privateLectures) {
-				try {
-					const problems = await apiClient({apiFunc: fetchProblems, args: [lecture.id, false]});
-					setTrainingProblemsByLecture(prevProblemsByLecture => ({
-						...prevProblemsByLecture,
-						[lecture.id]: problems
-					}));
-				} catch (error) {
-					console.error(`Failed to fetch problems for lecture ${lecture.id}:`, error);
-				}
-			}
-		};
-
-		if (publicLectures.length > 0) {
-			fetchTrainProblemsForEachLecture();
-		};
-		if (isAdminOrManager) {
-			fetchManagerProblemsForEachLecture();
-		};
-	}, [publicLectures, privateLectures, token]);
-
 	const toggleLecture = (lectureId: number) => {
-		setExpandedPublicLectures(prev => (
+		setExpandedLectures(prev => (
 			{ ...prev, [lectureId]: !prev[lectureId] }
 		)
 		);
 	};
 
-	const togglePrivateLecture = (lectureId: number) => {
-		setExpandedPrivateLectures(prev => (
-			{ ...prev, [lectureId]: !prev[lectureId] }
-		)
-		);
-	};
-
-	// TODO: Manager, Adminの場合は、公開していない課題や、評価用の課題も表示する
 	return (
 		<SidebarContainer>
 			<SidebarList>
 				<Link to="/status/me"><h3>{user_id}</h3></Link>
 				<Link to="/"><h3>ホーム</h3></Link>
-				{publicLectures.map(
+				{lectures.map(
 					lecture => (
 						<SidebarItem key={lecture.id}>
 							<h3 onClick={() => toggleLecture(lecture.id)}>
-								{expandedPublicLectures[lecture.id] ? '▼' : '▶'} {lecture.title}
+								{expandedLectures[lecture.id] ? '▼' : '▶'} {lecture.title}
 							</h3>
-							{expandedPublicLectures[lecture.id] && trainingProblemsByLecture[lecture.id] && (
+							{expandedLectures[lecture.id] && (
 								<ProblemList>
-									{trainingProblemsByLecture[lecture.id].map(problem => (
+									{lecture.problems.map(problem => (
 										<ProblemItem key={problem.assignment_id}>
-											<Link to={`/submission/${lecture.id}/${problem.assignment_id}`}>
+											<Link to={`/submission/${problem.lecture_id}/${problem.assignment_id}?evaluation=${isAdminOrManager}`}>
 												{problem.title}
 											</Link>
 										</ProblemItem>
 									))}
 									<ProblemItem>
-										<Link to={`/format-check?lecture_id=${lecture.id}`}>フォーマットチェック</Link>
+										<Link to={`/format-check?lecture_id=${lecture.id}&evaluation=${isAdminOrManager}`}>フォーマットチェック</Link>
 									</ProblemItem>
 								</ProblemList>
 							)}
 						</SidebarItem>
 					)
 				)}
-
-				{isAdminOrManager && <h3>非公開課題リスト↓</h3>}
-				{isAdminOrManager &&
-					privateLectures.map(
-						lecture => (
-							<SidebarItem key={lecture.id}>
-								<h3 onClick={() => togglePrivateLecture(lecture.id)}>
-									{expandedPrivateLectures[lecture.id] ? '▼' : '▶'} {lecture.title}
-								</h3>
-								{expandedPrivateLectures[lecture.id] && trainingProblemsByLecture[lecture.id] && (
-									<ProblemList>
-										{trainingProblemsByLecture[lecture.id].map(problem => (
-											<ProblemItem key={problem.assignment_id}>
-												<Link to={`/submission/${lecture.id}/${problem.assignment_id}`}>
-													{problem.title}
-												</Link>
-											</ProblemItem>
-										))}
-									</ProblemList>
-								)}
-							</SidebarItem>
-						)
-					)
-				}
 			</SidebarList>
 			
 			{isAdminOrManager &&

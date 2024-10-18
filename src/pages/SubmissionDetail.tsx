@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchSubmissionFiles, fetchSubmissionStatus, fetchProblemEntry } from '../api/GetAPI';
-import { FileRecord, SubmissionSummary, JudgeProgressAndStatus } from '../types/Assignments';
+import { fetchSubmissionFiles, fetchSubmissionStatus, fetchProblemEntry, fetchProblemDetail } from '../api/GetAPI';
+import { FileRecord, TestCases } from '../types/Assignments';
 import useApiClient from '../hooks/useApiClient';
 import CodeBlock from '../components/CodeBlock';
 import { fetchSubmissionResultDetail } from '../api/GetAPI';
-import { Problem } from '../types/Assignments';
+import { Submission, Problem } from '../types/Assignments';
 import styled from 'styled-components';
 import JudgeResultsViewer from '../components/JudgeResultsViewer';
 import { useAuth } from '../context/AuthContext';
@@ -14,15 +14,15 @@ import OfflineFileDownloadButton from '../components/OfflineFileDownloadButton';
 const SubmissionDetail: React.FC = () => {
     const { token } = useAuth();
     const { submissionId } = useParams<{ submissionId: string }>();
+    const [ problem, setProblem ] = useState<Problem | null>(null);
     const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([]);
     const [arrangedFiles, setArrangedFiles] = useState<FileRecord[]>([]);
     const { apiClient } = useApiClient();
     const [selectedUploadedFile, setSelectedUploadedFile] = useState<string>('');
     const [selectedArrangedFile, setSelectedArrangedFile] = useState<string>('');
-    const [submissionSummary, setSubmissionSummary] = useState<SubmissionSummary | null>(null);
-    const [submissionStatus, setSubmissionStatus] = useState<JudgeProgressAndStatus>();
-    const [problem, setProblem] = useState<Problem>();
-    
+    const [submission, setSubmission] = useState<Submission | null>(null);
+    const [testCaseId2TestCases, setTestCaseId2TestCases] = useState<Map<number, TestCases>>(new Map());
+
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
 
     const [loading, setLoading] = useState<boolean>(true);
@@ -31,36 +31,33 @@ const SubmissionDetail: React.FC = () => {
     useEffect(() => {
         const fetchFiles = async () => {
             try {
-                setLoading(true);
                 const uploadedData = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!), 'uploaded']})
                 const arrangedData = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!), 'arranged']})
                 setUploadedFiles(uploadedData);
                 setArrangedFiles(arrangedData);
             } catch (error) {
-                setError('Failed to fetch files');
+                setError('Failed to fetch submission detail');
             }
         };
 
-        const fetchSummary = async () => {
+        const fetchSubmission = async () => {
             try {
-                const summary = await apiClient({ apiFunc: fetchSubmissionResultDetail, args: [parseInt(submissionId!)] });
-                setSubmissionSummary(summary);
-            } catch (error) {
-                setError('Failed to fetch summary');
-            }
-        };
+                const submission = await apiClient({ apiFunc: fetchSubmissionResultDetail, args: [parseInt(submissionId!)] });
+                setSubmission(submission);
 
-        const fetchStatusAndProblemEntry = async () => {
-            try {
-                const status = await apiClient({ apiFunc: fetchSubmissionStatus, args: [parseInt(submissionId!)] });
-                setSubmissionStatus(status);
+                const problemInfo = await apiClient({ apiFunc: fetchProblemDetail, args: [submission.lecture_id, submission.assignment_id, submission.eval] });
+                setProblem(problemInfo);
 
-                if (status) {
-                    const problem = await apiClient({ apiFunc: fetchProblemEntry, args: [status.lecture_id, status.assignment_id, status.for_evaluation] });
-                    setProblem(problem);
+                const testCaseId2TestCases = new Map<number, TestCases>();
+
+                for (const testCase of problemInfo.detail?.test_cases || []) {
+                    // testCase.id(key) -> testCase(value)
+                    testCaseId2TestCases.set(testCase.id, testCase);
                 }
+
+                setTestCaseId2TestCases(testCaseId2TestCases);
             } catch (error) {
-                setError('Failed to fetch status');
+                setError('Failed to fetch submission detail');
             }
         };
 
@@ -68,8 +65,7 @@ const SubmissionDetail: React.FC = () => {
             try {
                 setLoading(true);
                 fetchFiles();
-                fetchSummary();
-                fetchStatusAndProblemEntry();
+                fetchSubmission();
             } catch (error) {
                 setError('Failed to fetch data');
             } finally {
@@ -111,7 +107,7 @@ const SubmissionDetail: React.FC = () => {
 
     return (
         <div>
-            <h1>提出 #{submissionId}</h1>
+            <h1>提出 #{submissionId} (課題: {problem?.title || '課題名不明'})</h1>
             <h2>提出されたファイル一覧</h2>
             <select onChange={handleUploadedFileSelect} value={selectedUploadedFile}>
                 <option value="">ファイルを選択してください</option>
@@ -144,14 +140,14 @@ const SubmissionDetail: React.FC = () => {
             </ul>
 
             {
-                submissionSummary && (
+                submission && problem && (
                     <div>
                         <h2>提出結果</h2>
                         <table>
                             <tbody>
                                 <tr>
                                     <th>提出日時</th>
-                                    <td>{submissionStatus?.ts.toString()}</td>
+                                    <td>{submission?.ts.toString()}</td>
                                 </tr>
                                 <tr>
                                     <th>問題</th>
@@ -159,23 +155,23 @@ const SubmissionDetail: React.FC = () => {
                                 </tr>
                                 <tr>
                                     <th>ユーザ</th>
-                                    <td>{submissionSummary.user_id}</td>
+                                    <td>{submission?.user_id}</td>
                                 </tr>
                                 <tr>
                                     <th>得点</th>
-                                    <td>{submissionSummary.score}</td>
+                                    <td>{submission?.score}</td>
                                 </tr>
                                 <tr>
                                     <th>結果</th>
-                                    <td>{submissionSummary.result}</td>
+                                    <td>{submission?.result}</td>
                                 </tr>
                                 <tr>
                                     <th>実行時間</th>
-                                    <td>{submissionSummary.timeMS}ms</td>
+                                    <td>{submission?.timeMS}ms</td>
                                 </tr>
                                 <tr>
                                     <th>メモリ</th>
-                                    <td>{submissionSummary.memoryKB}KB</td>
+                                    <td>{submission?.memoryKB}KB</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -185,8 +181,8 @@ const SubmissionDetail: React.FC = () => {
 
             <div>
                 <h2>メッセージ</h2>
-                <p>{submissionSummary?.message || 'なし'}</p>
-                <p>{'detail: ' +submissionSummary?.detail || ''}</p>
+                <p>{submission?.message || 'なし'}</p>
+                <p>{'detail: ' +submission?.detail || ''}</p>
             </div>
 
             <h2>チェックリスト</h2>
@@ -201,23 +197,23 @@ const SubmissionDetail: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {submissionSummary?.evaluation_summary_list.map((evaluation, index) => (
-                        <React.Fragment key={evaluation.id}>
+                    {submission?.judge_results.map((judge_result, index) => (
+                        <React.Fragment key={index}>
                             <CheckListRow>
                                 <td>
-                                    <ExpandButton onClick={() => toggleRow(evaluation.id)}>
-                                        {expandedRows.includes(evaluation.id) ? '▼' : '▶'}
+                                    <ExpandButton onClick={() => toggleRow(index)}>
+                                        {expandedRows.includes(index) ? '▼' : '▶'}
                                     </ExpandButton>
                                 </td>
-                                <td>{evaluation.eval_description}</td>
-                                <td>{evaluation.result}</td>
-                                <td>{evaluation.timeMS}ms</td>
-                                <td>{evaluation.memoryKB}KB</td>
+                                <td>{testCaseId2TestCases.get(judge_result.testcase_id)?.description || ''}</td>
+                                <td>{judge_result.result}</td>
+                                <td>{judge_result.timeMS}ms</td>
+                                <td>{judge_result.memoryKB}KB</td>
                             </CheckListRow>
-                            {expandedRows.includes(evaluation.id) && (
+                            {expandedRows.includes(index) && (
                                 <ExpandedRow>
                                     <td colSpan={5}>
-                                        <JudgeResultsViewer results={evaluation.judge_result_list} />
+                                        <JudgeResultsViewer result={judge_result} testCase={testCaseId2TestCases.get(judge_result.testcase_id)!} />
                                     </td>
                                 </ExpandedRow>
                             )}

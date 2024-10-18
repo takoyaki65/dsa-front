@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileRecord } from '../types/Assignments';
 
-
+// メモリ上にあるファイルをダウンロードするボタン
 const OfflineFileDownloadButton: React.FC<{ file: FileRecord }> = ({ file }) => {
     if (typeof file.content === 'string') {
         console.log("file.content is string");

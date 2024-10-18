@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchBatchSubmission, fetchBatchSubmissionList, fetchUserInfo } from '../api/GetAPI';
-import { BatchSubmissionRecord } from '../types/Assignments';
+import { fetchBatchSubmissionStatus, fetchBatchSubmissionList, fetchUserInfo } from '../api/GetAPI';
+import { BatchSubmission } from '../types/Assignments';
 import { User } from '../types/user';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 
 const BatchStatus: React.FC = () => {
-  const [submissions, setSubmissions] = useState<BatchSubmissionRecord[]>([]);
-  const [users, setUsers] = useState<{ [key: string]: User }>({});
+  const [submissions, setSubmissions] = useState<BatchSubmission[]>([]);
+  const [userDict, setUserDict] = useState<{ [key: string]: User }>({});
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const { token } = useAuth();
@@ -21,7 +21,13 @@ const BatchStatus: React.FC = () => {
       const submissionList = await apiClient({ apiFunc: fetchBatchSubmissionList, args: [page] });
       setSubmissions(submissionList);
 
-      const userPromises = submissionList.map(submission => apiClient({ apiFunc: fetchUserInfo, args: [submission.user_id] }));
+      const userPromises = submissionList.map(async (submission) => {
+        if (userDict[submission.user_id]) {
+          return userDict[submission.user_id];
+        }
+        const user = await apiClient({ apiFunc: fetchUserInfo, args: [submission.user_id] });
+        return user;
+      });
       const userResults = await Promise.all(userPromises);
 
       const newUsers = userResults.reduce((acc, user) => {
@@ -30,7 +36,7 @@ const BatchStatus: React.FC = () => {
         }
         return acc;
       }, {} as { [key: string]: User });
-      setUsers(newUsers);
+      setUserDict(newUsers);
       setLoading(false);
     };
 
@@ -43,7 +49,7 @@ const BatchStatus: React.FC = () => {
     submissions.forEach(submission => {
       if (submission.complete_judge !== submission.total_judge) {
         const intervalId = setInterval(async () => {
-          const updatedSubmission = await apiClient({ apiFunc: fetchBatchSubmission, args: [submission.id] });
+          const updatedSubmission = await apiClient({ apiFunc: fetchBatchSubmissionStatus, args: [submission.id] });
           if (updatedSubmission) {
             setSubmissions(prev =>
               prev.map(sub => sub.id === updatedSubmission.id ? updatedSubmission : sub)
@@ -85,7 +91,7 @@ const BatchStatus: React.FC = () => {
                 </a>
               </td>
               <td>
-                {users[submission.user_id]?.username || ''}<br />
+                {userDict[submission.user_id]?.username || ''}<br />
                 {submission.user_id}
               </td>
               <td>
