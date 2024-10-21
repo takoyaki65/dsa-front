@@ -10,6 +10,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 const LoginPage: React.FC = () => {
     const [credentials, setCredentials] = useState<LoginCredentials>({ user_id: '', password: '' });
     const [error, setError] = useState<string>('');
+    const [showPassword, setShowPassword] = useState<boolean>(false);
     const { token, setToken, setUserId, setRole } = useAuth();
     const { apiClient } = useApiClient();
     const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null); // トークンの有効性を保持
@@ -94,15 +95,20 @@ const LoginPage: React.FC = () => {
                     </FormGroup>
                     <FormGroup>
                         <Label htmlFor="password">パスワード:</Label>
-                        <Input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={credentials.password}
-                            onChange={handleChange}
-                            autoComplete="current-password"
-                            required
-                        />
+                        <PasswordContainer>
+                            <Input
+                                type={showPassword ? 'text' : 'password'}
+                                id="password"
+                                name="password"
+                                value={credentials.password}
+                                onChange={handleChange}
+                                autoComplete="current-password"
+                                required
+                            />
+                            <ShowPasswordButton type="button" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? '非表示' : '表示'}
+                            </ShowPasswordButton>
+                        </PasswordContainer>
                     </FormGroup>
                     <Button type="submit">ログイン</Button>
                 </FormContainer>
@@ -184,4 +190,20 @@ const Button = styled.button`
 const ErrorMessage = styled.p`
     color: red;
     margin-bottom: 1rem;
+`;
+
+const PasswordContainer = styled.div`
+    position: relative;
+`;
+
+const ShowPasswordButton = styled.button`
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #007bff;
+    type: button;
 `;
