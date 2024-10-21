@@ -31,23 +31,23 @@ const useApiClient = () => {
         const adjustedArgs = needsToken ? [...args, token] : args;
         try {
             // API関数を実行
-            console.log("First try")
             return await apiFunc(...adjustedArgs);
         } catch (error: any) {
-            console.log(`Error: ${error}, status: ${error.response?.status}`)
-            if (error.response?.status === 401) {
+            const status = error.response?.status;
+            const detail = error.response?.data?.detail;
+            if (status === 401 && detail === "Token has expired") {
                 console.log("Token refreshed")
                 const refreshedToken = await refreshAccessToken();
                 if (refreshedToken) {
                     const adjustedArgs = needsToken ? [...args, refreshedToken] : args;
-                    console.log("Second try")
                     return await apiFunc(...adjustedArgs); // トークンをリフレッシュ後に再試行
                 } else {
-                    console.log("Logout")
                     logout();
                     throw new Error('セッションが切れました。再度ログインしてください。');
                 }
-            } else if (error.response?.status !== 200){
+            } else if (status === 400 && detail === "現在のパスワードが正しくありません") {
+                throw error;
+            } else if (status !== 200){
                 console.error('APIリクエストエラー:', error);
                 const errorMessage = '予期せぬエラーが発生しました。再度ログインしてください。';
                 alert(errorMessage);

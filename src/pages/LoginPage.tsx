@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 import { validateToken } from '../api/PostAPI';
 import { Navigate, useNavigate } from 'react-router-dom';
+import PasswordBox from '../components/PasswordBox';
 
 const LoginPage: React.FC = () => {
     const [credentials, setCredentials] = useState<LoginCredentials>({ user_id: '', password: '' });
@@ -74,6 +75,7 @@ const LoginPage: React.FC = () => {
     if (isTokenValid === null) {
         return null; // ローディング中やスピナーを表示しても良い
     }
+
     return (
         <>
             <GlobalStyle /> {/* ログイン画面用のグローバルスタイルを適用 */}
@@ -95,20 +97,7 @@ const LoginPage: React.FC = () => {
                     </FormGroup>
                     <FormGroup>
                         <Label htmlFor="password">パスワード:</Label>
-                        <PasswordContainer>
-                            <Input
-                                type={showPassword ? 'text' : 'password'}
-                                id="password"
-                                name="password"
-                                value={credentials.password}
-                                onChange={handleChange}
-                                autoComplete="current-password"
-                                required
-                            />
-                            <ShowPasswordButton type="button" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? '非表示' : '表示'}
-                            </ShowPasswordButton>
-                        </PasswordContainer>
+                        <PasswordBox value={credentials.password} onChange={handleChange} />
                     </FormGroup>
                     <Button type="submit">ログイン</Button>
                 </FormContainer>
@@ -190,20 +179,4 @@ const Button = styled.button`
 const ErrorMessage = styled.p`
     color: red;
     margin-bottom: 1rem;
-`;
-
-const PasswordContainer = styled.div`
-    position: relative;
-`;
-
-const ShowPasswordButton = styled.button`
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: #007bff;
-    type: button;
 `;
