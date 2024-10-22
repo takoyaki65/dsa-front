@@ -8,6 +8,9 @@ import StudentListUploadBox from '../components/StudentListUploadBox';
 import useApiClient from '../hooks/useApiClient';
 import { UserRole } from '../types/token';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import PasswordBox from '../components/PasswordBox';
+import ButtonComponent from '../components/ButtonComponent';
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -88,62 +91,66 @@ const RegisterPage: React.FC = () => {
         <div>
             <h2>アカウント登録</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleRegister}>
-                <div>
-                    <label>学籍番号:</label>
-                    <input type="text" value={user_id} onChange={(e) => setUserId(e.target.value)} required />
-                </div>
-                <div>
-                    <label>ユーザー名:</label>
-                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-                </div>
-                <div>
-                    <label>メールアドレス:</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <div>
-                    <label>パスワード:</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
-                <div>
-                    <label>パスワード確認:</label>
-                    <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-                </div>
-                <div>
-                    <label>役職:</label>
-                    <input type="radio" name="role" value="student" onChange={() => setRole(UserRole.student)} /> 学生
-                    <input type="radio" name="role" value="manager" onChange={() => setRole(UserRole.manager)} /> 採点者
-                </div>
-                {/* <div>
-                    <label>有効化: </label>
-                    <input type="radio" name="disabled" value="true" onChange={() => setDisabled(true)} /> はい
-                    <input type="radio" name="disabled" value="false" onChange={() => setDisabled(false)} checked /> いいえ
-                </div> */}
-                <div>
-                    <label>有効開始日時:</label>
-                    <div>
+            <form onSubmit={handleRegister} style={{ marginBottom: '20px' }}>
+                <UserItemContainer>
+                    <UserItem>ユーザーID:</UserItem>
+                    <InputWrapper>
+                        <StyledInput type="text" value={user_id} onChange={(e) => setUserId(e.target.value)} required />
+                    </InputWrapper>
+                </UserItemContainer>
+                <UserItemContainer>
+                    <UserItem>ユーザー名:</UserItem>
+                    <InputWrapper>
+                        <StyledInput type="text" value={username} onChange={(e) => {setUsername(e.target.value)}} required />
+                    </InputWrapper>
+                </UserItemContainer>
+                <UserItemContainer>
+                    <UserItem>メールアドレス:</UserItem>
+                    <InputWrapper>
+                        <StyledInput type="email" value={email} onChange={(e) => {setEmail(e.target.value)}} required />
+                    </InputWrapper>
+                </UserItemContainer>
+                <UserItemContainer>
+                    <UserItem>パスワード:</UserItem>
+                    <PasswordBox value={password} onChange={(e) => {setPassword(e.target.value)}} style={{ width: '300px' }} required />
+                </UserItemContainer>
+                <UserItemContainer>
+                    <UserItem>パスワード確認:</UserItem>
+                    <PasswordBox value={confirmPassword} onChange={(e) => {setConfirmPassword(e.target.value)}} style={{width: '300px'}} required />
+                </UserItemContainer>
+                <UserItemContainer>
+                    <UserItem>役職:</UserItem>
+                    <div style={{ fontSize: '20px', fontWeight: 'normal' }}><input type="radio" name="role" value="student" checked={role === UserRole.student} onChange={() => setRole(UserRole.student)} /> 学生</div>
+                    <div style={{ fontSize: '20px', fontWeight: 'normal' }}><input type="radio" name="role" value="manager" checked={role === UserRole.manager} onChange={() => setRole(UserRole.manager)} /> 採点者</div>
+                </UserItemContainer>
+                <UserItemContainer>
+                    <UserItem>有効開始日時:</UserItem>
+                    <UserItem>
                         <DatePicker 
                             selected={activeStartDate}
-                            onChange={(date: Date | null) => setActiveStartDate(date)}
+                            onChange={(date: Date | null) => {setActiveStartDate(date)}}
                             showTimeSelect
                             dateFormat="yyyy/MM/dd HH:mm"
                         />
-                    </div>
-                    <small>指定しない場合は無期限として扱われます。</small>
-                </div>
-                <div>
-                    <label>有効終了日時:</label>
-                    <div>
+                    </UserItem>
+                    <small>指定しない場合は無期限として扱われます．</small>
+                </UserItemContainer>
+                <UserItemContainer>
+                    <UserItem>有効終了日時:</UserItem>
+                    <UserItem>
                         <DatePicker 
                             selected={activeEndDate}
-                            onChange={(date: Date | null) => setActiveEndDate(date)}
+                            onChange={(date: Date | null) => {setActiveEndDate(date)}}
                             showTimeSelect
                             dateFormat="yyyy/MM/dd HH:mm"
                         />
-                    </div>
-                    <small>指定しない場合は無期限として扱われます。</small>
-                </div>
-                <button type="submit">登録</button>
+                    </UserItem>
+                    <small>指定しない場合は無期限として扱われます．</small>
+                </UserItemContainer>
+                <ButtonContainer>
+                    <ButtonComponent onClick={() => navigate("/users/management")} label="キャンセル" height='40px' width='120px' />
+                    <ButtonComponent type='submit' label="登録" height='40px' width='120px' disabled={error !== ''}/>
+                </ButtonContainer>
             </form>
             <StudentListUploadBox />
         </div>
@@ -151,3 +158,44 @@ const RegisterPage: React.FC = () => {
 };
 
 export default RegisterPage;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 20px;
+    gap: 80px;
+    padding-left: 130px; // UserItemの幅と同じ
+`
+
+const UserItemContainer = styled.div`
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 20px;
+    gap: 20px;
+    flex-direction: row;
+    align-items: center;
+`
+
+const UserItem = styled.div`
+    font-size: 20px;
+    font-family: Inter;
+    font-weight: 700;
+    word-wrap: break-word;
+    width: 150px; // 固定幅を設定
+    text-align: right; // テキストを右寄せに
+`
+
+const InputWrapper = styled.div`
+    flex: 1;
+    display: flex
+    align-items: center;
+    position: relative;
+`;
+
+const StyledInput = styled.input`
+    width: 300px;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+`;
+
