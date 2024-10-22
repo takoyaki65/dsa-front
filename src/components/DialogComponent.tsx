@@ -15,7 +15,7 @@ const Dialog: React.FC<DialogProps> = ({ title, body, buttons, onClose }) => {
         <Wrapper>
             <DialogBox>
                 <Title>{title}</Title>
-                <Body>{body}</Body>
+                <ScrollableBody>{body}</ScrollableBody>
                 <ButtonSection>
                     {buttons.map((button, index) => (
                         <ButtonWrapper key={index}>{button}</ButtonWrapper>
@@ -50,6 +50,9 @@ const DialogBox = styled.div`
     z-index: 1001;
     min-width: 300px;
     max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
 `;
 
 const Title = styled.h2`
@@ -57,8 +60,11 @@ const Title = styled.h2`
     margin-bottom: 16px;
 `;
 
-const Body = styled.p`
+const ScrollableBody = styled.div`
     margin-bottom: 24px;
+    overflow-y: auto;
+    max-height: calc(80vh - 150px); // タイトルとボタンの高さを考慮
+    padding-right: 10px; // スクロールバーのスペース
 `;
 
 const ButtonSection = styled.div`
