@@ -131,169 +131,184 @@ const UserManagementPage: React.FC = () => {
         setIsOpenDialog(false)
     };
 
-    return <div>
+    return <PageContainer>
         <h2>ユーザー管理</h2>
-        <UserManagementContainer usersLength={filteredUsers.length}>
-            <ToolBarContainer>
-                <FilterDropdown
-                    value={filterKey}
-                    onChange={(e) => setFilterKey(e.target.value)}
-                >
-                    <option value="">フィルター項目を選択</option>
-                    {headerContents.filter((header) => header.filterable).map((header) => (
-                        <option key={header.label} value={header.label}>
+        <UserManagementContainer>
+            <FixedContent>
+                <ToolBarContainer>
+                    <FilterDropdown
+                        value={filterKey}
+                        onChange={(e) => setFilterKey(e.target.value)}
+                    >
+                        <option value="">フィルター項目を選択</option>
+                        {headerContents.filter((header) => header.filterable).map((header) => (
+                            <option key={header.label} value={header.label}>
+                                {header.label}
+                            </option>
+                        ))}
+                    </FilterDropdown>
+                    <SearchInputWrapper>
+                        <SearchInput
+                            type="text"
+                            value={searchCondition}
+                            onChange={(e) => setSearchCondition(e.target.value)}
+                            placeholder={filterKey ? `${filterKey}で検索` : 'フィルター項目を選択してください'}
+                            disabled={!filterKey}
+                        />
+                        <SearchIcon src={SearchIconSVG} alt="検索" />
+                    </SearchInputWrapper>
+                    <div style={{ flexGrow: 1 }} />
+                    {checkedUsers.length > 0 ? 
+                        <ButtonComponent 
+                            onClick={handleOpenDialog}
+                            label="選択したユーザーを削除"
+                            height="40px"
+                            width="200px"
+                        /> : 
+                        <ButtonComponent 
+                            onClick={() => navigate('/users/register')}
+                            label="ユーザーを追加"
+                            height="40px"
+                            width='200px'
+                        />
+                    }
+                </ToolBarContainer>
+                <HeaderContainer>
+                    <CheckboxContainer>
+                        <Checkbox
+                            type="checkbox"
+                            onChange={handleSelectAll}
+                            checked={checkedUsers.length === users.length - 1}
+                        />
+                    </CheckboxContainer>
+                    {headerContents.map((header, index) => (
+                        <HeaderItem key={index}>
                             {header.label}
-                        </option>
+                            {header.sortable && (
+                                <SortButtons>
+                                    <SortButton onClick={() => handleSort(header.sortLabel, 'asc')}>▲</SortButton>
+                                    <SortButton onClick={() => handleSort(header.sortLabel, 'desc')}>▼</SortButton>
+                                </SortButtons>
+                            )}
+                        </HeaderItem>
                     ))}
-                </FilterDropdown>
-                <SearchInputWrapper>
-                    <SearchInput
-                        type="text"
-                        value={searchCondition}
-                        onChange={(e) => setSearchCondition(e.target.value)}
-                        placeholder={filterKey ? `${filterKey}で検索` : 'フィルター項目を選択してください'}
-                        disabled={!filterKey}
-                    />
-                    <SearchIcon src={SearchIconSVG} alt="検索" />
-                </SearchInputWrapper>
-                <div style={{ flexGrow: 1 }} />
-                {checkedUsers.length > 0 ? 
-                    <ButtonComponent 
-                        onClick={handleOpenDialog}
-                        label="選択したユーザーを削除"
-                        height="40px"
-                        width="200px"
-                    /> : 
-                    <ButtonComponent 
-                        onClick={() => navigate('/users/register')}
-                        label="ユーザーを追加"
-                        height="40px"
-                        width='200px'
-                    />
-                }
-            </ToolBarContainer>
-            <HeaderContainer>
-                <CheckboxContainer>
-                    <Checkbox
-                        type="checkbox"
-                        onChange={handleSelectAll}
-                        checked={checkedUsers.length === users.length - 1}
-                    />
-                </CheckboxContainer>
-                {headerContents.map((header, index) => (
-                    <HeaderItem key={index}>
-                        {header.label}
-                        {header.sortable && (
-                            <SortButtons>
-                                <SortButton onClick={() => handleSort(header.sortLabel, 'asc')}>▲</SortButton>
-                                <SortButton onClick={() => handleSort(header.sortLabel, 'desc')}>▼</SortButton>
-                            </SortButtons>
-                        )}
-                    </HeaderItem>
-                ))}
-            </HeaderContainer>
-            {isOpenDialog && (
-                    <Dialog
-                        title="ユーザーの削除"
-                        body={<div style={{ whiteSpace: 'pre-wrap' }}>
-                                以下のユーザーを削除します。
-                                <ul>
-                                    {users.filter(user => checkedUsers.includes(user.user_id)).map(user => <li>{`${user.username} (${user.user_id})`}</li>)}
-                                </ul>
-                            </div>}
-                        buttons={[
-                            <ButtonComponent
-                                key="cancel"
-                                label="キャンセル"
-                                onClick={handleCloseDialog}
-                                width="150px"
-                                height="40px"
-                            />,
-                            <ButtonComponent
-                                key="delete"
-                                label="削除"
-                                onClick={handleDeleteUsers}
-                                width="150px"
-                                height="40px"
-                            />,
-                        ]}
-                        onClose={handleCloseDialog}
-                    />
-                )}
-            <UserListContainer>
-                {filteredUsers.map((user, index) => (
-                    <React.Fragment key={user.user_id}>
-                        <UserItemContainer>
-                            <CheckboxContainer>
-                                <Checkbox
-                                    type="checkbox"
-                                    onChange={() => handleSelectUser(user.user_id)}
-                                    checked={checkedUsers.includes(user.user_id)}
-                                    disabled={user.user_id === user_id}
-                                />
-                            </CheckboxContainer>
-                            <UserInfoItem>
-                                {user.username}<br />
-                                {user.user_id}
-                            </UserInfoItem>
-                            <UserInfoItem>{user.role}</UserInfoItem>
-                            <UserInfoItem>{user.disabled ? 'Disactive' : 'Active'}</UserInfoItem>
-                            <UserInfoItem>{user.created_at.toLocaleString()}</UserInfoItem>
-                            <UserInfoItem>{user.updated_at.toLocaleString()}</UserInfoItem>
-                            <UserInfoItem>
-                                {`from: ${user.active_start_date}`}<br />
-                                {`to: ${user.active_end_date}`}
-                            </UserInfoItem>
-                            <UserInfoItem>
-                                <ButtonComponent
-                                    onClick={() => navigate(`/users/edit/${user.user_id}`)}
-                                    label="編集"
-                                    height="40px"
-                                />
-                            </UserInfoItem>
-                        </UserItemContainer>
-                        {index < filteredUsers.length - 1 && <Divider />}
-                    </React.Fragment>
-                ))}
-            </UserListContainer>
+                </HeaderContainer>
+            </FixedContent>
+            <ScrollableContent>
+                <UserListContainer>
+                    {filteredUsers.map((user, index) => (
+                        <React.Fragment key={user.user_id}>
+                            <UserItemContainer>
+                                <CheckboxContainer>
+                                    <Checkbox
+                                        type="checkbox"
+                                        onChange={() => handleSelectUser(user.user_id)}
+                                        checked={checkedUsers.includes(user.user_id)}
+                                        disabled={user.user_id === user_id}
+                                    />
+                                </CheckboxContainer>
+                                <UserInfoItem>
+                                    {user.username}<br />
+                                    {user.user_id}
+                                </UserInfoItem>
+                                <UserInfoItem>{user.role}</UserInfoItem>
+                                <UserInfoItem>{user.disabled ? 'Disactive' : 'Active'}</UserInfoItem>
+                                <UserInfoItem>{user.created_at.toLocaleString()}</UserInfoItem>
+                                <UserInfoItem>{user.updated_at.toLocaleString()}</UserInfoItem>
+                                <UserInfoItem>
+                                    {`from: ${user.active_start_date}`}<br />
+                                    {`to: ${user.active_end_date}`}
+                                </UserInfoItem>
+                                <UserInfoItem>
+                                    <ButtonComponent
+                                        onClick={() => navigate(`/users/edit/${user.user_id}`)}
+                                        label="編集"
+                                        height="40px"
+                                    />
+                                </UserInfoItem>
+                            </UserItemContainer>
+                            {index < filteredUsers.length - 1 && <Divider />}
+                        </React.Fragment>
+                    ))}
+                </UserListContainer>
+            </ScrollableContent>
         </UserManagementContainer>
-    </div>;
+        {isOpenDialog && (
+                <Dialog
+                    title="ユーザーの削除"
+                    body={<div style={{ whiteSpace: 'pre-wrap' }}>
+                            以下のユーザーを削除します。
+                            <ul>
+                                {users.filter(user => checkedUsers.includes(user.user_id)).map(user => <li>{`${user.username} (${user.user_id})`}</li>)}
+                            </ul>
+                        </div>}
+                    buttons={[
+                        <ButtonComponent
+                            key="cancel"
+                            label="キャンセル"
+                            onClick={handleCloseDialog}
+                            width="150px"
+                            height="40px"
+                        />,
+                        <ButtonComponent
+                            key="delete"
+                            label="削除"
+                            onClick={handleDeleteUsers}
+                            width="150px"
+                            height="40px"
+                        />,
+                    ]}
+                    onClose={handleCloseDialog}
+                />
+            )}
+    </PageContainer>;
 }
 
-export default UserManagementPage;
+const PageContainer = styled.div`
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 50px;
+`;
 
-
-const UserManagementContainer = styled.div<{ usersLength: number }>`
-    width: 100%;
-    height: 100%;
+const UserManagementContainer = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     background: white;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.20);
     border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: ${props => props.usersLength > 0 ? '0' : '20px'};
+    overflow: hidden;
+`;
+
+const FixedContent = styled.div`
+    flex-shrink: 0;
+`;
+
+const ScrollableContent = styled.div`
+    flex: 1;
+    overflow-y: auto;
 `;
 
 const ToolBarContainer = styled.div`
     display: flex;
-    flex-direction: row;
-    padding: 20px;
     align-items: center;
+    padding: 10px;
 `;
 
 const HeaderContainer = styled.div`
     display: flex;
-    flex-direction: row;
     background-color: #B8B8B8;
-    padding: 10px 0;
-    align-items: center;
-    height: 40px;
+    padding: 10px;
+    font-weight: bold;
 `;
 
 const UserListContainer = styled.div`
-    display: flex;
-    flex-direction: column;
+    padding: 10px;
 `;
+
+export default UserManagementPage;
+
 
 const UserItemContainer = styled.div`
     display: flex;
