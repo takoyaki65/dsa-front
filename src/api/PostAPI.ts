@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { LoginCredentials, CreateUser } from '../types/user';
+import { LoginCredentials, CreateUser, UserUpdatePassword } from '../types/user';
 import { Token, TokenResponse } from '../types/token';
 import { Submission, BatchSubmission } from '../types/Assignments';
-import { UserUpdatePassword } from '../types/user';
 
 interface UploadResult {
     unique_id: string;
@@ -170,6 +169,16 @@ export const validateToken = async (token: string): Promise<boolean> => {
         throw error;
     }
 };
+
+export const updateUserInfo = async (user: CreateUser, token: string | null): Promise<void> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.post(`${API_PREFIX}/users/update/user`, user, { headers });
+        return response.data.result;
+    } catch (error) {
+        throw error;
+    }
+}
 
 export const updatePassword = async (user: UserUpdatePassword, token: string | null): Promise<void> => {
     try {

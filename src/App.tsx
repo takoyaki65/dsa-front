@@ -15,6 +15,7 @@ import BatchDetail from './pages/BatchDetail';
 import BatchUserDetail from './pages/BatchUserDetail';
 import StudentPassChangePage from './pages/StudentPassChangePage';
 import UserManagementPage from './pages/UserManagementPage';
+import UserArrangePage from './pages/UserArrangePage';
 // ログインしているユーザーのみがアクセスできるページを作成するためのコンポーネント
 // ログインしていないユーザーはログインページにリダイレクトされる
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
@@ -45,6 +46,7 @@ const App: React.FC = () => {
 					<Route path="/batch/result/:batchId" element={<PrivateRoute element={<BatchDetail />} />} />
 					<Route path="/batch/result/:batchId/user/:userId" element={<PrivateRoute element={<BatchUserDetail />} />} />
 					<Route path="/users/management" element={<PrivateRoute element={<UserManagementPage />} />} />
+					<Route path="/users/edit/:userId" element={<PrivateRoute element={<UserArrangePage />} />} />
 					<Route path="*" element={<h1>Not Found</h1>} />
 				</Routes>
 				</div>

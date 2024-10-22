@@ -4,10 +4,11 @@ import styled from "styled-components";
 interface PasswordBoxProps {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    required?: boolean;
     style?: CSSProperties;
 }
 
-const PasswordBox: React.FC<PasswordBoxProps> = ({ value, onChange, style }) => {
+const PasswordBox: React.FC<PasswordBoxProps> = ({ value, onChange, required = true, style }) => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
     return (
@@ -18,7 +19,7 @@ const PasswordBox: React.FC<PasswordBoxProps> = ({ value, onChange, style }) => 
                 name="password"
                 onChange={onChange}
                 autoComplete="current-password"
-                required
+                required={required}
                 style={style}
             />
             <ShowPasswordButton type="button" onClick={() => setShowPassword(!showPassword)}>
