@@ -1,20 +1,31 @@
 import styled from "styled-components";
-import React, { useState } from "react";
+import React from "react";
 
-interface ButtonComponentProps {
-    onClick: () => void;
+type ButtonComponentPropsBase = {
     label: string;
     disabled?: boolean;
     width?: string;
     height?: string;
     fontSize?: string;
-}
+};
 
-const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, disabled = false, width = '90px', height = '40px', fontSize = '16px' }) => {
+type ButtonComponentPropsWithClick = ButtonComponentPropsBase & {
+    type?: 'button';
+    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+};
 
+type ButtonComponentPropsWithoutClick = ButtonComponentPropsBase & {
+    type: 'submit' | 'reset';
+    onClick?: never;
+};
+
+type ButtonComponentProps = ButtonComponentPropsWithClick | ButtonComponentPropsWithoutClick;
+
+const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, type = 'button', disabled = false, width, height, fontSize = '16px' }) => {
     return (
         <StyledButton 
-            onClick={onClick} 
+            onClick={onClick}
+            type={type}
             disabled={disabled} 
             width={width}
             height={height}
@@ -27,7 +38,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, disab
 
 export default ButtonComponent;
 
-const StyledButton = styled.button<{ width: string; height: string; fontSize: string }>`
+const StyledButton = styled.button<{ width?: string; height?: string; fontSize?: string }>`
     background-color: white;
     border: 1px solid black;
     border-radius: 15px;
@@ -37,6 +48,8 @@ const StyledButton = styled.button<{ width: string; height: string; fontSize: st
     width: ${(props) => props.width || 'auto'};
     height: ${(props) => props.height || 'auto'};
     transition: background-color 0.1s;
+    white-space: nowrap;
+    padding: 0 12px;
 
     &:hover {
         background-color: #B8B8B8;

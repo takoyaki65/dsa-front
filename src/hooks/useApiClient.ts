@@ -47,11 +47,14 @@ const useApiClient = () => {
                 }
             } else if (status === 400 && detail === "現在のパスワードが正しくありません") {
                 throw error;
-            } else if (status !== 200){
+            } else if (status === 403 || status === 401) {
+                alert("許可されていないページまたは操作です．")
+                window.location.href = '/';
+            }else if (status !== 200){
                 console.error('APIリクエストエラー:', error);
                 const errorMessage = '予期せぬエラーが発生しました。再度ログインしてください。';
                 alert(errorMessage);
-                logout();
+                // logout();
             }
             throw error;
         }

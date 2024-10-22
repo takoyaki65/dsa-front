@@ -71,7 +71,7 @@ const Sidebar: React.FC = () => {
 					<Link to="/batch/status"><h3>採点履歴</h3></Link>
 				</div>
 			}
-			{ role === UserRole.admin && <Link to="/users"><h3>ユーザー管理</h3></Link>}
+			{ (role === UserRole.admin || role === UserRole.manager) && <Link to="/users/management"><h3>ユーザー管理</h3></Link>}
 			{token && <LogoutButton onClick={logout}>ログアウト</LogoutButton>}
 		</SidebarContainer>
 	);

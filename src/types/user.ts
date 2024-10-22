@@ -37,4 +37,3 @@ export type UserUpdatePassword = {
     plain_password: string;
     new_plain_password: string;
 }
-
