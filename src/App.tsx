@@ -6,11 +6,9 @@ import SubmissionPage from './pages/ProblemPage';
 import RegisterPage from './pages/UserRegisterationPage';
 import LoginPage from './pages/LoginPage';
 import SubmissionStatusOfMe from './pages/SubmissionStatusOfMe';
-import UserDeletePage from './pages/UserDeletePage';
 import { useAuth } from './context/AuthContext';
 import SubmissionDetail from './pages/SubmissionDetail';
 import FormatCheckSubmission from './pages/FormatCheckSubmission';
-import UserManager from './pages/UserManager';
 import BatchSubmission from './pages/BatchSubmission';
 import BatchStatus from './pages/BatchStatus';
 import BatchDetail from './pages/BatchDetail';
@@ -40,8 +38,6 @@ const App: React.FC = () => {
 					<Route path="/submission/:lectureId/:assignmentId" element={<PrivateRoute element={<SubmissionPage />} />} />
 					<Route path="/status/me" element={<PrivateRoute element={<SubmissionStatusOfMe />} />} />
 					<Route path="/result/:submissionId" element={<PrivateRoute element={<SubmissionDetail />} />} />
-					{/* <Route path="/users/delete" element={<PrivateRoute element={<UserDeletePage />} />} /> */}
-					{/* <Route path="/users" element={<PrivateRoute element={<UserManager />} />} /> */}
 					<Route path="/users/passChange" element={<PrivateRoute element={<StudentPassChangePage />} />} />
 					<Route path="/format-check" element={<PrivateRoute element={<FormatCheckSubmission />} />} />
 					<Route path="/batch/submit" element={<PrivateRoute element={<BatchSubmission />} />} />
