@@ -273,10 +273,14 @@ export const fetchBatchSubmissionUserReport = async (batch_id: number, user_id: 
 
 
 
-export const fetchUserList = async (token: string | null): Promise<User[]> => {
+export const fetchUserList = async (user_id: string | null, token: string | null): Promise<User[]> => {
     try {
+        let url = `${API_PREFIX}/users/all`;
+        if (user_id !== null) {
+            url += `?user_id=${user_id}&role=student`;
+        }
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(`${API_PREFIX}/users/all`, { headers });
+        const response = await axios.get(url, { headers });
         return response.data;
     } catch (error) {
         throw error;

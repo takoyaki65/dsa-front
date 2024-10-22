@@ -18,7 +18,7 @@ const UserDeletePage: React.FC = () => {
     useEffect(() => {
         const getUsers = async () => {
             try {
-                const userList = await apiClient({ apiFunc: fetchUserList });
+                const userList = await apiClient({ apiFunc: fetchUserList, args: [null] });
                 setUsers(userList);
             } catch (error) {
                 console.error('ユーザーの取得に失敗しました。', error);
@@ -38,7 +38,7 @@ const UserDeletePage: React.FC = () => {
         try {
             await apiClient({ apiFunc: deleteUsers, args: [selectedUsers] });
             alert('選択されたユーザーが正常に削除されました。');
-            const updatedUserList = await apiClient({ apiFunc: fetchUserList });
+            const updatedUserList = await apiClient({ apiFunc: fetchUserList, args: [null] });
             setUsers(updatedUserList);
             setSelectedUsers([]);
         } catch (error) {

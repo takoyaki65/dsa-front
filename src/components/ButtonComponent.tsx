@@ -10,7 +10,7 @@ interface ButtonComponentProps {
     fontSize?: string;
 }
 
-const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, disabled = false, width = '90px', height = '40px', fontSize = '16px' }) => {
+const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, disabled = false, width, height, fontSize = '16px' }) => {
 
     return (
         <StyledButton 
@@ -27,7 +27,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, disab
 
 export default ButtonComponent;
 
-const StyledButton = styled.button<{ width: string; height: string; fontSize: string }>`
+const StyledButton = styled.button<{ width?: string; height?: string; fontSize?: string }>`
     background-color: white;
     border: 1px solid black;
     border-radius: 15px;
@@ -37,6 +37,8 @@ const StyledButton = styled.button<{ width: string; height: string; fontSize: st
     width: ${(props) => props.width || 'auto'};
     height: ${(props) => props.height || 'auto'};
     transition: background-color 0.1s;
+    white-space: nowrap;
+    padding: 0 12px;
 
     &:hover {
         background-color: #B8B8B8;

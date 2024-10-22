@@ -51,7 +51,7 @@ const useApiClient = () => {
                 console.error('APIリクエストエラー:', error);
                 const errorMessage = '予期せぬエラーが発生しました。再度ログインしてください。';
                 alert(errorMessage);
-                logout();
+                // logout();
             }
             throw error;
         }
