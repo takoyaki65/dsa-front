@@ -7,8 +7,10 @@ import { useAuth } from '../context/AuthContext';
 import StudentListUploadBox from '../components/StudentListUploadBox';
 import useApiClient from '../hooks/useApiClient';
 import { UserRole } from '../types/token';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage: React.FC = () => {
+    const navigate = useNavigate();
     const [user_id, setUserId] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -68,7 +70,7 @@ const RegisterPage: React.FC = () => {
             setActiveStartDate(new Date(2024, 10, 1, 9, 0, 0));
             setActiveEndDate(new Date(2025, 3, 1, 23, 59, 59));
             setError('');
-            // 登録後の処理（例：ログインページへのリダイレクト）
+            navigate('/users/management');
         } catch (error) {
             console.error('アカウントの作成に失敗しました。', error);
             setError(`アカウントの作成に失敗しました: ${(error as any).response.data.detail}`);
