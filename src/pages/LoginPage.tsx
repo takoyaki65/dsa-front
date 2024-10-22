@@ -6,10 +6,12 @@ import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 import { validateToken } from '../api/PostAPI';
 import { Navigate, useNavigate } from 'react-router-dom';
+import PasswordBox from '../components/PasswordBox';
 
 const LoginPage: React.FC = () => {
     const [credentials, setCredentials] = useState<LoginCredentials>({ user_id: '', password: '' });
     const [error, setError] = useState<string>('');
+    const [showPassword, setShowPassword] = useState<boolean>(false);
     const { token, setToken, setUserId, setRole } = useAuth();
     const { apiClient } = useApiClient();
     const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null); // トークンの有効性を保持
@@ -73,6 +75,7 @@ const LoginPage: React.FC = () => {
     if (isTokenValid === null) {
         return null; // ローディング中やスピナーを表示しても良い
     }
+
     return (
         <>
             <GlobalStyle /> {/* ログイン画面用のグローバルスタイルを適用 */}
@@ -94,15 +97,7 @@ const LoginPage: React.FC = () => {
                     </FormGroup>
                     <FormGroup>
                         <Label htmlFor="password">パスワード:</Label>
-                        <Input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={credentials.password}
-                            onChange={handleChange}
-                            autoComplete="current-password"
-                            required
-                        />
+                        <PasswordBox value={credentials.password} onChange={handleChange} />
                     </FormGroup>
                     <Button type="submit">ログイン</Button>
                 </FormContainer>

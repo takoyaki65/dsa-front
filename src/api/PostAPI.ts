@@ -2,6 +2,7 @@ import axios from 'axios';
 import { LoginCredentials, CreateUser } from '../types/user';
 import { Token, TokenResponse } from '../types/token';
 import { Submission, BatchSubmission } from '../types/Assignments';
+import { UserUpdatePassword } from '../types/user';
 
 interface UploadResult {
     unique_id: string;
@@ -169,3 +170,19 @@ export const validateToken = async (token: string): Promise<boolean> => {
         throw error;
     }
 };
+
+export const updatePassword = async (user: UserUpdatePassword, token: string | null): Promise<void> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.post(`${API_PREFIX}/users/update/password`, user, { headers });
+        
+        // サーバーからのレスポンスを確認し、必要に応じて処理を追加
+        if (response.status === 200) {
+            console.log('パスワードが正常に更新されました');
+        } else {
+            console.error('パスワード更新に失敗しました');
+        }
+    } catch (error: any) {
+        throw error;
+    }
+}
