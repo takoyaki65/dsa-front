@@ -99,6 +99,7 @@ const BatchStatusPage: React.FC = () => {
         };
     }, [token, page, pageSize, sortKey, sortOrder, inProgress, appliedSearchCondition]);
 
+
     useEffect(() => {
         let dotsInterval: NodeJS.Timeout | null = null;
 
@@ -130,6 +131,17 @@ const BatchStatusPage: React.FC = () => {
         setAppliedSearchCondition(searchCondition);
     };
 
+    const handleFilterKeyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newFilterKey = e.target.value;
+        setFilterKey(newFilterKey);
+        // filterKey が空になった場合、検索を実行
+        if (newFilterKey === '') {
+            setSearchCondition('');
+            setAppliedSearchCondition('');
+            getSubmissions('');
+        }
+    };
+
     const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newSearchCondition = e.target.value;
         setSearchCondition(newSearchCondition);
@@ -157,7 +169,7 @@ const BatchStatusPage: React.FC = () => {
                 <ToolBarContainer>
                     <FilterDropdown
                         value={filterKey}
-                        onChange={(e) => setFilterKey(e.target.value)}
+                        onChange={handleFilterKeyChange}
                     >
                         <option value="">フィルター項目を選択</option>
                         {headerContents.filter((header) => header.filterable).map((header) => (
