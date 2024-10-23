@@ -10,12 +10,12 @@ import { useAuth } from './context/AuthContext';
 import SubmissionDetail from './pages/SubmissionDetail';
 import FormatCheckSubmission from './pages/FormatCheckSubmission';
 import BatchSubmission from './pages/BatchSubmission';
-import BatchStatus from './pages/BatchStatus';
 import BatchDetail from './pages/BatchDetail';
 import BatchUserDetail from './pages/BatchUserDetail';
 import StudentPassChangePage from './pages/StudentPassChangePage';
 import UserManagementPage from './pages/UserManagementPage';
 import UserArrangePage from './pages/UserArrangePage';
+import BatchStatusPage from './pages/BatchStatusPage';
 // ログインしているユーザーのみがアクセスできるページを作成するためのコンポーネント
 // ログインしていないユーザーはログインページにリダイレクトされる
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
@@ -42,7 +42,7 @@ const App: React.FC = () => {
 					<Route path="/users/passChange" element={<PrivateRoute element={<StudentPassChangePage />} />} />
 					<Route path="/format-check" element={<PrivateRoute element={<FormatCheckSubmission />} />} />
 					<Route path="/batch/submit" element={<PrivateRoute element={<BatchSubmission />} />} />
-					<Route path="/batch/status" element={<PrivateRoute element={<BatchStatus />} />} />
+					<Route path="/batch/status" element={<PrivateRoute element={<BatchStatusPage />} />} />
 					<Route path="/batch/result/:batchId" element={<PrivateRoute element={<BatchDetail />} />} />
 					<Route path="/batch/result/:batchId/user/:userId" element={<PrivateRoute element={<BatchUserDetail />} />} />
 					<Route path="/users/management" element={<PrivateRoute element={<UserManagementPage />} />} />
