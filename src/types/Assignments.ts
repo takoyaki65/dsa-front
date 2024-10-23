@@ -64,6 +64,29 @@ export type BatchSubmission = {
   evaluation_statuses: EvaluationStatus[];
 }
 
+export type BatchSubmissionItemForListView = {
+  id: number;
+  ts: Date;
+  user_id: string;
+  username: string;
+  lecture_id: number;
+  lecture_title: string;
+  message: string | null;
+  status: "queued" | "running" | "done";
+  complete_judge: number | null;
+  total_judge: number | null;
+
+  evaluation_statuses: EvaluationStatus[];
+}
+
+export type BatchSubmissionItemsForListView = {
+  items: BatchSubmissionItemForListView[];
+  total_items: number;
+  current_page: number;
+  total_pages: number;
+  page_size: number;
+}
+
 export enum SubmissionSummaryStatus {
   AC = "AC", // Accepted
   WA = "WA", // Wrong Answer

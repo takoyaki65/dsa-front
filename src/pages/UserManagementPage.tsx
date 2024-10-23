@@ -264,6 +264,8 @@ const UserManagementPage: React.FC = () => {
     </PageContainer>;
 }
 
+export default UserManagementPage;
+
 const PageContainer = styled.div`
     height: 100vh;
     display: flex;
@@ -306,9 +308,6 @@ const HeaderContainer = styled.div`
 const UserListContainer = styled.div`
     padding: 10px;
 `;
-
-export default UserManagementPage;
-
 
 const UserItemContainer = styled.div`
     display: flex;

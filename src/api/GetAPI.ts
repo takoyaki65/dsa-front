@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Lecture, Problem, Submission, FileRecord, BatchSubmission, EvaluationStatus } from '../types/Assignments';
+import { Lecture, Problem, Submission, FileRecord, BatchSubmission, EvaluationStatus, BatchSubmissionItemsForListView } from '../types/Assignments';
 import { User } from '../types/user';
 import { Token } from '../types/token';
 import { TextResponse } from '../types/response'
@@ -134,7 +134,7 @@ export const fetchSubmissionFiles = async (submission_id: number, type: "uploade
             })
         );
         return files;
- 
+
     } catch (error: any) {
         console.error("提出ファイルの取得に失敗しました", error);
         throw error;
@@ -168,10 +168,23 @@ export const fetchBatchSubmissionStatus = async (batch_id: number, token: string
 
 
 // "/api/v1/assignments/status/batch/all?page={page}"を通じて、バッチ採点の進捗状況のリストを取得する関数
-export const fetchBatchSubmissionList = async (page: number, token: string | null): Promise<BatchSubmission[]> => {
+export const fetchBatchSubmissionList = async (page: number, page_size: number, lecture_title: string | null, user: string | null, sort_by: string | null, sort_order: string | null, token: string | null): Promise<BatchSubmissionItemsForListView> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<BatchSubmission[]>(`${API_PREFIX}/assignments/status/batch/all?page=${page}`, { headers });
+        const params = new URLSearchParams({
+            page: page.toString(),
+            page_size: page_size.toString()
+        });
+
+        if (lecture_title !== null && lecture_title !== undefined) params.append('lecture_title', lecture_title);
+        if (user !== null && user !== undefined) params.append('user', user);
+        if (sort_by !== null && sort_by !== undefined) params.append('sort_by', sort_by);
+        if (sort_order !== null && sort_order !== undefined) params.append('sort_order', sort_order);
+        const response = await axios.get<BatchSubmissionItemsForListView>(`${API_PREFIX}/assignments/status/batch/all`, { 
+            headers,
+            params
+        });
+        console.log("fetchBatchSubmissionList")
         return response.data;
     } catch (error: any) {
         console.error("バッチ採点の結果のリストの取得に失敗しました", error);

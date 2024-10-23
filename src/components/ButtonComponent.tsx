@@ -7,6 +7,7 @@ type ButtonComponentPropsBase = {
     width?: string;
     height?: string;
     fontSize?: string;
+    style?: React.CSSProperties;
 };
 
 type ButtonComponentPropsWithClick = ButtonComponentPropsBase & {
@@ -21,7 +22,7 @@ type ButtonComponentPropsWithoutClick = ButtonComponentPropsBase & {
 
 type ButtonComponentProps = ButtonComponentPropsWithClick | ButtonComponentPropsWithoutClick;
 
-const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, type = 'button', disabled = false, width, height, fontSize = '16px' }) => {
+const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, type = 'button', disabled = false, width, height, fontSize = '16px', style }) => {
     return (
         <StyledButton 
             onClick={onClick}
@@ -30,6 +31,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({ onClick, label, type 
             width={width}
             height={height}
             fontSize={fontSize}
+            style={style}
         >
             {label}
         </StyledButton>
