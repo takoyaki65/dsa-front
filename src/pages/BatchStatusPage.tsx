@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 import SearchIconSVG from '../images/Search.svg';
 import ButtonComponent from '../components/ButtonComponent';
-import { useNavigate } from 'react-router-dom';
 import { fetchBatchSubmissionList } from '../api/GetAPI';
 import { BatchSubmissionItemsForListView } from '../types/Assignments';
 
@@ -22,7 +21,6 @@ const MAX_DATA_COUNT = 20;
 */
 
 const BatchStatusPage: React.FC = () => {
-    const navigate = useNavigate();
     const { apiClient } = useApiClient();
     const [submissions, setSubmissions] = useState<BatchSubmissionItemsForListView | null>(null);
     const [page, setPage] = useState(1);
