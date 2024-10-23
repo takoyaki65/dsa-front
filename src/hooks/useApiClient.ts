@@ -49,7 +49,7 @@ const useApiClient = () => {
                 throw error;
             } else if (status === 403 || status === 401) {
                 alert("許可されていないページまたは操作です．")
-                // window.location.href = '/';
+                window.location.href = '/';
             }else if (status !== 200){
                 console.error('APIリクエストエラー:', error);
                 const errorMessage = '予期せぬエラーが発生しました。再度ログインしてください。';
