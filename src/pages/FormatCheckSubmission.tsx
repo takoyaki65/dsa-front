@@ -9,7 +9,7 @@ import { submitStudentZip } from '../api/PostAPI';
 import { useNavigate } from 'react-router-dom';
 
 const FormatCheckSubmission: React.FC = () => {
-  const { token } = useAuth();
+  const { token, role } = useAuth();
   const searchParams = new URLSearchParams(window.location.search);
   const lecture_id_from_query = searchParams.get('lecture_id');
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -20,10 +20,12 @@ const FormatCheckSubmission: React.FC = () => {
   const { apiClient } = useApiClient();
   const navigate = useNavigate();
 
+  const isAdminOrManager = role === 'admin' || role === 'manager';
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const lectureList = await apiClient({ apiFunc: fetchLectures, args: [true] });
+        const lectureList = await apiClient({ apiFunc: fetchLectures, args: [isAdminOrManager ? true : false] });
 
         for (const lecture of lectureList) {
           for (const problem of lecture.problems) {
