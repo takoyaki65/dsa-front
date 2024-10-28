@@ -10,7 +10,7 @@ import { useAuth } from './context/AuthContext';
 import SubmissionDetail from './pages/SubmissionDetail';
 import FormatCheckSubmission from './pages/FormatCheckSubmission';
 import BatchSubmission from './pages/BatchSubmission';
-import BatchDetail from './pages/BatchDetail';
+import BatchDetailPage from './pages/BatchDetailPage';
 import BatchUserDetail from './pages/BatchUserDetail';
 import StudentPassChangePage from './pages/StudentPassChangePage';
 import UserManagementPage from './pages/UserManagementPage';
@@ -43,7 +43,7 @@ const App: React.FC = () => {
 					<Route path="/format-check" element={<PrivateRoute element={<FormatCheckSubmission />} />} />
 					<Route path="/batch/submit" element={<PrivateRoute element={<BatchSubmission />} />} />
 					<Route path="/batch/status" element={<PrivateRoute element={<BatchStatusPage />} />} />
-					<Route path="/batch/result/:batchId" element={<PrivateRoute element={<BatchDetail />} />} />
+					<Route path="/batch/result/:batchId" element={<PrivateRoute element={<BatchDetailPage />} />} />
 					<Route path="/batch/result/:batchId/user/:userId" element={<PrivateRoute element={<BatchUserDetail />} />} />
 					<Route path="/users/management" element={<PrivateRoute element={<UserManagementPage />} />} />
 					<Route path="/users/edit/:userId" element={<PrivateRoute element={<UserArrangePage />} />} />

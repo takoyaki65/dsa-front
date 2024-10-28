@@ -83,7 +83,7 @@ const RegisterPage: React.FC = () => {
     if (login_user_id === null) {
         logout();
     }
-    if (login_user_role !== UserRole.admin) {
+    if (login_user_role === UserRole.student) {
         return <p>管理者権限がありません。</p>;
     }
 

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Lecture, Problem, Submission, FileRecord, BatchSubmission, EvaluationStatus, BatchSubmissionItemsForListView } from '../types/Assignments';
+import { Lecture, Problem, Submission, FileRecord, BatchSubmission, EvaluationStatus, BatchSubmissionItemsForListView, BatchSubmissionDetailItem } from '../types/Assignments';
 import { User } from '../types/user';
 import { Token } from '../types/token';
 import { TextResponse } from '../types/response'
@@ -184,7 +184,6 @@ export const fetchBatchSubmissionList = async (page: number, page_size: number, 
             headers,
             params
         });
-        console.log("fetchBatchSubmissionList")
         return response.data;
     } catch (error: any) {
         console.error("バッチ採点の結果のリストの取得に失敗しました", error);
@@ -194,10 +193,11 @@ export const fetchBatchSubmissionList = async (page: number, page_size: number, 
 
 
 // "/api/v1/assignments/result/batch/id/{batch_id}"を通じて、指定されたバッチ採点の結果の詳細を取得する関数
-export const fetchBatchSubmissionDetail = async (batch_id: number, token: string | null): Promise<BatchSubmission> => {
+export const fetchBatchSubmissionDetail = async (batch_id: number, token: string | null): Promise<BatchSubmissionDetailItem> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<BatchSubmission>(`${API_PREFIX}/assignments/result/batch/id/${batch_id}`, { headers });
+        const response = await axios.get<BatchSubmissionDetailItem>(`${API_PREFIX}/assignments/result/batch/id/${batch_id}`, { headers });
+        console.log("response: ", response);
         return response.data;
     } catch (error: any) {
         console.error("指定されたバッチ採点の結果の詳細の取得に失敗しました", error);

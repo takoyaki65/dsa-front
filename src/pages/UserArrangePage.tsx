@@ -31,7 +31,6 @@ const UserArrangePage: React.FC = () => {
     useEffect(() => {
         const getUser = async () => {
             const userInfo = await apiClient({ apiFunc: fetchUserInfo, args: [user_id] });
-            console.log(userInfo)
             setUsername(userInfo.username)
             setEmail(userInfo.email)
             setRole(userInfo.role)
