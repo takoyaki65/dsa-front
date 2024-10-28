@@ -56,7 +56,7 @@ const BatchDetailPage: React.FC = () => {
     const [batchSubmissions, setBatchSubmissions] = useState<BatchSubmissionDetailItem | null>(null);
     const { token } = useAuth();
     const [sortKey, setSortKey] = useState<string>('user');
-    const [sortOrder, setSortOrder] = useState<string>('desc');
+    const [sortOrder, setSortOrder] = useState<string>('asc');
     const [columns, setColumns] = useState<ColumnDefinition[]>(columnDefinitions);
     const [filterState, setFilterState] = useState<FilterState>({
         activeKey: null,
@@ -138,13 +138,17 @@ const BatchDetailPage: React.FC = () => {
                 const searchValue = filterState.value.toLowerCase();
                 if (column.key === 'user') {
                     return submission.user_id.toLowerCase().includes(searchValue) || 
-                           submission.username.toLowerCase().includes(searchValue);
+                            submission.username.toLowerCase().includes(searchValue);
                 }
             } else if (column.filterType === 'checkbox') {
                 // レポートのフィルタリング
                 if (column.key === 'report') {
                     if (!submission.report_exists) {
                         return filterValues.includes('non-submitted');
+                    }
+                    if (submission.status !== "submitted") {
+                        console.log(submission.status);
+                        console.log(filterValues);
                     }
                     return filterValues.includes(submission.status);
                 }
@@ -320,7 +324,7 @@ const BatchDetailPage: React.FC = () => {
                                     {submission.submit_date ? submission.submit_date.toLocaleString() : '-'}
                                 </UserInfoItem>
                                 <UserInfoItem>
-                                    <StyledStatusButton status={submission.report_exists ? "提出" : "未提出"} isButton={true} />
+                                    <StyledStatusButton status={!submission.report_exists ? "未提出" : submission.status === "submitted" ? "提出" : "遅延"} isButton={true} />
                                 </UserInfoItem>
                                 {batchSubmissions.lecture.problems.map(problem => (
                                     <UserInfoItem key={problem.assignment_id}>
@@ -524,15 +528,4 @@ const FilterOptionsContainer = styled.div`
 const StyledStatusButton = styled(StatusButton)`
     cursor: pointer;
 `;
-
-const StatusContainer = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-`;
-
-
-
-
-
 
