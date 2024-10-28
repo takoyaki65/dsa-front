@@ -81,7 +81,7 @@ const LoginPage: React.FC = () => {
             <GlobalStyle /> {/* ログイン画面用のグローバルスタイルを適用 */}
             <PageContainer>
                 <FormContainer onSubmit={handleSubmit}>
-                    <h2>ログイン</h2>
+                    <h1>ログイン</h1>
                     {error && <ErrorMessage>{error}</ErrorMessage>}
                     <FormGroup>
                         <Label htmlFor="user_id">学籍番号（例: 202312345）:</Label>

@@ -104,7 +104,7 @@ const UserArrangePage: React.FC = () => {
 
     return (
         <div>
-            <h2>ユーザー編集</h2>
+            <h1>ユーザー編集</h1>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleUpdate}>
                 <UserItemContainer>

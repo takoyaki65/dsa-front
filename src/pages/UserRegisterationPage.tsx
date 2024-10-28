@@ -89,7 +89,7 @@ const RegisterPage: React.FC = () => {
 
     return (
         <div>
-            <h2>アカウント登録</h2>
+            <h1>アカウント登録</h1>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleRegister} style={{ marginBottom: '20px' }}>
                 <UserItemContainer>

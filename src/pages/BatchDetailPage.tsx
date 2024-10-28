@@ -236,13 +236,16 @@ const BatchDetailPage: React.FC = () => {
 
     if (!batchSubmissions) {
         return <div>
-            <h2>採点履歴</h2>
+            <h1>採点履歴</h1>
             <LoadingComponent message="読み込み中..." />
         </div>;
     }
 
     return <PageContainer>
-        <h2>採点履歴</h2>
+        <h1>採点履歴</h1>
+        <h2>{batchSubmissions.lecture.title}</h2>
+        <div style={{ fontSize: '14px', color: '#808080' }}>提出: {batchSubmissions.ts.toLocaleString()}, 提出者: {batchSubmissions.username}</div>
+        <Divider style={{ height: '3px', marginBottom: '20px', borderRadius: '2px' }} />
         <BatchStatusContainer>
             <FixedContent>
                 <ToolBarContainer>
@@ -352,6 +355,10 @@ const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
     padding-bottom: 50px;
+
+    h2 {
+        margin: 5px 0 5px;
+    }
 `;
 
 const BatchStatusContainer = styled.div`

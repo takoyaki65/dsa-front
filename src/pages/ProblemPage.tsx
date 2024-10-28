@@ -76,7 +76,7 @@ const SubmissionPage: React.FC = () => {
 				<MarkdownRenderer content={problem?.detail?.description || 'description is not found'} />
 			</div>
 			<div>
-				<h2>必要なファイル</h2>
+				<h1>必要なファイル</h1>
 				<ul>
 					{problem?.detail?.required_files.map((file, index) => (
 						<li key={index}>{file.name}</li>
@@ -84,7 +84,7 @@ const SubmissionPage: React.FC = () => {
 				</ul>
 			</div>
 			<div>
-				<h2>提出フォーム</h2>
+				<h1>提出フォーム</h1>
 				<FileUploadBox onSubmit={handleSubmit} descriptionOnBox={'zipではなく各ファイルを提出してください．'} />
 			</div>
 		</div>

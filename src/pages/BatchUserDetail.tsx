@@ -133,7 +133,7 @@ const BatchUserDetail: React.FC = () => {
       <p>提出日時: {evaluationStatus?.submit_date instanceof Date ? evaluationStatus?.submit_date.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-') : new Date(evaluationStatus?.submit_date!).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-')} </p>
       <p>ステータス: {getSubmissionStatus(evaluationStatus?.status ?? null)}</p>
       <p>レポート: {evaluationStatus?.report_exists ? '提出済み' : '未提出'}</p>
-      <h2>課題別結果</h2>
+      <h1>課題別結果</h1>
       { problems.length > 0 && (
       <table>
         <thead>
@@ -157,7 +157,7 @@ const BatchUserDetail: React.FC = () => {
       </table>
       )}
 
-      <h2>チェックリスト ({selectedId !== null && problems[selectedId]?.title})</h2>
+      <h1>チェックリスト ({selectedId !== null && problems[selectedId]?.title})</h1>
       <CheckListTable>
         <thead>
           <tr>
@@ -194,7 +194,7 @@ const BatchUserDetail: React.FC = () => {
         </tbody>
       </CheckListTable>
 
-      <h2>提出されたファイル一覧</h2>
+      <h1>提出されたファイル一覧</h1>
       <ul>
         {uploadedFiles.filter(file => file.content instanceof Blob).map(file => (
           <li key={file.name}>

@@ -88,7 +88,7 @@ const FormatCheckSubmission: React.FC = () => {
 
       {selectedLectureId && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <h2>class{selectedLectureId}.zipの構造</h2>
+          <h1>class{selectedLectureId}.zipの構造</h1>
           <pre style={{ textAlign: 'left' }}>
             {`class${selectedLectureId}/\n`}
             {`  +-${lectureId2RequiredFiles.get(selectedLectureId)?.join('\n  +-')}`}

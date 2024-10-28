@@ -55,7 +55,7 @@ const DialogBox = styled.div`
     max-height: 80vh;
 `;
 
-const Title = styled.h2`
+const Title = styled.h1`
     margin-top: 0;
     margin-bottom: 16px;
 `;

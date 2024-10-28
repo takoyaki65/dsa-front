@@ -90,7 +90,7 @@ const StudentPassChangePage = () => {
     
     return (
         <Container>
-            <h2>ユーザー管理</h2>
+            <h1>ユーザー管理</h1>
             <h3>パスワード変更</h3>
             <FormContainer>
                 <form onSubmit={handleSubmit}>

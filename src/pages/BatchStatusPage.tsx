@@ -150,14 +150,14 @@ const BatchStatusPage: React.FC = () => {
 
     if (isLoading || !submissions) {
         return <div>
-            <h2>採点履歴</h2>
+            <h1>採点履歴</h1>
             <LoadingComponent message="読み込み中..." />
         </div>;
     }
 
 
     return <PageContainer>
-        <h2>採点履歴</h2>
+        <h1>採点履歴</h1>
         <BatchStatusContainer>
             <FixedContent>
                 <ToolBarContainer>
