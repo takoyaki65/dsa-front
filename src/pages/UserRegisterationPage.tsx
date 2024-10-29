@@ -83,13 +83,13 @@ const RegisterPage: React.FC = () => {
     if (login_user_id === null) {
         logout();
     }
-    if (login_user_role !== UserRole.admin) {
+    if (login_user_role === UserRole.student) {
         return <p>管理者権限がありません。</p>;
     }
 
     return (
         <div>
-            <h2>アカウント登録</h2>
+            <h1>アカウント登録</h1>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleRegister} style={{ marginBottom: '20px' }}>
                 <UserItemContainer>

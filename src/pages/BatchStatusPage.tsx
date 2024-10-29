@@ -7,6 +7,7 @@ import SearchIconSVG from '../images/Search.svg';
 import ButtonComponent from '../components/ButtonComponent';
 import { fetchBatchSubmissionList } from '../api/GetAPI';
 import { BatchSubmissionItemsForListView } from '../types/Assignments';
+import LoadingComponent from '../components/LoadingComponent';
 
 
 const MAX_DATA_COUNT = 20;
@@ -54,7 +55,6 @@ const BatchStatusPage: React.FC = () => {
             alert('フィルタ項目が不正です');
         }
         const submissionList = await apiClient({ apiFunc: fetchBatchSubmissionList, args: args });
-        console.log(`submissionListInGetSubmissions: ${submissionList.items}`);
         setSubmissions(submissionList);
         return submissionList;
     };
@@ -70,7 +70,6 @@ const BatchStatusPage: React.FC = () => {
         const fetchAndUpdate = async () => {
             try {
                 const submissionList = await getSubmissions(appliedSearchCondition);
-                console.log(`submissionList: ${submissionList}`);
                 if (submissionList) {
                     checkAndUpdateProgress(submissionList);
                 } else {
@@ -151,17 +150,14 @@ const BatchStatusPage: React.FC = () => {
 
     if (isLoading || !submissions) {
         return <div>
-            <h2>採点履歴</h2>
-            <LoadingContainer>
-                <Spinner />
-                <LoadingText>読み込み中...</LoadingText>
-            </LoadingContainer>
+            <h1>採点履歴</h1>
+            <LoadingComponent message="読み込み中..." />
         </div>;
     }
 
 
     return <PageContainer>
-        <h2>採点履歴</h2>
+        <h1>採点履歴</h1>
         <BatchStatusContainer>
             <FixedContent>
                 <ToolBarContainer>
@@ -396,31 +392,3 @@ const LinkButton = styled.a`
         text-decoration: underline;
     }
 `
-const LoadingContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-`;
-
-const LoadingText = styled.p`
-    margin-top: 16px;
-    font-size: 16px;
-    color: #666;
-`;
-
-const Spinner = styled.div`
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-`;
-

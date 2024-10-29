@@ -108,7 +108,7 @@ const SubmissionDetail: React.FC = () => {
     return (
         <div>
             <h1>提出 #{submissionId} (課題: {problem?.title || '課題名不明'})</h1>
-            <h2>提出されたファイル一覧</h2>
+            <h1>提出されたファイル一覧</h1>
             <select onChange={handleUploadedFileSelect} value={selectedUploadedFile}>
                 <option value="">ファイルを選択してください</option>
                 {uploadedFiles.filter(file => typeof file.content === 'string').map(file => (
@@ -123,7 +123,7 @@ const SubmissionDetail: React.FC = () => {
                     </li>
                 ))}
             </ul>
-            <h2>用意されたファイル一覧</h2>
+            <h1>用意されたファイル一覧</h1>
             <select onChange={handleArrangedFileSelect} value={selectedArrangedFile}>
                 <option value="">ファイルを選択してください</option>
                 {arrangedFiles.filter(file => typeof file.content === 'string').map(file => (
@@ -142,7 +142,7 @@ const SubmissionDetail: React.FC = () => {
             {
                 submission && problem && (
                     <div>
-                        <h2>提出結果</h2>
+                        <h1>提出結果</h1>
                         <table>
                             <tbody>
                                 <tr>
@@ -180,12 +180,12 @@ const SubmissionDetail: React.FC = () => {
             }
 
             <div>
-                <h2>メッセージ</h2>
+                <h1>メッセージ</h1>
                 <p>{submission?.message || 'なし'}</p>
                 <p>{'detail: ' +submission?.detail || ''}</p>
             </div>
 
-            <h2>チェックリスト</h2>
+            <h1>チェックリスト</h1>
             <CheckListTable>
                 <thead>
                     <tr>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Sidebar from './components/Sidebar';
 import SubmissionPage from './pages/ProblemPage';
@@ -10,8 +10,8 @@ import { useAuth } from './context/AuthContext';
 import SubmissionDetail from './pages/SubmissionDetail';
 import FormatCheckSubmission from './pages/FormatCheckSubmission';
 import BatchSubmission from './pages/BatchSubmission';
-import BatchDetail from './pages/BatchDetail';
-import BatchUserDetail from './pages/BatchUserDetail';
+import BatchDetailPage from './pages/BatchDetailPage';
+import BatchUserDetailPage, { BatchUserDetailState } from './pages/BatchUserDetailPage';
 import StudentPassChangePage from './pages/StudentPassChangePage';
 import UserManagementPage from './pages/UserManagementPage';
 import UserArrangePage from './pages/UserArrangePage';
@@ -23,10 +23,12 @@ const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) =>
 		return token ? element : <Navigate to="/login" replace />;
 };
 
-
 // アプリケーションのルートコンポーネント
 const App: React.FC = () => {
 	const { token } = useAuth();
+	const location = useLocation();
+	const state = location.state as BatchUserDetailState;
+
     return (
 			
 			<div className="app">
@@ -43,8 +45,8 @@ const App: React.FC = () => {
 					<Route path="/format-check" element={<PrivateRoute element={<FormatCheckSubmission />} />} />
 					<Route path="/batch/submit" element={<PrivateRoute element={<BatchSubmission />} />} />
 					<Route path="/batch/status" element={<PrivateRoute element={<BatchStatusPage />} />} />
-					<Route path="/batch/result/:batchId" element={<PrivateRoute element={<BatchDetail />} />} />
-					<Route path="/batch/result/:batchId/user/:userId" element={<PrivateRoute element={<BatchUserDetail />} />} />
+					<Route path="/batch/result/:batchId" element={<PrivateRoute element={<BatchDetailPage />} />} />
+					<Route path="/batch/result/:batchId/user/:userId" element={<PrivateRoute element={<BatchUserDetailPage openingData={state?.openingData || "ステータス"} />} />} />
 					<Route path="/users/management" element={<PrivateRoute element={<UserManagementPage />} />} />
 					<Route path="/users/edit/:userId" element={<PrivateRoute element={<UserArrangePage />} />} />
 					<Route path="*" element={<h1>Not Found</h1>} />

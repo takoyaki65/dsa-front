@@ -87,6 +87,20 @@ export type BatchSubmissionItemsForListView = {
   page_size: number;
 }
 
+export type BatchSubmissionDetailItem = {
+  id: number;
+  ts: Date;
+  user_id: string;
+  username: string;
+  lecture_id: number;
+  lecture: Lecture;
+  message: string | null;
+  status: "queued" | "running" | "done";
+  complete_judge: number | null;
+  total_judge: number | null;
+  evaluation_statuses: EvaluationStatus[];
+}
+
 export enum SubmissionSummaryStatus {
   AC = "AC", // Accepted
   WA = "WA", // Wrong Answer
@@ -103,6 +117,9 @@ export type EvaluationStatus = {
   id: number;
   batch_id: number;
   user_id: string;
+  username: string;
+  lecture_id: number;
+  lecture: Lecture;
   status: "submitted" | "delay" | "non-submitted";
   result: SubmissionSummaryStatus | null;
   upload_file_exists: boolean;
