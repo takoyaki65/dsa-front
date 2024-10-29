@@ -212,14 +212,15 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
       {selectedUploadedFile && (
         <CodeBlock code={getSelectedUploadedFileContent()} fileName={selectedUploadedFile} />
       )}
-      <ResultTable>
-        <ResultHeader>
-            <ResultHeaderCell key={"term"} align="term">{"項目"}</ResultHeaderCell>
+      {selectedId !== null && selectedId > 1 && (
+        <ResultTable>
+          <ResultHeader>
+              <ResultHeaderCell key={"term"} align="term">{"項目"}</ResultHeaderCell>
             <ResultHeaderCell key={"result"} align="result">{"結果"}</ResultHeaderCell>
-        </ResultHeader>
-        {selectedId !== null && selectedId > 1 && evaluationStatus?.submissions[selectedId-2].judge_results.map(judge_result => (
-          <React.Fragment key={judge_result.id}>
-            <ResultRow 
+          </ResultHeader>
+          {selectedId !== null && selectedId > 1 && evaluationStatus?.submissions[selectedId-2].judge_results.map(judge_result => (
+            <React.Fragment key={judge_result.id}>
+              <ResultRow 
               isExpanded={expandedRows.has(judge_result.id)}
               onClick={() => toggleExpand(judge_result.id)}
             >
@@ -239,9 +240,10 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
                 />
               </ExpandedContent>
             )}
-          </React.Fragment>
-        ))}
-      </ResultTable>
+            </React.Fragment>
+          ))}
+        </ResultTable>
+      )}
       {/* <h1>課題別結果</h1>
       { problems.length > 0 && (
       <table>
