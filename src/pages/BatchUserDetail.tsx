@@ -11,16 +11,18 @@ import CodeBlock from '../components/CodeBlock';
 import OfflineFileDownloadButton from '../components/OfflineFileDownloadButton';
 import LoadingComponent from '../components/LoadingComponent';
 import StatusButton from '../components/StatusButtonComponent';
-
+import { SubmissionSummaryStatus } from '../types/Assignments';
 type ColumnDefinition = {
     key: string;
     label: string;
+    id: number | null;
 };
 
 const baseColumns: ColumnDefinition[] = [
-  { key: "status", label: "ステータス" },
-  { key: "report", label: "レポート" },
+  { key: "status", label: "ステータス", id: null },
+  { key: "report", label: "レポート", id: null },
 ];
+
 
 const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ステータス" }) => {
   const { batchId, userId } = useParams<{ batchId: string; userId: string }>();
@@ -45,7 +47,7 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
       if (!batchId || !userId) return;
       try {
         // 特定のバッチ採点の特定の学生の詳細を取得
-        const evaluationStatus = await apiClient({ apiFunc: fetchEvaluationStatus, args: [parseInt(batchId), parseInt(userId)] });
+        const evaluationStatus = await apiClient({ apiFunc: fetchEvaluationStatus, args: [parseInt(batchId), userId] });
         setEvaluationStatus(evaluationStatus);
 
         let problemsData: Problem[] = [];
@@ -55,12 +57,12 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
           problemsData.push(problemDetail);
         }
         setProblems(problemsData);
-        setColumns(baseColumns.concat(problemsData.map(problem => ({ key: problem.assignment_id.toString(), label: problem.title }))))
+        setColumns(baseColumns.concat(problemsData.map(problem => ({ key: problem.assignment_id.toString(), label: problem.title, id: problem.assignment_id }))))
 
         
         if (evaluationStatus.upload_file_exists) {
           // アップロードされたファイルを取得
-          const file_list = await apiClient({ apiFunc: fetchBatchSubmissionUserUploadedFile, args: [parseInt(batchId), parseInt(userId)] });
+          const file_list = await apiClient({ apiFunc: fetchBatchSubmissionUserUploadedFile, args: [parseInt(batchId), userId] });
           setUploadedFiles(file_list);
         }
 
@@ -154,10 +156,8 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
     return submission?.result || "non-submitted";
   };
   
-  console.log(`selectedId: ${selectedId}`);
-  console.log(`evaluationStatus?.submissions: ${JSON.stringify(evaluationStatus?.submissions)}`);
   return (
-    <div>
+    <PageContainer>
       <h1>採点履歴</h1>
       <h2 style={{margin: '5px 0 5px'}}>
         <LinkButton href={`/batch/result/${batchId}`}>
@@ -215,100 +215,60 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
       {selectedId !== null && selectedId > 1 && (
         <ResultTable>
           <ResultHeader>
-              <ResultHeaderCell key={"term"} align="term">{"項目"}</ResultHeaderCell>
+            <ResultHeaderCell key={"term"} align="term">{"項目"}</ResultHeaderCell>
             <ResultHeaderCell key={"result"} align="result">{"結果"}</ResultHeaderCell>
           </ResultHeader>
-          {selectedId !== null && selectedId > 1 && evaluationStatus?.submissions[selectedId-2].judge_results.map(judge_result => (
-            <React.Fragment key={judge_result.id}>
-              <ResultRow 
-              isExpanded={expandedRows.has(judge_result.id)}
-              onClick={() => toggleExpand(judge_result.id)}
-            >
-              <ResultCell>
-                {testCaseId2TestCase.get(judge_result.testcase_id)?.description || ''}
-              </ResultCell>
-              <ResultCell>
-                {judge_result.result}
-              </ResultCell>
-              <ExpandIcon isExpanded={expandedRows.has(judge_result.id)} />
-            </ResultRow>
-            {expandedRows.has(judge_result.id) && (
-              <ExpandedContent>
-                <JudgeResultsViewer 
-                  result={judge_result} 
-                  testCase={testCaseId2TestCase.get(judge_result.testcase_id)!} 
-                />
-              </ExpandedContent>
-            )}
-            </React.Fragment>
-          ))}
+          {(() => {
+            const submission = evaluationStatus?.submissions.find(
+              (s) => s.assignment_id === columns[selectedId].id
+            );
+
+            if (!submission) {
+              return (
+                <ResultRow isExpanded={false} onClick={() => {}}>
+                  <ResultCell align="term">データがありません</ResultCell>
+                </ResultRow>
+              );
+            }
+
+            return submission.judge_results.map(judge_result => (
+              <React.Fragment key={judge_result.id}>
+                <ResultRow 
+                  isExpanded={expandedRows.has(judge_result.id)}
+                  onClick={() => toggleExpand(judge_result.id)}
+                >
+                  <ResultCell align="term">
+                    {testCaseId2TestCase.get(judge_result.testcase_id)?.description || ''}
+                  </ResultCell>
+                  <ResultCell align="result">
+                    <StatusButton status={judge_result.result as any} isButton={false} />
+                  </ResultCell>
+                  <ExpandIcon isExpanded={expandedRows.has(judge_result.id)} />
+                </ResultRow>
+                {expandedRows.has(judge_result.id) && (
+                  <ExpandedContent>
+                    <JudgeResultsViewer 
+                      result={judge_result} 
+                      testCase={testCaseId2TestCase.get(judge_result.testcase_id)!} 
+                    />
+                  </ExpandedContent>
+                )}
+              </React.Fragment>
+            ));
+          })()}
         </ResultTable>
       )}
-      {/* <h1>課題別結果</h1>
-      { problems.length > 0 && (
-      <table>
-        <thead>
-          <tr>
-            {problems.map((problem, index) => (
-              <th>{problem.title}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            {problems.map((problem, index) => (
-              <th key={index} onClick={() => handleCheckListRowClick(index)}>
-                {// problem.assignment_idから該当するSubmissionSummaryのresultを取得
-                  evaluationStatus?.submissions[index]?.result
-                }
-              </th>
-            ))}
-          </tr>
-        </tbody>
-      </table>
-      )} */}
       
-      {/* <CheckListTable>
-        <thead>
-          <tr>
-            <th></th>
-            <th>チェック項目</th>
-            <th>結果</th>
-            <th>実行時間</th>
-            <th>メモリ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {selectedId !== null && evaluationStatus?.submissions[selectedId].judge_results.map((judge_result, index) => (
-            <React.Fragment key={judge_result.id}>
-                <CheckListRow key={judge_result.id}>
-                  <td>
-                    <ExpandButton onClick={() => toggleRow(judge_result.id)}>
-                      {expandedRows.includes(judge_result.id) ? '▼' : '▶'}
-                    </ExpandButton>
-                  </td>
-                  <td>{testCaseId2TestCase.get(judge_result.testcase_id)?.description || ''}</td>
-                  <td>{judge_result.result}</td>
-                  <td>{judge_result.timeMS}ms</td>
-                  <td>{judge_result.memoryKB}KB</td>
-                </CheckListRow>
-                {expandedRows.includes(judge_result.id) && (
-                  <ExpandedRow>
-                  <td colSpan={5}>
-                    <JudgeResultsViewer result={judge_result} testCase={testCaseId2TestCase.get(judge_result.testcase_id)!} />
-                  </td>
-                </ExpandedRow>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </CheckListTable> */}
-    </div>
+    </PageContainer>
   );
 
 };
 
 export default BatchUserDetail;
+
+const PageContainer = styled.div`
+  padding-bottom: 100px;
+`;
 
 const Divider = styled.hr`
     border: none;
@@ -390,6 +350,9 @@ const ResultTable = styled.div`
   flex-direction: column;
   width: 100%;
   margin-top: 20px;
+  border: 1px solid #E0E0E0;
+  border-radius: 10px;
+  overflow: hidden;
 `;
 
 const ResultHeader = styled.div`
@@ -403,12 +366,12 @@ const ResultHeader = styled.div`
 `;
 
 const ResultHeaderCell = styled.div<{ align?: string }>`
-  flex: ${props => props.align === 'term' ? '3' : '1'};  // 項目のセルを2、結果のセルを1の比率に
+  flex: ${props => props.align === 'term' ? '3' : '1'};
   font-size: 25px;
   font-family: Inter;
   padding: 10px;
   text-align: ${props => props.align === 'term' ? 'center' : 'center'};
-  padding-right: ${props => props.align === 'result' ? '10px' : '10px'};  // 結果セルの右パディングを調整（ExpandIconとの余白分）
+  padding-right: ${props => props.align === 'result' ? '40px' : '10px'};
 `;
 
 const ResultRow = styled.div<{ isExpanded: boolean }>`
@@ -424,19 +387,29 @@ const ResultRow = styled.div<{ isExpanded: boolean }>`
   }
 `;
 
-
-const ResultCell = styled.div`
-  flex: 1;
-  font-size: 14px;
-  padding: 10px;
+const ResultCell = styled.div<{ align?: string }>`
+  flex: ${props => props.align === 'term' ? '3' : '1'};
+  font-size: 20px;
+  font-family: Inter;
+  font-weight: 600;
+  padding: 0px 10px;
+  text-align: ${props => props.align === 'term' ? 'left' : 'center'};
+  display: flex;
+  align-items: center;
+  justify-content: ${props => props.align === 'term' ? 'flex-start' : 'center'};
+  padding-right: ${props => props.align === 'result' ? '0px' : '10px'};
+  padding-left: ${props => props.align === 'term' ? '10px' : '0px'};
 `;
 
 const ExpandIcon = styled.span<{ isExpanded: boolean }>`
   position: relative;
-  width: 10px;
-  height: 10px;
+  width: 20px;
+  height: 20px;
   margin-left: auto;
   margin-right: 10px;
+  transform: ${props => props.isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'};
+  transform-origin: center 75%;
+  transition: transform 0.3s ease;
 
   &::before,
   &::after {
@@ -451,17 +424,13 @@ const ExpandIcon = styled.span<{ isExpanded: boolean }>`
 
   &::before {
     left: 0;
-    transform: ${props => props.isExpanded 
-      ? 'rotate(135deg)' 
-      : 'rotate(45deg)'};
+    transform: rotate(45deg);
     transform-origin: 100% 100%;
   }
 
   &::after {
     right: 0;
-    transform: ${props => props.isExpanded 
-      ? 'rotate(-135deg)' 
-      : 'rotate(-45deg)'};
+    transform: rotate(-45deg);
     transform-origin: 0 100%;
   }
 `;

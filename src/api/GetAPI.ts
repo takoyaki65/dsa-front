@@ -197,7 +197,6 @@ export const fetchBatchSubmissionDetail = async (batch_id: number, token: string
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
         const response = await axios.get<BatchSubmissionDetailItem>(`${API_PREFIX}/assignments/result/batch/id/${batch_id}`, { headers });
-        console.log("response: ", response);
         return response.data;
     } catch (error: any) {
         console.error("指定されたバッチ採点の結果の詳細の取得に失敗しました", error);
