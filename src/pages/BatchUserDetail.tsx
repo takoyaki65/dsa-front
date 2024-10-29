@@ -30,7 +30,7 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
   const [evaluationStatus, setEvaluationStatus] = useState<EvaluationStatus | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [expandedRows, setExpandedRows] = useState<number[]>([]);
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [testCaseId2TestCase, setTestCaseId2TestCase] = useState<Map<number, TestCases>>(new Map());
   const [columns, setColumns] = useState<ColumnDefinition[]>(baseColumns);
   const [showingData, setShowingData] = useState<string>(openingData);
@@ -105,13 +105,17 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
     }
   };
 
-  const toggleRow = (id: number) => {
-    setExpandedRows(prevExpandedRows =>
-      prevExpandedRows.includes(id)
-          ? prevExpandedRows.filter(rowId => rowId !== id)
-          : [...prevExpandedRows, id]
-    );
-  }
+  const toggleExpand = (id: number) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
 
   const handleUploadedFileSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedUploadedFile(event.target.value);
@@ -150,8 +154,8 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
     return submission?.result || "non-submitted";
   };
   
-
-
+  console.log(`selectedId: ${selectedId}`);
+  console.log(`evaluationStatus?.submissions: ${JSON.stringify(evaluationStatus?.submissions)}`);
   return (
     <div>
       <h1>採点履歴</h1>
@@ -208,6 +212,36 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
       {selectedUploadedFile && (
         <CodeBlock code={getSelectedUploadedFileContent()} fileName={selectedUploadedFile} />
       )}
+      <ResultTable>
+        <ResultHeader>
+            <ResultHeaderCell key={"term"} align="term">{"項目"}</ResultHeaderCell>
+            <ResultHeaderCell key={"result"} align="result">{"結果"}</ResultHeaderCell>
+        </ResultHeader>
+        {selectedId !== null && selectedId > 1 && evaluationStatus?.submissions[selectedId-2].judge_results.map(judge_result => (
+          <React.Fragment key={judge_result.id}>
+            <ResultRow 
+              isExpanded={expandedRows.has(judge_result.id)}
+              onClick={() => toggleExpand(judge_result.id)}
+            >
+              <ResultCell>
+                {testCaseId2TestCase.get(judge_result.testcase_id)?.description || ''}
+              </ResultCell>
+              <ResultCell>
+                {judge_result.result}
+              </ResultCell>
+              <ExpandIcon isExpanded={expandedRows.has(judge_result.id)} />
+            </ResultRow>
+            {expandedRows.has(judge_result.id) && (
+              <ExpandedContent>
+                <JudgeResultsViewer 
+                  result={judge_result} 
+                  testCase={testCaseId2TestCase.get(judge_result.testcase_id)!} 
+                />
+              </ExpandedContent>
+            )}
+          </React.Fragment>
+        ))}
+      </ResultTable>
       {/* <h1>課題別結果</h1>
       { problems.length > 0 && (
       <table>
@@ -273,26 +307,6 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
 };
 
 export default BatchUserDetail;
-
-// const CheckListTable = styled.table`
-//     width: 100%;
-//     border-collapse: collapse;
-// `;
-
-// const CheckListRow = styled.tr`
-//     border-bottom: 1px solid #ddd;
-// `;
-
-// const ExpandedRow = styled.tr`
-//     background-color: #f9f9f9;
-// `;
-
-// const ExpandButton = styled.button`
-//     background-color: none;
-//     border: none;
-//     cursor: pointer;
-//     font-size: 1.2em;
-// `;
 
 const Divider = styled.hr`
     border: none;
@@ -369,58 +383,90 @@ const Dropdown = styled.select`
     cursor: pointer;
 `;
 
-const CheckListTable = styled.table`
-    width: 100%;
-    border-collapse: collapse;
-    font-family: Inter, sans-serif;
-    margin-top: 10px;
+const ResultTable = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 20px;
 `;
 
-const TableHeader = styled.th`
-    background-color: #B8B8B8;
-    color: #FFFFFF;
-    font-weight: 600;
-    padding: 10px;
-    text-align: left;
-    font-size: 16px;
-    &:first-child {
-        border-top-left-radius: 6px;
-    }
-    &:last-child {
-        border-top-right-radius: 6px;
-    }
+const ResultHeader = styled.div`
+  display: flex;
+  background-color: #B8B8B8;
+  color: #FFFFFF;
+  font-weight: 600;
+  // padding: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 `;
 
-const CheckListRow = styled.tr`
-    cursor: pointer;
-    background-color: #FFFFFF;
-    &:hover {
-        background-color: #F5F5F5;
-    }
+const ResultHeaderCell = styled.div<{ align?: string }>`
+  flex: ${props => props.align === 'term' ? '3' : '1'};  // 項目のセルを2、結果のセルを1の比率に
+  font-size: 25px;
+  font-family: Inter;
+  padding: 10px;
+  text-align: ${props => props.align === 'term' ? 'center' : 'center'};
+  padding-right: ${props => props.align === 'result' ? '10px' : '10px'};  // 結果セルの右パディングを調整（ExpandIconとの余白分）
 `;
 
-const ResultCell = styled.td`
-    padding: 10px;
-    border-top: 1px solid #E0E0E0;
-    text-align: left;
-    font-size: 14px;
+const ResultRow = styled.div<{ isExpanded: boolean }>`
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF;
+  border-top: 1px solid #E0E0E0;
+  cursor: pointer;
+  padding: 10px;
+  
+  &:hover {
+    background-color: #F5F5F5;
+  }
 `;
 
-const ToggleIcon = styled.span`
-    font-size: 14px;
-    cursor: pointer;
-    margin-left: auto;
-    margin-right: 10px;
+
+const ResultCell = styled.div`
+  flex: 1;
+  font-size: 14px;
+  padding: 10px;
 `;
 
-const ExpandedRow = styled.tr`
-    background-color: #f9f9f9;
+const ExpandIcon = styled.span<{ isExpanded: boolean }>`
+  position: relative;
+  width: 10px;
+  height: 10px;
+  margin-left: auto;
+  margin-right: 10px;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 50%;
+    height: 2px;
+    background-color: #666;
+    transition: transform 0.3s ease;
+  }
+
+  &::before {
+    left: 0;
+    transform: ${props => props.isExpanded 
+      ? 'rotate(135deg)' 
+      : 'rotate(45deg)'};
+    transform-origin: 100% 100%;
+  }
+
+  &::after {
+    right: 0;
+    transform: ${props => props.isExpanded 
+      ? 'rotate(-135deg)' 
+      : 'rotate(-45deg)'};
+    transform-origin: 0 100%;
+  }
 `;
 
-const ExpandButton = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
+const ExpandedContent = styled.div`
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-top: 1px solid #E0E0E0;
 `;
 

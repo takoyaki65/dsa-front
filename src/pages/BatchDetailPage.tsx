@@ -7,7 +7,7 @@ import SearchIconSVG from '../images/Search.svg';
 import ButtonComponent from '../components/ButtonComponent';
 import { fetchBatchSubmissionDetail } from '../api/GetAPI';
 import { BatchSubmissionDetailItem, BatchSubmissionItemsForListView } from '../types/Assignments';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import LoadingComponent from '../components/LoadingComponent';
 import StatusButton from '../components/StatusButtonComponent';
 import { SubmissionSummaryStatus } from '../types/Assignments';
@@ -62,6 +62,7 @@ const BatchDetailPage: React.FC = () => {
         activeKey: null,
         value: ''
     });
+    const navigate = useNavigate();
 
     
     const getSubmissions = async (batchId: string) => {
@@ -237,6 +238,12 @@ const BatchDetailPage: React.FC = () => {
         setSortOrder(order);
     };
 
+    const handleStatusClick = (userId: string, openingData: string) => {
+        navigate(`/batch/result/${batchId}/user/${userId}`, {
+            state: { openingData }
+        });
+    };
+
 
     if (!batchSubmissions) {
         return <div>
@@ -324,7 +331,11 @@ const BatchDetailPage: React.FC = () => {
                                     {submission.submit_date ? submission.submit_date.toLocaleString() : '-'}
                                 </UserInfoItem>
                                 <UserInfoItem>
-                                    <StyledStatusButton status={!submission.report_exists ? "未提出" : submission.status === "submitted" ? "提出" : "遅延"} isButton={true} />
+                                    <StyledStatusButton 
+                                        status={!submission.report_exists ? "未提出" : submission.status === "submitted" ? "提出" : "遅延"} 
+                                        isButton={true}
+                                        onClick={() => handleStatusClick(submission.user_id, "レポート")}
+                                    />
                                 </UserInfoItem>
                                 {batchSubmissions.lecture.problems.map(problem => (
                                     <UserInfoItem key={problem.assignment_id}>
@@ -334,12 +345,21 @@ const BatchDetailPage: React.FC = () => {
                                                     ? submission.submissions.find(sub => sub.assignment_id === problem.assignment_id)?.result || "エラー"
                                                     : "未提出"
                                             } 
-                                            isButton={true} 
+                                            isButton={true}
+                                            onClick={() => handleStatusClick(submission.user_id, problem.title)}
                                         />
                                     </UserInfoItem>
                                 ))}
                                 <UserInfoItem>
-                                    <LinkButton href={`/batch/result/${batchId}/user/${submission.user_id}`}>詳細</LinkButton>
+                                    <LinkButton 
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleStatusClick(submission.user_id, "ステータス");
+                                        }}
+                                        href={`/batch/result/${batchId}/user/${submission.user_id}`}
+                                    >
+                                        詳細
+                                    </LinkButton>
                                 </UserInfoItem>
                             </UserItemContainer>
                             {index < filteredSubmissions.length - 1 && <Divider />}
