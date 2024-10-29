@@ -11,7 +11,7 @@ import SubmissionDetail from './pages/SubmissionDetail';
 import FormatCheckSubmission from './pages/FormatCheckSubmission';
 import BatchSubmission from './pages/BatchSubmission';
 import BatchDetailPage from './pages/BatchDetailPage';
-import BatchUserDetail from './pages/BatchUserDetail';
+import BatchUserDetailPage, { BatchUserDetailState } from './pages/BatchUserDetailPage';
 import StudentPassChangePage from './pages/StudentPassChangePage';
 import UserManagementPage from './pages/UserManagementPage';
 import UserArrangePage from './pages/UserArrangePage';
@@ -21,10 +21,6 @@ import BatchStatusPage from './pages/BatchStatusPage';
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
 		const { token } = useAuth();
 		return token ? element : <Navigate to="/login" replace />;
-};
-
-type BatchUserDetailState = {
-	openingData: string;
 };
 
 // アプリケーションのルートコンポーネント
@@ -50,7 +46,7 @@ const App: React.FC = () => {
 					<Route path="/batch/submit" element={<PrivateRoute element={<BatchSubmission />} />} />
 					<Route path="/batch/status" element={<PrivateRoute element={<BatchStatusPage />} />} />
 					<Route path="/batch/result/:batchId" element={<PrivateRoute element={<BatchDetailPage />} />} />
-					<Route path="/batch/result/:batchId/user/:userId" element={<PrivateRoute element={<BatchUserDetail openingData={state?.openingData || "ステータス"} />} />} />
+					<Route path="/batch/result/:batchId/user/:userId" element={<PrivateRoute element={<BatchUserDetailPage openingData={state?.openingData || "ステータス"} />} />} />
 					<Route path="/users/management" element={<PrivateRoute element={<UserManagementPage />} />} />
 					<Route path="/users/edit/:userId" element={<PrivateRoute element={<UserArrangePage />} />} />
 					<Route path="*" element={<h1>Not Found</h1>} />

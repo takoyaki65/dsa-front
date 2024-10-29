@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { fetchBatchSubmissionUserUploadedFile, fetchEvaluationStatus, fetchProblemDetail } from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
-import { Problem, EvaluationStatus, Lecture, TestCases } from '../types/Assignments';
+import { Problem, EvaluationStatus, TestCases } from '../types/Assignments';
 import styled from 'styled-components';
 import JudgeResultsViewer from '../components/JudgeResultsViewer';
 import { FileRecord } from '../types/Assignments';
@@ -11,7 +11,11 @@ import CodeBlock from '../components/CodeBlock';
 import OfflineFileDownloadButton from '../components/OfflineFileDownloadButton';
 import LoadingComponent from '../components/LoadingComponent';
 import StatusButton from '../components/StatusButtonComponent';
-import { SubmissionSummaryStatus } from '../types/Assignments';
+
+export type BatchUserDetailState = {
+	openingData: string;
+};
+
 type ColumnDefinition = {
     key: string;
     label: string;
@@ -24,7 +28,7 @@ const baseColumns: ColumnDefinition[] = [
 ];
 
 
-const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ステータス" }) => {
+const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = "ステータス" }) => {
   const { batchId, userId } = useParams<{ batchId: string; userId: string }>();
   const { token } = useAuth();
   const { apiClient } = useApiClient();
@@ -57,7 +61,23 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
           problemsData.push(problemDetail);
         }
         setProblems(problemsData);
-        setColumns(baseColumns.concat(problemsData.map(problem => ({ key: problem.assignment_id.toString(), label: problem.title, id: problem.assignment_id }))))
+
+        // 新しいカラムを設定
+        const newColumns = baseColumns.concat(
+          problemsData.map(problem => ({ 
+            key: problem.assignment_id.toString(), 
+            label: problem.title, 
+            id: problem.assignment_id 
+          }))
+        );
+        setColumns(newColumns);
+
+        // openingDataに対応するカラムを探す
+        const openingColumn = newColumns.find(column => column.label === openingData);
+        if (openingColumn) {
+          setSelectedId(openingColumn.id);
+          console.log(openingColumn.id)
+        }
 
         
         if (evaluationStatus.upload_file_exists) {
@@ -77,7 +97,7 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
       } catch (error) {
         console.error("Error fetching data: ", error);
       } finally {
-        if (problems.length > 0 && evaluationStatus?.submissions.length! > 0) {
+        if (problems.length > 0 && evaluationStatus?.submissions.length! > 0 && selectedId === null) {
           setSelectedId(0);
         }
         setIsLoading(false);
@@ -88,10 +108,6 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
 
   if (isLoading) {
     return <LoadingComponent message="読み込み中..." />;
-  }
-
-  const handleCheckListRowClick = (index: number) => {
-    setSelectedId(index);
   }
 
   const getSubmissionStatus = (status: "submitted" | "delay" | "non-submitted" | null) => {
@@ -128,11 +144,11 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
     return file?.content as string;
   };
 
-  const handleColumnClick = (columnKey: string, index: number) => {
+  const handleColumnClick = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey);
     if (column && column.label !== showingData) {
       setShowingData(column.label);
-      setSelectedId(index);
+      setSelectedId(column.id);
       }
   };
 
@@ -155,6 +171,7 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
     );
     return submission?.result || "non-submitted";
   };
+  console.log(JSON.stringify(evaluationStatus))
   
   return (
     <PageContainer>
@@ -169,10 +186,10 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
       <Divider style={{ height: '3px', marginBottom: '20px', borderRadius: '2px' }} />
       <div>
         <HeaderContainer>
-          {columns.map((column, index) => (
+          {columns.map((column) => (
             <HeaderColumnContainer 
               key={column.key}
-              onClick={() => handleColumnClick(column.key, index)}
+              onClick={() => handleColumnClick(column.key)}
               isActive={column.label === showingData}
             >
               <HeaderItem>
@@ -182,12 +199,12 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
           ))}
         </HeaderContainer>
         <ResultContainer>
-          {columns.map((column, index) => (
+          {columns.map(column=> (
             <ColumnContainer 
               key={column.key}
             >
               <ResultItem>
-                <StatusButton status={getStatusForColumn(column, evaluationStatus)} isButton={true} onClick={() => handleColumnClick(column.key, index)}/>
+                <StatusButton status={getStatusForColumn(column, evaluationStatus)} isButton={true} onClick={() => handleColumnClick(column.key)}/>
               </ResultItem>
             </ColumnContainer>
           ))}
@@ -212,15 +229,16 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
       {selectedUploadedFile && (
         <CodeBlock code={getSelectedUploadedFileContent()} fileName={selectedUploadedFile} />
       )}
-      {selectedId !== null && selectedId > 1 && (
+      {selectedId !== null && (
         <ResultTable>
           <ResultHeader>
             <ResultHeaderCell key={"term"} align="term">{"項目"}</ResultHeaderCell>
             <ResultHeaderCell key={"result"} align="result">{"結果"}</ResultHeaderCell>
           </ResultHeader>
           {(() => {
+            // 選択中の課題のテスト結果を表示する．
             const submission = evaluationStatus?.submissions.find(
-              (s) => s.assignment_id === columns[selectedId].id
+              (s) => s.assignment_id === selectedId
             );
 
             if (!submission) {
@@ -264,7 +282,7 @@ const BatchUserDetail: React.FC<{ openingData: string }> = ({ openingData = "ス
 
 };
 
-export default BatchUserDetail;
+export default BatchUserDetailPage;
 
 const PageContainer = styled.div`
   padding-bottom: 100px;
