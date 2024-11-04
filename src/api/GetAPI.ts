@@ -284,6 +284,18 @@ export const fetchBatchSubmissionUserReport = async (batch_id: number, user_id: 
 }
 
 
+// "/api/v1/assignments/problem/download?lecture_id={lecture_id}?problem_id={problem_id}"を通じて、小課題のzipファイルをダウンロードする
+export const downloadProblem = async (lecture_id: number, problem_id: number, token: string | null): Promise<{ data: Blob, headers: any }> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get(`${API_PREFIX}/assignments/problem/download?lecture_id=${lecture_id}&problem_id=${problem_id}`, { headers, responseType: 'blob' });
+        return { data: response.data, headers: response.headers };
+    } catch (error: any) {
+        console.error('Error downloading problem:', error);
+        throw error;
+    }
+}
+
 
 export const fetchUserList = async (user_id: string | null, token: string | null): Promise<User[]> => {
     try {
