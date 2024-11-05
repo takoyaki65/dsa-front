@@ -127,16 +127,21 @@ const ProblemUpdatePage: React.FC = () => {
       const result = await apiClient({ apiFunc: downloadTemplate, args: []});
       // ヘッダーの"Content-Disposition: attachment; filename="(filename)"を取得
       const contentDisposition = result.headers['content-disposition'];
-      // console.log(result.headers);
-      // console.log(contentDisposition);
-      const filename = contentDisposition.split('filename=')[1].replace(/"/g, '');
-      // console.log(filename);
+      let filename = 'template.zip';
+
+      if (contentDisposition) {
+        const filenameRegex = /filename="([^"]+)"/;
+        const matches = filenameRegex.exec(contentDisposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1];
+        }
+      }
 
       // ダウンロード処理の実装
       const url = window.URL.createObjectURL(result.data);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename || 'template.zip';
+      a.download = filename;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
@@ -149,12 +154,20 @@ const ProblemUpdatePage: React.FC = () => {
       const result = await apiClient({ apiFunc: downloadProblem, args: [lecture_id, assignment_id] });
       // ヘッダーのContent-Disposition: attachment; filename="(filename)"を取得
       const contentDisposition = result.headers['content-disposition'];
-      const filename = contentDisposition.split('filename=')[1].replace(/"/g, '');
+      let filename = 'problem.zip';
+
+      if (contentDisposition) {
+        const filenameRegex = /filename="([^"]+)"/;
+        const matches = filenameRegex.exec(contentDisposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1];
+        }
+      }
 
       const url = window.URL.createObjectURL(result.data);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename || 'problem.zip';
+      a.download = filename;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
