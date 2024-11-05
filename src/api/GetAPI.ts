@@ -12,6 +12,11 @@ export const fetchLectures = async (all: boolean, token: string | null): Promise
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
         const response = await axios.get<Lecture[]>(`${API_PREFIX}/assignments/info?all=${all}`, { headers });
+        // start_dateとend_dateをDate型に変換
+        response.data.forEach((lecture) => {
+            lecture.start_date = new Date(lecture.start_date);
+            lecture.end_date = new Date(lecture.end_date);
+        });
         return response.data;
     } catch (error: any) {
         const customError = new Error('授業の取得に失敗しました');
@@ -27,6 +32,9 @@ export const fetchLectureEntry = async (lecture_id: number, token: string | null
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
         const response = await axios.get<Lecture>(`${API_PREFIX}/assignments/info/${lecture_id}`, { headers });
+        // start_dateとend_dateをDate型に変換
+        response.data.start_date = new Date(response.data.start_date);
+        response.data.end_date = new Date(response.data.end_date);
         return response.data;
     } catch (error: any) {
         const customError = new Error('授業のエントリの詳細の取得に失敗しました');
@@ -38,7 +46,6 @@ export const fetchLectureEntry = async (lecture_id: number, token: string | null
 
 
 // "/api/v1/assignments/info/{lecture_id}/{assignment_id}/entry"を通して、課題のエントリの詳細を取得する関数。
-// eval=Trueなら評価用の追加リソース(テストケースなど)も取得される
 export const fetchProblemEntry = async (lecture_id: number, assignment_id: number, token: string | null): Promise<Problem> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
@@ -292,6 +299,19 @@ export const downloadProblem = async (lecture_id: number, problem_id: number, to
         return { data: response.data, headers: response.headers };
     } catch (error: any) {
         console.error('Error downloading problem:', error);
+        throw error;
+    }
+}
+
+
+// "/api/v1/assignments/problem/template"を通じて、小課題のテンプレートをダウンロードする
+export const downloadTemplate = async (token: string | null): Promise<{ data: Blob, headers: any }> => {
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get(`${API_PREFIX}/assignments/problem/template`, { headers, responseType: 'blob' });
+        return { data: response.data, headers: response.headers };
+    } catch (error: any) {
+        console.error('Error downloading template:', error);
         throw error;
     }
 }
