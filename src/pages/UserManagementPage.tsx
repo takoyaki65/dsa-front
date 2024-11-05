@@ -60,8 +60,8 @@ const UserManagementPage: React.FC = () => {
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            const allUserIdsExcludeMe = users.map(user => user.user_id).filter(id => id !== user_id);
-            setCheckedUsers(allUserIdsExcludeMe);
+            const allFilteredUserIdsExcludeMe = filteredUsers.map(user => user.user_id).filter(id => id !== user_id);
+            setCheckedUsers(allFilteredUserIdsExcludeMe);
         } else {
             setCheckedUsers([]);
         }
