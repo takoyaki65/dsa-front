@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { uploadStudentList } from '../api/PostAPI';
 import useApiClient from '../hooks/useApiClient';
+import { match } from 'assert';
 
 const StudentListUpload: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -61,12 +62,24 @@ const StudentListUpload: React.FC = () => {
 
             try {
                 const { data: blob, headers } = await apiClient({ apiFunc: uploadStudentList, args: [file] });
+
+                console.log('headers', headers);
                 
                 // Content-Dispositionヘッダーからファイル名を取得
+                // TODO: 現状はCORSの設定により、カスタムヘッダーが取得できないため、
+                //       contentDispositionがundefinedになってしまう。
                 const contentDisposition = headers['content-disposition'];
-                const fileName = contentDisposition
-                    ? contentDisposition.split('filename=')[1].replace(/['"]/g, '')
-                    : 'downloaded_file.csv'; // デフォルトのファイル名
+                // console.log('contentDisposition', contentDisposition);
+                let fileName = 'downloaded_file.xlsx';
+
+                if (contentDisposition) {
+                    const filenameRegex = /filename="([^"]+)"/;
+                    const matches = filenameRegex.exec(contentDisposition);
+                    if (matches != null && matches[1]) {
+                        fileName = matches[1];
+                    }
+                }
+                // console.log('extracted fileName', fileName);
 
                 setDownloadFileName(fileName); // 動的に取得したファイル名を設定
                 const url = window.URL.createObjectURL(blob);
