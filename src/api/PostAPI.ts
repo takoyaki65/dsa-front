@@ -2,6 +2,7 @@ import axios from 'axios';
 import { LoginCredentials, CreateUser, UserUpdatePassword } from '../types/user';
 import { Token, TokenResponse } from '../types/token';
 import { Submission, BatchSubmission } from '../types/Assignments';
+import { MessageResponse } from '../types/response';
 
 interface UploadResult {
     unique_id: string;
@@ -93,7 +94,61 @@ export const submitBatchEvaluation = async (lecture_id: number, evaluation: bool
 }
 
 
+// "/api/v1/assignments/problem/add?lecture_id={lecture_id}?lecture_title={lecture_title}?lecture_start_date={lecture_start_date}?lecture_end_date={lecture_end_date}?is_update={true|false}"
+// を通じて、課題エントリに追加・更新、および小課題の新規追加を行う
+export const mergeLectureAndAddProblem = async (lecture_id: number, lecture_title: string, lecture_start_date: Date, lecture_end_date: Date, is_update: boolean, upload_file: File | null,token: string | null): Promise<MessageResponse> => {
+    const formData = new FormData();
+    // is_updateがTrueの場合は、upload_fileを追加する
+    if (upload_file !== null) {
+        formData.append("upload_file", upload_file);
+    } else {
+        // ファイルが無い場合は、空のファイルを追加する
+        formData.append("upload_file", new File([], "empty.zip"));
+    }
 
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json', 'Content-Type': 'multipart/form-data'} : {};
+        // lecture_title, lecture_start_date, lecture_end_dateにはエスケープしなければならない文字があるので
+        // それらをエスケープしてから送信する
+        const lecture_title_escaped = encodeURIComponent(lecture_title);
+        const lecture_start_date_escaped = encodeURIComponent(lecture_start_date.toISOString());
+        const lecture_end_date_escaped = encodeURIComponent(lecture_end_date.toISOString());
+        const response = await axios.post<MessageResponse>(`${API_PREFIX}/assignments/problem/add?lecture_id=${lecture_id}&lecture_title=${lecture_title_escaped}&lecture_start_date=${lecture_start_date_escaped}&lecture_end_date=${lecture_end_date_escaped}&is_update=${is_update}`, formData, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error('Error merging lecture and adding problem:', error);
+        if (error.response) {
+            console.error('Server responded with an error:', error.response.data);
+        } else if (error.request) {
+            console.error('No response received from the server:', error.request);
+        } else {
+            console.error('Error during the request:', error.message);
+        }
+        throw error;
+    }
+}
+
+// "/api/v1/assignments/problem/update?lecture_id={lecture_id}"を通じて、小課題の更新を行う
+export const updateProblem = async (lecture_id: number, upload_file: File, token: string | null): Promise<MessageResponse> => {
+    const formData = new FormData();
+    formData.append("upload_file", upload_file);
+
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json', 'Content-Type': 'multipart/form-data'} : {};
+        const response = await axios.post<MessageResponse>(`${API_PREFIX}/assignments/problem/update?lecture_id=${lecture_id}`, formData, { headers });
+        return response.data;
+    } catch (error: any) {
+        console.error('Error updating problem:', error);
+        if (error.response) {
+            console.error('Server responded with an error:', error.response.data);
+        } else if (error.request) {
+            console.error('No response received from the server:', error.request);
+        } else {
+            console.error('Error during the request:', error.message);
+        }
+        throw error;
+    }
+}
 
 
 export const uploadStudentList = async (file: File, token: string | null): Promise<{ data: Blob, headers: any }> => {
