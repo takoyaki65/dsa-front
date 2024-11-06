@@ -4,6 +4,7 @@ import { User } from '../types/user';
 import { Token } from '../types/token';
 import { TextResponse } from '../types/response'
 import JSZip from 'jszip';
+import { SubmissionStatusQuery } from '../types/Assignments';
 
 const API_PREFIX = 'http://localhost:8000/api/v1';
 
@@ -90,14 +91,34 @@ export const fetchSubmissionStatus = async (submission_id: number, token: string
     }
 };
 
-// "/api/v1/assignments/status/submissions/view?page={page}?include_eval={true|false}?all={true|false}"を通じて、自分の提出の進捗状況を取得する関数
-export const fetchSubmissionList = async (page: number, include_eval: boolean, all: boolean, token: string | null): Promise<Submission[]> => {
+// "/api/v1/assignments/status/submissions/view"を通じて、自分の提出の進捗状況を取得する関数
+/*
+ * クエリパラメータ:
+ * page: ページ番号
+ * all: 全てのユーザの提出を含めるかどうか
+ * user: user_idまたはusernameの部分一致検索
+ * ts_order: 提出のtsのソート順(asc: 古い順, desc: 新しい順)
+ * lecture_id: 講義IDを指定して取得する
+ * assignment_id: 課題IDを指定して取得する
+ * result: 提出結果の条件, "WJ"は未評価の提出を表す
+ */
+export const fetchSubmissionList = async (page: number, all: boolean, user: string | null, ts_order: "asc" | "desc", lecture_id: number | null, assignment_id: number | null, result: SubmissionStatusQuery | null, token: string | null): Promise<Submission[]> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/json' } : {};
-        const response = await axios.get<Submission[]>(`${API_PREFIX}/assignments/status/submissions/view?page=${page}&include_eval=${include_eval}&all=${all}`, { headers });
+        let request_url = `${API_PREFIX}/assignments/status/submissions/view?page=${page}&all=${all}`;
+        if (user !== null) request_url += `&user=${user}`;
+        request_url += `&ts_order=${ts_order}`;
+        if (lecture_id !== null) request_url += `&lecture_id=${lecture_id}`;
+        if (assignment_id !== null) request_url += `&assignment_id=${assignment_id}`;
+        if (result !== null) request_url += `&result=${result}`;
+        const response = await axios.get<Submission[]>(request_url, { headers });
+        // tsはstring型なのでDate型に変換
+        response.data.forEach((submission) => {
+            submission.ts = new Date(submission.ts);
+        });
         return response.data;
     } catch (error: any) {
-        const customError = new Error('自分の提出の進捗状況の取得に失敗しました');
+        const customError = new Error('提出の進捗状況の取得に失敗しました');
         customError.stack = error.stack;
         (customError as any).originalError = error;
         throw customError;
