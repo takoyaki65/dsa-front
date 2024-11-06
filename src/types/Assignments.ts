@@ -113,6 +113,8 @@ export enum SubmissionSummaryStatus {
   FN = "FN" // File Not found
 }
 
+export type SubmissionStatusQuery = "AC" | "WA" | "TLE" | "MLE" | "RE" | "CE" | "OLE" | "IE" | "FN" | "WJ";
+
 export type EvaluationStatus = {
   id: number;
   batch_id: number;

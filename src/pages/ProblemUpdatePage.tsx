@@ -49,6 +49,8 @@ const ProblemUpdatePage: React.FC = () => {
   const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
   const [endDate, setEndDate] = useState<Date>(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000));
 
+  const [deleteLecturemode, setDeleteLecturemode] = useState<boolean>(false);
+
   // 小問テーブル用の状態
   type ProblemRow = {
     id: number;
@@ -81,12 +83,14 @@ const ProblemUpdatePage: React.FC = () => {
   // 大問が選択されたときの処理
   useEffect(() => {
     if (selectedLectureId === "new") {
+      setDeleteLecturemode(false);
       setProblemRows([]);
       setLectureId(0);
       setLectureTitle("");
       setStartDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
       setEndDate(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000));
     } else {
+      setDeleteLecturemode(false);
       const lecture = lectureList.find(l => l.id === selectedLectureId);
       // console.log(typeof lecture?.start_date);
       // console.log(typeof lecture?.end_date);
@@ -112,7 +116,7 @@ const ProblemUpdatePage: React.FC = () => {
   const handleAddProblemRow = () => {
     setProblemRows([...problemRows, 
       {
-        id: Math.random(),
+        id: -1,
         title: "",
         file: null,
         isNew: true,
@@ -178,6 +182,15 @@ const ProblemUpdatePage: React.FC = () => {
   // 適用ボタンの処理
   const handleApply = async () => {
     try {
+      if (deleteLecturemode) {
+        await apiClient({
+          apiFunc: deleteLecture,
+          args: [lectureId]
+        });
+        setDeleteLecturemode(false);
+        navigate("/");
+        return;
+      }
       // 大問の処理
       if (selectedLectureId === "new") {
         if (lectureId === 0) {
@@ -233,11 +246,24 @@ const ProblemUpdatePage: React.FC = () => {
     }
   };
 
+  const handleDeleteLectureButton = () => {
+    if (selectedLectureId !== "new") {
+      setDeleteLecturemode(!deleteLecturemode);
+    } else {
+      setDeleteLecturemode(false);
+      setLectureId(0);
+      setLectureTitle("");
+      setStartDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+      setEndDate(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000));
+      setProblemRows([]);
+    }
+  }
+
   return (
     <Container maxWidth="lg">
       <h1>課題追加</h1>
 
-      <Paper sx={{p: 2, mb: 2}}>
+      <Paper sx={{p: 2, mb: 2, backgroundColor: deleteLecturemode ? "#ffebee" : "inherit"}}>
         <FormControl fullWidth sx={{mb: 2}}>
           <InputLabel>大問選択</InputLabel>
           <Select
@@ -295,9 +321,18 @@ const ProblemUpdatePage: React.FC = () => {
             />
           </FormControl>
         </LocalizationProvider>
+
+
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleDeleteLectureButton}
+        >
+          削除
+        </Button>
       </Paper>
 
-      <Paper sx={{p: 2}}>
+      <Paper sx={{p: 2, backgroundColor: deleteLecturemode ? "#ffebee" : "inherit"}}>
         <h2>小問設定</h2>
         <Button
           variant="contained"
@@ -326,7 +361,7 @@ const ProblemUpdatePage: React.FC = () => {
                     backgroundColor: row.toDelete ? "#ffebee" : "inherit"
                   }}
                 >
-                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.id === -1 ? "-" : row.id}</TableCell>
                   <TableCell>{row.title}</TableCell>
                   <TableCell>
                     {!row.isNew && (
@@ -338,7 +373,7 @@ const ProblemUpdatePage: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button component="label">
+                    <Button component="label" disabled={deleteLecturemode}>
                       アップロード
                       <input
                         type="file"
@@ -371,6 +406,7 @@ const ProblemUpdatePage: React.FC = () => {
                           setProblemRows(newRows);
                         }
                       }}
+                      disabled={deleteLecturemode}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -385,6 +421,7 @@ const ProblemUpdatePage: React.FC = () => {
           startIcon={<AddIcon />}
           onClick={handleAddProblemRow}
           sx={{mt: 2}}
+          disabled={deleteLecturemode}
         >
           追加
         </Button>
