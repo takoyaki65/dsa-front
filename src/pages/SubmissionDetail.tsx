@@ -6,7 +6,6 @@ import useApiClient from '../hooks/useApiClient';
 import CodeBlock from '../components/CodeBlock';
 import { fetchSubmissionResultDetail } from '../api/GetAPI';
 import { Submission, Problem } from '../types/Assignments';
-import styled from 'styled-components';
 import JudgeResultsViewer from '../components/JudgeResultsViewer';
 import { useAuth } from '../context/AuthContext';
 import OfflineFileDownloadButton from '../components/OfflineFileDownloadButton';
@@ -251,7 +250,6 @@ const SubmissionDetail: React.FC = () => {
                                                     <Chip
                                                         label={judge_result.result}
                                                         color={judge_result.result === 'AC' ? 'success' : 'error' }
-                                                        variant="outlined"
                                                         size="small"
                                                     />
                                                 </TableCell>
@@ -400,23 +398,3 @@ const SubmissionDetail: React.FC = () => {
 };
 
 export default SubmissionDetail;
-
-const CheckListTable = styled.table`
-    width: 100%;
-    border-collapse: collapse;
-`;
-
-const CheckListRow = styled.tr`
-    border-bottom: 1px solid #ddd;
-`;
-
-const ExpandedRow = styled.tr`
-    background-color: #f9f9f9;
-`;
-
-const ExpandButton = styled.button`
-    background-color: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2em;
-`;
