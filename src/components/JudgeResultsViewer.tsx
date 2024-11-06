@@ -5,58 +5,60 @@ import styled from 'styled-components';
 // JudgeResult[]を引数として受け取り、それらを表示するコンポーネント
 interface JudgeResultsViewerProps {
   result: JudgeResult;
-  testCase: TestCases;
+  testCase: TestCases | undefined;
 };
 
 const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCase }) => {
   return (
     <div>
-      <JudgeResultContainer key={result.id}>
-        <h3>Test: #{result.testcase_id}, time: {result.timeMS}ms, memory: {result.memoryKB}KB, result: {result.result}</h3>
-        <ExecCommandContainer>
-          <h4>Exec command:</h4>
-          <CommandBox>{result.command}</CommandBox>
-        </ExecCommandContainer>
-        <IOContainer>
-          <InputOutputBox>
-            <h4>標準入力:</h4>
-            <ScrollBarContent>
-              {testCase.stdin || 'No input'}
-            </ScrollBarContent>
-          </InputOutputBox>
-          <InputOutputBox>
-            <h4>標準出力:</h4>
-            <ScrollBarContent>
-              {result.stdout}
-            </ScrollBarContent>
-          </InputOutputBox>
-          <InputOutputBox>
-            <h4>標準出力(想定):</h4>
-            <ScrollBarContent>
-              {testCase.stdout || 'No expected output'}
-            </ScrollBarContent>
-          </InputOutputBox>
-        </IOContainer>
+      {testCase && (
+        <JudgeResultContainer key={result.id}>
+          <h3>Test: #{result.testcase_id}, time: {result.timeMS}ms, memory: {result.memoryKB}KB, result: {result.result}</h3>
+          <ExecCommandContainer>
+            <h4>Exec command:</h4>
+            <CommandBox>{result.command}</CommandBox>
+          </ExecCommandContainer>
+          <IOContainer>
+            <InputOutputBox>
+              <h4>標準入力:</h4>
+              <ScrollBarContent>
+                {testCase.stdin || 'No input'}
+              </ScrollBarContent>
+            </InputOutputBox>
+            <InputOutputBox>
+              <h4>標準出力:</h4>
+              <ScrollBarContent>
+                {result.stdout}
+              </ScrollBarContent>
+            </InputOutputBox>
+            <InputOutputBox>
+              <h4>標準出力(想定):</h4>
+              <ScrollBarContent>
+                {testCase.stdout || 'No expected output'}
+              </ScrollBarContent>
+            </InputOutputBox>
+          </IOContainer>
 
-        <IOContainer>
-          <InputOutputBox>
-            <h4>標準エラー出力:</h4>
-            <ScrollBarContent>
-              {result.stderr}
-            </ScrollBarContent>
-          </InputOutputBox>
-          <InputOutputBox>
-            <h4>標準エラー出力(想定):</h4>
-            <ScrollBarContent>
-              {testCase.stderr || 'No expected stderr'}
-            </ScrollBarContent>
-          </InputOutputBox>
-        </IOContainer>
-        <ExitCodeContainer>
-          <p>Exit code: {result.exit_code}</p>
-          <p>Exit code (expected): {testCase.exit_code || 'No expected exit code'}</p>
-        </ExitCodeContainer>
-      </JudgeResultContainer>
+          <IOContainer>
+            <InputOutputBox>
+              <h4>標準エラー出力:</h4>
+              <ScrollBarContent>
+                {result.stderr}
+              </ScrollBarContent>
+            </InputOutputBox>
+            <InputOutputBox>
+              <h4>標準エラー出力(想定):</h4>
+              <ScrollBarContent>
+                {testCase.stderr || 'No expected stderr'}
+              </ScrollBarContent>
+            </InputOutputBox>
+          </IOContainer>
+          <ExitCodeContainer>
+            <p>Exit code: {result.exit_code}</p>
+            <p>Exit code (expected): {testCase.exit_code !== 0 ? 'panic(except for 0)' : testCase.exit_code}</p>
+          </ExitCodeContainer>
+          </JudgeResultContainer>
+      )}
     </div>
   );
 };
