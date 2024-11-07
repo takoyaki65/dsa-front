@@ -1,7 +1,17 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FaTrash, FaFile } from 'react-icons/fa';
-import './FileUploadBox.css';
+import {
+    Box,
+    Paper,
+    Typography,
+    Button,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    IconButton
+} from '@mui/material';
+import { CloudUpload, InsertDriveFile, Delete } from '@mui/icons-material';
 
 interface FileUploadFormProps {
     onSubmit: (files: File[]) => void;
@@ -11,6 +21,7 @@ interface FileUploadFormProps {
 const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnBox }) => {
     const [files, setFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [inputKey, setInputKey] = useState(Date.now());
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
@@ -20,6 +31,7 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnB
 
     const handleRemoveFile = (index: number) => {
         setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+        setInputKey(Date.now()); // ファイル削除時にinputのKeyを更新
     };
 
     const handleSubmit = (event: React.FormEvent) => {
@@ -31,32 +43,74 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnB
         fileInputRef.current?.click();
     }
 
+    const handleBoxClick = () =>{
+        fileInputRef.current?.click();
+    };
+
     return (
-        <div className="file-upload-box">
-            <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
-                <input {...getInputProps()} ref={fileInputRef} />
-                <p>{descriptionOnBox}</p>
+        <Box sx={{ width: '100%', maxWidth: 600, mx: 'auto', p: 2 }}>
+            <Paper
+                {...getRootProps()}
+                onClick={handleBoxClick}
+                sx={{
+                    p: 3,
+                    border: '2px dashed',
+                    borderColor: isDragActive ? 'primary.main' : 'grey.300',
+                    bgcolor: isDragActive ? 'primary.50' : 'background.paper',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out'
+                }}
+            >
+                <input {...getInputProps()} ref={fileInputRef} key={inputKey}/>
+                <Box sx={{ textAlign: 'center' }}>
+                    <CloudUpload sx={{ fontSize: 48, color: 'primary.main', mb: 2}} />
+                    <Typography variant="h6" gutterBottom>
+                        {descriptionOnBox}
+                    </Typography>
+                </Box>
+
                 {files.length > 0 && (
-                    <ul className='file-list'>
+                    <List>
                         {files.map((file, index) => (
-                            <li key={index} className='file-item'>
-                                <div className='file-info'>
-                                    <FaFile style={{ marginRight: '5px' }} />
-                                    <span>{file.name}</span>
-                                </div>
-                                <button onClick={() => handleRemoveFile(index)} className='remove-file'>
-                                    <FaTrash />
-                                </button>
-                            </li>
+                            <ListItem key={index}
+                                secondaryAction={
+                                    <IconButton 
+                                        edge="end"
+                                        onClick={() => handleRemoveFile(index)}
+                                        size="small"
+                                        sx={{ ml: 'auto' }}
+                                    >
+                                        <Delete />
+                                    </IconButton>
+                                }
+                            >
+                                <ListItemIcon>
+                                    <InsertDriveFile />
+                                </ListItemIcon>
+                                <ListItemText primary={file.name} />
+                            </ListItem>
                         ))}
-                    </ul>
+                    </List>
                 )}
-            </div>
-            <div className="button-container">
-                <button type="button" onClick={handleAddFile} className="add-file">ファイルを追加</button>
-                <button type="submit" onClick={handleSubmit} disabled={files.length === 0} className="submit">提出</button>
-            </div>
-        </div>
+            </Paper>
+
+            <Box sx={{ mt: 2, display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button
+                    variant="outlined"
+                    onClick={handleAddFile}
+                    startIcon={<CloudUpload />}
+                >
+                    ファイルを追加
+                </Button>
+                <Button
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={files.length === 0}
+                >
+                    提出
+                </Button>
+            </Box>
+        </Box>
     );
 };
 
