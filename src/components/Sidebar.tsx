@@ -64,6 +64,12 @@ const Sidebar: React.FC = () => {
 					)
 				)}
 			</SidebarList>
+
+			{!isAdminOrManager &&
+				<div>
+					<Link to="/users/passChange"><h3>パスワード変更</h3></Link>
+				</div>
+			}
 			
 			{isAdminOrManager &&
 				<div>
