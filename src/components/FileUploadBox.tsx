@@ -58,7 +58,11 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnB
                     borderColor: isDragActive ? 'primary.main' : 'grey.300',
                     bgcolor: isDragActive ? 'primary.50' : 'background.paper',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out'
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': { // ホバー時のスタイル
+                        bgcolor: 'primary.50',
+                        borderColor: 'primary.main'
+                    }
                 }}
             >
                 <input {...getInputProps()} ref={fileInputRef} key={inputKey}/>
