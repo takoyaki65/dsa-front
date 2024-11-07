@@ -16,7 +16,7 @@ const FormatCheckSubmission: React.FC = () => {
   const [selectedLectureId, setSelectedLectureId] = useState<number | null>(
     lecture_id_from_query ? parseInt(lecture_id_from_query) : null
   );
-  const [lectureId2RequiredFiles, setLectureId2RequiredFiles] = useState<Map<number, string[]>>(new Map());
+  const [lectureId2RequiredFiles, setLectureId2RequiredFiles] = useState<Map<number, Set<string>>>(new Map());
   const { apiClient } = useApiClient();
   const navigate = useNavigate();
 
@@ -37,16 +37,16 @@ const FormatCheckSubmission: React.FC = () => {
 
         setLectures(lectureList);
 
-        const lectureId2RequiredFiles = new Map<number, string[]>();
+        const lectureId2RequiredFiles = new Map<number, Set<string>>();
         for (const lecture of lectureList) {
-          const requiredFiles: string[] = [];
+          const requiredFiles = new Set<string>();
           for (const problem of lecture.problems) {
             for (const requiredFile of problem.detail?.required_files ?? []) {
-              requiredFiles.push(requiredFile.name);
+              requiredFiles.add(requiredFile.name);
             }
           }
           // レポートのファイル名を追加
-          requiredFiles.push('report' + lecture.id + '.pdf');
+          requiredFiles.add('report' + lecture.id + '.pdf');
           lectureId2RequiredFiles.set(lecture.id, requiredFiles);
         }
         setLectureId2RequiredFiles(lectureId2RequiredFiles);
@@ -93,7 +93,7 @@ const FormatCheckSubmission: React.FC = () => {
           <h1>class{selectedLectureId}.zipの構造</h1>
           <pre style={{ textAlign: 'left' }}>
             {`class${selectedLectureId}/\n`}
-            {`  +-${lectureId2RequiredFiles.get(selectedLectureId)?.join('\n  +-')}`}
+            {`  +-${Array.from(lectureId2RequiredFiles.get(selectedLectureId) ?? []).join('\n  +-')}`}
           </pre>
         </div>
       )}
