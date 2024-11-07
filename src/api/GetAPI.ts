@@ -20,10 +20,7 @@ export const fetchLectures = async (all: boolean, token: string | null): Promise
         });
         return response.data;
     } catch (error: any) {
-        const customError = new Error('授業の取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
+        throw error;
     }
 };
 
@@ -38,10 +35,7 @@ export const fetchLectureEntry = async (lecture_id: number, token: string | null
         response.data.end_date = new Date(response.data.end_date);
         return response.data;
     } catch (error: any) {
-        const customError = new Error('授業のエントリの詳細の取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
+        throw error;
     }
 };
 
@@ -53,10 +47,7 @@ export const fetchProblemEntry = async (lecture_id: number, assignment_id: numbe
         const response = await axios.get<Problem>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/entry`, { headers });
         return response.data;
     } catch (error: any) {
-        const customError = new Error('課題のエントリの詳細の取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
+        throw error;
     }
 };
 
@@ -69,10 +60,7 @@ export const fetchProblemDetail = async (lecture_id: number, assignment_id: numb
         const response = await axios.get<Problem>(`${API_PREFIX}/assignments/info/${lecture_id}/${assignment_id}/detail?eval=${evaluation}`, { headers });
         return response.data;
     } catch (error: any) {
-        const customError = new Error('課題のエントリの詳細の取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
+        throw error;
     }
 };
 
@@ -84,10 +72,7 @@ export const fetchSubmissionStatus = async (submission_id: number, token: string
         const response = await axios.get<Submission>(`${API_PREFIX}/assignments/status/submissions/id/${submission_id}`, { headers });
         return response.data;
     } catch (error: any) {
-        const customError = new Error('提出の進捗状況の取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
+        throw error;
     }
 };
 
@@ -118,10 +103,7 @@ export const fetchSubmissionList = async (page: number, all: boolean, user: stri
         });
         return response.data;
     } catch (error: any) {
-        const customError = new Error('提出の進捗状況の取得に失敗しました');
-        customError.stack = error.stack;
-        (customError as any).originalError = error;
-        throw customError;
+        throw error;
     }
 };
 
@@ -257,6 +239,10 @@ export const fetchBatchSubmissionUserUploadedFile = async (batch_id: number, use
         const zip = new JSZip();
         const loadedZip = await zip.loadAsync(response.data);
 
+        Object.keys(loadedZip.files).forEach((fileName) => {
+            console.log("ファイルの名前", fileName);
+        });
+
         const files: FileRecord[] = await Promise.all(
             Object.keys(loadedZip.files).map(async (fileName) => {
                 let file = loadedZip.files[fileName];
@@ -264,7 +250,7 @@ export const fetchBatchSubmissionUserUploadedFile = async (batch_id: number, use
                 if (fileName.endsWith(".txt") || fileName.endsWith(".json") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".json") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r")) {
                     content = await file.async('string');
                     //console.log("ファイルの名前[string]: ", fileName);
-                } else if (fileName === "Makefile" || fileName === "makefile" || fileName === "GNUmakefile") {
+                } else if (fileName.endsWith("Makefile") || fileName.endsWith("makefile") || fileName.endsWith("GNUmakefile")) {
                     content = await file.async('string');
                     //console.log("ファイルの名前[string]: ", fileName);
                 } else {

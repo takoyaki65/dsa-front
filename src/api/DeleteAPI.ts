@@ -11,7 +11,7 @@ export const deleteUsers = async (user_ids: string[], token: string | null): Pro
         await axios.post(`${API_PREFIX}/users/delete`, { user_ids: user_ids }, { headers });
     } catch (error) {
         console.error('ユーザーの削除に失敗しました', error);
-        throw new Error('ユーザーの削除に失敗しました');
+        throw error;
     }
 };
 
@@ -24,7 +24,7 @@ export const deleteProblem = async (lecture_id: number, problem_id: number, toke
         return response.data;
     } catch (error) {
         console.error('小課題の削除に失敗しました', error);
-        throw new Error('小課題の削除に失敗しました');
+        throw error;
     }
 }
 
@@ -37,6 +37,6 @@ export const deleteLecture = async (lecture_id: number, token: string | null): P
         return response.data;
     } catch (error) {
         console.error('課題エントリの削除に失敗しました', error);
-        throw new Error('課題エントリの削除に失敗しました');
+        throw error;
     }
 }
