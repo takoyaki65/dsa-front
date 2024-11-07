@@ -20,7 +20,7 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { User } from '../types/user';
-import { KeyboardArrowDown } from '@mui/icons-material';
+import { KeyboardArrowDown, UploadFileSharp } from '@mui/icons-material';
 
 const SubmissionDetail: React.FC = () => {
     const { token } = useAuth();
@@ -146,6 +146,20 @@ const SubmissionDetail: React.FC = () => {
                         </Select>
                     </FormControl>
                     <CodeBlock code={getSelectedUploadedFileContent()} fileName={selectedUploadedFile} />
+
+                    {/* Blob形式のファイル一覧 */}
+                    {uploadedFiles.some(file => file.content instanceof Blob) && (
+                        <Box sx={{ mt: 2}}>
+                            <Typography variant="h6" gutterBottom>バイナリファイル</Typography>
+                            <Paper variant="outlined" sx={{ p: 2 }}>
+                                {uploadedFiles.filter(file => file.content instanceof Blob).map(file => (
+                                    <Box key={file.name} sx={{ mb: 1 }}>
+                                        <OfflineFileDownloadButton file={file} />
+                                    </Box>
+                                ))}
+                            </Paper>
+                        </Box>
+                    )}
                 </Box>
 
                 <Box sx={{ my: 4 }}>
@@ -166,6 +180,20 @@ const SubmissionDetail: React.FC = () => {
                         </Select>
                     </FormControl>
                     <CodeBlock code={getSelectedArrangedFileContent()} fileName={selectedArrangedFile} />
+
+                    {/* Blob形式のファイル一覧 */}
+                    {arrangedFiles.some(file => file.content instanceof Blob) && (
+                        <Box sx={{ mt: 2}}>
+                            <Typography variant="h6" gutterBottom>バイナリファイル</Typography>
+                            <Paper variant="outlined" sx={{ p: 2 }}>
+                                {arrangedFiles.filter(file => file.content instanceof Blob).map(file => (
+                                    <Box key={file.name} sx={{ mb: 1 }}>
+                                        <OfflineFileDownloadButton file={file} />
+                                    </Box>
+                                ))}
+                            </Paper>
+                        </Box>
+                    )}
                 </Box>
                 
                 {submission && problem && (
