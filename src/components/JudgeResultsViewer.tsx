@@ -49,6 +49,20 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
         </Typography>
       </Box>
 
+      {/* Exec command */}
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" gutterBottom>実行コマンド:</Typography>
+        <ScrollableTextField
+          fullWidth
+          multiline
+          variant="outlined"
+          value={result.command || '(No command)'}
+          slotProps={{
+            input: { readOnly: true },
+          }}
+        />
+      </Box>
+
       <Divider sx={{ my: 2}}/>
 
       <Stack spacing={2}>
@@ -124,59 +138,6 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
       </Stack>
     </Paper>
   )
-
-  // return (
-  //   <div>
-  //     {testCase && (
-  //       <JudgeResultContainer key={result.id}>
-  //         <h3>Test: #{result.testcase_id}, time: {result.timeMS}ms, memory: {result.memoryKB}KB, result: {result.result}</h3>
-  //         <ExecCommandContainer>
-  //           <h4>Exec command:</h4>
-  //           <CommandBox>{result.command}</CommandBox>
-  //         </ExecCommandContainer>
-  //         <IOContainer>
-  //           <InputOutputBox>
-  //             <h4>標準入力:</h4>
-  //             <ScrollBarContent>
-  //               {testCase.stdin || '(No input)'}
-  //             </ScrollBarContent>
-  //           </InputOutputBox>
-  //           <InputOutputBox>
-  //             <h4>標準出力:</h4>
-  //             <ScrollBarContent>
-  //               {result.stdout}
-  //             </ScrollBarContent>
-  //           </InputOutputBox>
-  //           <InputOutputBox>
-  //             <h4>標準出力(想定):</h4>
-  //             <ScrollBarContent>
-  //               {testCase.stdout || '(No expected output)'}
-  //             </ScrollBarContent>
-  //           </InputOutputBox>
-  //         </IOContainer>
-
-  //         <IOContainer>
-  //           <InputOutputBox>
-  //             <h4>標準エラー出力:</h4>
-  //             <ScrollBarContent>
-  //               {result.stderr}
-  //             </ScrollBarContent>
-  //           </InputOutputBox>
-  //           <InputOutputBox>
-  //             <h4>標準エラー出力(想定):</h4>
-  //             <ScrollBarContent>
-  //               {testCase.stderr || '(No expected stderr)'}
-  //             </ScrollBarContent>
-  //           </InputOutputBox>
-  //         </IOContainer>
-  //         <ExitCodeContainer>
-  //           <p>Exit code: {result.exit_code}</p>
-  //           <p>Exit code (expected): {testCase.exit_code !== 0 ? 'panic(except for 0)' : testCase.exit_code}</p>
-  //         </ExitCodeContainer>
-  //         </JudgeResultContainer>
-  //     )}
-  //   </div>
-  // );
 };
 
 export default JudgeResultsViewer;
