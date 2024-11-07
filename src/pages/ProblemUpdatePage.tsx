@@ -116,7 +116,7 @@ const ProblemUpdatePage: React.FC = () => {
   const handleAddProblemRow = () => {
     setProblemRows([...problemRows, 
       {
-        id: -1,
+        id: Math.floor(Math.random() * 1000000) + 900,
         title: "",
         file: null,
         isNew: true,
@@ -361,7 +361,7 @@ const ProblemUpdatePage: React.FC = () => {
                     backgroundColor: row.toDelete ? "#ffebee" : "inherit"
                   }}
                 >
-                  <TableCell>{row.id === -1 ? "-" : row.id}</TableCell>
+                  <TableCell>{row.id >= 900 ? "-" : row.id}</TableCell>
                   <TableCell>{row.title}</TableCell>
                   <TableCell>
                     {!row.isNew && (
@@ -380,6 +380,7 @@ const ProblemUpdatePage: React.FC = () => {
                         hidden
                         onChange={(e) => {
                           const file = e.target.files?.[0];
+                          // console.log(file);
                           if (file) {
                             const newRows = [...problemRows];
                             newRows[index].file = file;
