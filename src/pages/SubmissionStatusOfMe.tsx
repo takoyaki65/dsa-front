@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import { styled } from '@mui/material/styles';
+import StatusButton from '../components/StatusButtonComponent';
 
 const LoadingDots = styled('span')({
   '&::after': {
@@ -282,7 +283,7 @@ const SubmissionStatusOfMe: React.FC = () => {
                 <TableCell>{new Date(submission.ts).toLocaleString()}</TableCell>
                 <TableCell>{lectureId2Lecture[submission.lecture_id]?.title} - {id2problem[`${submission.lecture_id}-${submission.assignment_id}`]?.title}</TableCell>
                 <TableCell>{`${myself?.username} (${myself?.user_id})`}</TableCell>
-                <TableCell>{submission.result}</TableCell>
+                <TableCell>{submission.result ? <StatusButton status={submission.result} /> : "-"}</TableCell>
                 <TableCell>{submission.timeMS}ms</TableCell>
                 <TableCell>{submission.memoryKB}KB</TableCell>
                 <TableCell>

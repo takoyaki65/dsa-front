@@ -101,17 +101,15 @@ export type BatchSubmissionDetailItem = {
   evaluation_statuses: EvaluationStatus[];
 }
 
-export enum SubmissionSummaryStatus {
-  AC = "AC", // Accepted
-  WA = "WA", // Wrong Answer
-  TLE = "TLE", // Time Limit Exceed
-  MLE = "MLE", // Memory Limit Exceed
-  RE = "RE", // Runtime Error
-  CE = "CE", // Compile Error
-  OLE = "OLE", // Output Limit Exceed (8000 bytes)
-  IE = "IE", // Internal Error (e.g., docker sandbox management)
-  FN = "FN" // File Not found
-}
+export type SubmissionSummaryStatus = "AC" | // Accepted
+                                    "WA" | // Wrong Answer 
+                                    "TLE" | // Time Limit Exceed
+                                    "MLE" | // Memory Limit Exceed
+                                    "RE" | // Runtime Error
+                                    "CE" | // Compile Error
+                                    "OLE" | // Output Limit Exceed (8000 bytes)
+                                    "IE" | // Internal Error (e.g., docker sandbox management)
+                                    "FN"; // File Not found
 
 export type SubmissionStatusQuery = "AC" | "WA" | "TLE" | "MLE" | "RE" | "CE" | "OLE" | "IE" | "FN" | "WJ";
 

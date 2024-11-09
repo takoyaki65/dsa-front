@@ -170,8 +170,8 @@ const BatchDetailPage: React.FC = () => {
                     if (filterValues.includes('error')) {
                         // エラーフィルター: ACとWA以外のすべてのステータス
                         return result && 
-                                result !== SubmissionSummaryStatus.AC && 
-                                result !== SubmissionSummaryStatus.WA;
+                                result !== "AC" && 
+                                result !== "WA";
                     }
                     
                     return result && filterValues.includes(result);

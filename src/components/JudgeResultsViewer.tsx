@@ -4,6 +4,7 @@ import {
   Paper, Typography, Box, TextField, Stack, Divider, Chip
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import StatusButton from './StatusButtonComponent';
 
 // JudgeResult[]を引数として受け取り、それらを表示するコンポーネント
 interface JudgeResultsViewerProps {
@@ -29,12 +30,7 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
       <Box sx={{ mb: 2}}>
         <Typography variant="h6" component="div">
           Test: #{result.testcase_id}
-          <Chip 
-            label={result.result}
-            color={result.result === 'AC' ? 'success' : 'error'}
-            size="small"
-            sx={{ ml: 1 }}  
-          />
+          <StatusButton status={result.result} />
         </Typography>
         <Typography color="text.secondary">
           実行時間: {result.timeMS}ms, メモリ: {result.memoryKB}KB
