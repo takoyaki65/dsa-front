@@ -111,6 +111,30 @@ const StudentListUpload: React.FC = () => {
                 <p style={{ color: 'red', minHeight: '20px' }}>
                     {isNameCorrect !== null && !isNameCorrect ? `ファイルはcsvかxlsxのものを選択してください．` : ''}
                 </p>
+
+                {error && <p style={{ color: 'red', margin: '5px 0', padding: '8px', backgroundColor: '#ffebee', borderRadius: '4px' }}>{error}</p>}
+
+                {downloadUrl && file && (
+                    <div style={{
+                        margin: '10px 0',
+                        padding: '10px',
+                        backgroundColor: '#e3f2fd',
+                        borderRadius: '4px'
+                    }}>
+                        <p style={{ marginBottom: '5px' }}>ユーザー登録が完了しました</p>
+                        <a
+                            href={downloadUrl}
+                            download={downloadFileName}
+                            style={{
+                                color: '#1976d2',
+                                textDecoration: 'underline',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            パスワードリストをダウンロード
+                        </a>
+                    </div>
+                )}
                 <input type="file" onChange={handleFileChange} ref={fileInputRef} style={{ display: 'none' }} />
                 <button
                     disabled={isUploading}
@@ -136,19 +160,9 @@ const StudentListUpload: React.FC = () => {
                     disabled={!file || !isNameCorrect || isUploading}
                     style={{ width: 'auto', padding: '10px' }}
                 >
-                    アップロード
+                    {isUploading ? 'アップロード中...' : 'アップロード'}
                 </button>
             </div>
-            {/* アップロードが成功した場合のダウンロードリンク表示 */}
-            {downloadUrl && file && (
-                <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                    <a href={downloadUrl} download={downloadFileName} style={{ padding: '10px', color: 'blue' }}>
-                        ここをクリックしてファイルをダウンロード
-                    </a>
-                </div>
-            )}
-            {/* エラーメッセージ表示 */}
-            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
         </>
     );
 };
