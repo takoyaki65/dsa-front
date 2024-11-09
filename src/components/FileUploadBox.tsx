@@ -25,10 +25,12 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnB
     const [inputKey, setInputKey] = useState(Date.now());
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
-    }, []);
+        if (!isSubmitting) {
+            setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
+        }
+    }, [isSubmitting]);
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, disabled: isSubmitting });
 
     const handleRemoveFile = (index: number) => {
         setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
@@ -45,7 +47,9 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnB
     }
 
     const handleBoxClick = () =>{
-        fileInputRef.current?.click();
+        if (!isSubmitting) {
+            fileInputRef.current?.click();
+        }
     };
 
     return (
@@ -56,13 +60,21 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnB
                 sx={{
                     p: 3,
                     border: '2px dashed',
-                    borderColor: isDragActive ? 'primary.main' : 'grey.300',
-                    bgcolor: isDragActive ? 'primary.50' : 'background.paper',
-                    cursor: 'pointer',
+                    borderColor: isSubmitting
+                        ? 'grey.300'
+                        : isDragActive
+                            ? 'primary.main'
+                            : 'grey.300',
+                    bgcolor: isSubmitting
+                        ? 'grey.100' 
+                        : isDragActive
+                            ? 'primary.50'
+                            : 'background.paper',
+                    cursor: isSubmitting ? 'not-allowed' :'pointer',
                     transition: 'all 0.2s ease-in-out',
                     '&:hover': { // ホバー時のスタイル
-                        bgcolor: 'primary.50',
-                        borderColor: 'primary.main'
+                        bgcolor: isSubmitting ? 'grey.100' : 'primary.50',
+                        borderColor: isSubmitting ? 'grey.300' : 'primary.main'
                     }
                 }}
             >
