@@ -59,7 +59,7 @@ const StatusButton: React.FC<StatusButtonProps> = ({ status, isButton = false, o
                 backgroundColor: chipColors.base,
                 color: 'white',
                 fontWeight: 700,
-                minWidth: '48px',
+                minWidth: '24px',
                 height: '24px',
                 borderRadius: '10px',
                 '&:hover': isButton ? {

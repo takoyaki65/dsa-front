@@ -20,7 +20,7 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { User } from '../types/user';
-import { KeyboardArrowDown, UploadFileSharp } from '@mui/icons-material';
+import StatusButton from '../components/StatusButtonComponent';
 
 const SubmissionDetail: React.FC = () => {
     const { token } = useAuth();
@@ -275,11 +275,7 @@ const SubmissionDetail: React.FC = () => {
                                                 </TableCell>
                                                 <TableCell>{testCaseId2TestCases.get(judge_result.testcase_id)?.description || ''}</TableCell>
                                                 <TableCell>
-                                                    <Chip
-                                                        label={judge_result.result}
-                                                        color={judge_result.result === 'AC' ? 'success' : 'error' }
-                                                        size="small"
-                                                    />
+                                                    <StatusButton status={judge_result.result} isButton={true} onClick={() => toggleRow(index)} />
                                                 </TableCell>
                                                 <TableCell>{judge_result.timeMS}ms</TableCell>
                                                 <TableCell>{judge_result.memoryKB}KB</TableCell>
