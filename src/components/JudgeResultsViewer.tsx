@@ -14,12 +14,23 @@ interface JudgeResultsViewerProps {
 
 const ScrollableTextField = styled(TextField)({
   '& .MuiInputBase-root': {
-    maxHeight: '150px',
-    overflow: 'auto',
+    width: '100%',
+    position: 'relative',
+    '& .MuiInputBase-input': {
+      overflow: 'auto !important', // スクロールを有効化
+    }
   },
   '& .MuiInputBase-input': {
     fontFamily: 'monospace',
+    fontSize: '14px',
+    whiteSpace: 'pre',
+    wordWrap: 'normal',
+    display: 'block',
+    minWidth: '100%',
+    position: 'relative',
+    zIndex: 0,
   },
+  width: '100%'
 });
 
 const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCase }) => {
@@ -67,7 +78,8 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
           <Typography variant="subtitle2" gutterBottom>標準入力:</Typography>
           <ScrollableTextField
             fullWidth
-            multiline
+            multiline={true}
+            maxRows={10}
             variant="outlined"
             value={testCase.stdin || '(No input)'}
             slotProps={{
@@ -82,7 +94,8 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
             <Typography variant="subtitle2" gutterBottom>標準出力:</Typography>
             <ScrollableTextField
               fullWidth
-              multiline
+              multiline={true}
+              maxRows={15}
               variant="outlined"
               value={result.stdout}
               slotProps={{
@@ -94,7 +107,8 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
             <Typography variant="subtitle2" gutterBottom>標準出力(想定):</Typography>
             <ScrollableTextField
               fullWidth
-              multiline
+              multiline={true}
+              maxRows={15}
               variant="outlined"
               value={testCase.stdout || '(No expected output)'}
               slotProps={{
@@ -110,7 +124,8 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
             <Typography variant="subtitle2" gutterBottom>標準エラー出力:</Typography>
             <ScrollableTextField
               fullWidth
-              multiline
+              multiline={true}
+              maxRows={15}
               variant="outlined"
               value={result.stderr}
               slotProps={{
@@ -122,7 +137,8 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
             <Typography variant="subtitle2" gutterBottom>標準エラー出力(想定):</Typography>
             <ScrollableTextField
               fullWidth
-              multiline
+              multiline={true}
+              maxRows={15}
               variant="outlined"
               value={testCase.stderr || '(No expected stderr)'}
               slotProps={{
