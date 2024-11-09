@@ -1,19 +1,19 @@
 export const Colors = {
     button: {
         green: {
-            base: "rgba(46, 242, 35, 0.5)",
-            hover: "#2EF223",
-            active: "#1CAE15",
+            base: "rgba(28, 174, 21, 0.8)",
+            hover: "#1CAE15",
+            active: "#293d29",
             disabled: "rgba(28, 174, 21, 0.5)"
         },
         yellow: {
-            base: "rgba(226, 212, 59, 0.5)",
-            hover: "#E2D43B",
-            active: "#B9AD2C",
+            base: "rgba(237, 180, 8, 0.9)",
+            hover: "#edb408",
+            active: "#7d600a",
             disabled: "rgba(185, 173, 44, 0.5)"
         },
         red: {
-            base: "rgba(221, 68, 48, 0.5)",
+            base: "rgba(221, 68, 48, 0.8)",
             hover: "#DD4430",
             active: "#AB3222",
             disabled: "rgba(171, 50, 34, 0.5)"
