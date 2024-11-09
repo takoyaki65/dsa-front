@@ -16,6 +16,7 @@ const SubmissionPage: React.FC = () => {
 	const { apiClient } = useApiClient();
 	const [hasError, setHasError] = useState<boolean>(false);
 	const navigate = useNavigate();
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
 	const isAdminOrManager = role === UserRole.admin || role === UserRole.manager;
 
@@ -43,6 +44,10 @@ const SubmissionPage: React.FC = () => {
 	}, [lectureId, assignmentId, token]);
 
 	const handleSubmit = async (files: File[]) => {
+		if (isSubmitting) {
+			return;
+		}
+
 		if (lectureId && assignmentId) {
 			// 必要なファイルが全てアップロードされているか確認
 			const uploadedFileNames = files.map(file => file.name);
@@ -85,7 +90,7 @@ const SubmissionPage: React.FC = () => {
 			</div>
 			<div>
 				<h1>提出フォーム</h1>
-				<FileUploadBox onSubmit={handleSubmit} descriptionOnBox={'zipではなく各ファイルを提出してください．'} />
+				<FileUploadBox onSubmit={handleSubmit} descriptionOnBox={'zipではなく各ファイルを提出してください．'} isSubmitting={isSubmitting} />
 			</div>
 		</div>
 	);

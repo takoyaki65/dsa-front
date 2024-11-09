@@ -16,9 +16,10 @@ import { CloudUpload, InsertDriveFile, Delete } from '@mui/icons-material';
 interface FileUploadFormProps {
     onSubmit: (files: File[]) => void;
     descriptionOnBox: string;
+    isSubmitting?: boolean;
 }
 
-const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnBox }) => {
+const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnBox, isSubmitting }) => {
     const [files, setFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [inputKey, setInputKey] = useState(Date.now());
@@ -109,9 +110,9 @@ const FileUploadBox: React.FC<FileUploadFormProps> = ({ onSubmit, descriptionOnB
                 <Button
                     variant="contained"
                     onClick={handleSubmit}
-                    disabled={files.length === 0}
+                    disabled={files.length === 0 || isSubmitting}
                 >
-                    提出
+                    {isSubmitting ? '提出中...' : '提出'}
                 </Button>
             </Box>
         </Box>

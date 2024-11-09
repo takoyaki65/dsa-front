@@ -11,6 +11,7 @@ const BatchSubmission: React.FC = () => {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [selectedLecture, setSelectedLecture] = useState<number | ''>('');
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { token } = useAuth();
   const { apiClient } = useApiClient();
   const navigate = useNavigate();
@@ -30,6 +31,10 @@ const BatchSubmission: React.FC = () => {
   }, [token]);
 
   const handleSubmit = async (files: File[]) => {
+    if (isSubmitting) {
+      return;
+    }
+
     if (files.length !== 1) {
       setError('ファイルは一つだけアップロードしてください');
       return;
@@ -47,6 +52,7 @@ const BatchSubmission: React.FC = () => {
     }
 
     try {
+      setIsSubmitting(true);
       await apiClient({ apiFunc: submitBatchEvaluation, args: [Number(selectedLecture), true, uploadedFile]});
       alert('バッチ採点が正常に提出されました');
       setSelectedLecture('');
@@ -54,6 +60,8 @@ const BatchSubmission: React.FC = () => {
     } catch (error) {
       console.error('Error submitting batch evaluation:', error);
       setError('バッチ採点の提出に失敗しました');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -80,6 +88,7 @@ const BatchSubmission: React.FC = () => {
       <FileUploadBox
         onSubmit={handleSubmit}
         descriptionOnBox='zipファイル一つをアップロードしてください'
+        isSubmitting={isSubmitting}
       />
       {error && <p className='error'>{error}</p>}
     </div>
