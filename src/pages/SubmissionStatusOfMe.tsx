@@ -281,7 +281,11 @@ const SubmissionStatusOfMe: React.FC = () => {
             {submissions.map((submission) => (
               <TableRow key={submission.id}>
                 <TableCell>{new Date(submission.ts).toLocaleString()}</TableCell>
-                <TableCell>{lectureId2Lecture[submission.lecture_id]?.title} - {id2problem[`${submission.lecture_id}-${submission.assignment_id}`]?.title}</TableCell>
+                <TableCell>
+                  <Link to={`/submission/${submission.lecture_id}/${submission.assignment_id}`}>
+                    {lectureId2Lecture[submission.lecture_id]?.title} - {id2problem[`${submission.lecture_id}-${submission.assignment_id}`]?.title}
+                  </Link>
+                </TableCell>
                 <TableCell>{`${myself?.username} (${myself?.user_id})`}</TableCell>
                 <TableCell>{submission.result ? <StatusButton status={submission.result} /> : "-"}</TableCell>
                 <TableCell>{submission.timeMS}ms</TableCell>

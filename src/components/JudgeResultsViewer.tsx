@@ -1,7 +1,7 @@
 import React from 'react';
 import { JudgeResult, TestCases } from '../types/Assignments';
 import {
-  Paper, Typography, Box, TextField, Stack, Divider, Chip
+  Paper, Typography, Box, TextField, Stack, Divider
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import StatusButton from './StatusButtonComponent';
@@ -52,7 +52,7 @@ const JudgeResultsViewer: React.FC<JudgeResultsViewerProps> = ({ result, testCas
         <Typography>
           Exit code: {result.exit_code}
           {' / '}
-          Exit code (expected): {testCase.exit_code !== 0 ? 'panic(except for 0)' : testCase.exit_code}
+          Expected exit code: {testCase.exit_code !== 0 ? 'panic(except for 0)' : testCase.exit_code}
         </Typography>
       </Box>
 
