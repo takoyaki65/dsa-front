@@ -50,13 +50,13 @@ const Sidebar: React.FC = () => {
 								<ProblemList>
 									{lecture.problems.map(problem => (
 										<ProblemItem key={problem.assignment_id}>
-											<Link to={`/submission/${problem.lecture_id}/${problem.assignment_id}?evaluation=${isAdminOrManager}`}>
+											<Link to={`/submission/${problem.lecture_id}/${problem.assignment_id}`}>
 												{problem.title}
 											</Link>
 										</ProblemItem>
 									))}
 									<ProblemItem>
-										<Link to={`/format-check?lecture_id=${lecture.id}&evaluation=${isAdminOrManager}`}>フォーマットチェック</Link>
+										<Link to={`/format-check?lecture_id=${lecture.id}`}>フォーマットチェック</Link>
 									</ProblemItem>
 								</ProblemList>
 							)}

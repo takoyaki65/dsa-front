@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { fetchLectures, fetchProblemDetail } from '../api/GetAPI';
 import { Lecture } from '../types/Assignments';
 import FileUploadBox from '../components/FileUploadBox';
-import { useParams } from 'react-router-dom';
 import useApiClient from '../hooks/useApiClient';
 import { useAuth } from '../context/AuthContext';
 import { submitStudentZip } from '../api/PostAPI';

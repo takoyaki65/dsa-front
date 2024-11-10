@@ -1,4 +1,4 @@
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import { Problem } from '../types/Assignments';
 import { fetchProblemDetail } from '../api/GetAPI';
@@ -20,10 +20,7 @@ const SubmissionPage: React.FC = () => {
 
 	const isAdminOrManager = role === UserRole.admin || role === UserRole.manager;
 
-	// ?evaluation={true|false}のパラメータを取得
-	const location = useLocation();
-	const searchParams = new URLSearchParams(location.search);
-	const evaluation = searchParams.get('evaluation') === 'true';
+	const evaluation = isAdminOrManager;
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -47,6 +44,7 @@ const SubmissionPage: React.FC = () => {
 		if (isSubmitting) {
 			return;
 		}
+		setIsSubmitting(true);
 
 		if (lectureId && assignmentId) {
 			// 必要なファイルが全てアップロードされているか確認
@@ -56,6 +54,7 @@ const SubmissionPage: React.FC = () => {
 			if (missingFiles.length > 0) {
 				console.error('以下のファイルがアップロードされていません：', missingFiles.join(', '));
 				alert(`以下のファイルがアップロードされていません：${missingFiles.join(', ')}`);
+				setIsSubmitting(false);
 				return;
 			}
 
@@ -64,8 +63,11 @@ const SubmissionPage: React.FC = () => {
 				navigate('/status/me');
 			} catch (error) {
 				console.error('提出エラー: ', error);
+			} finally {
+				setIsSubmitting(false);
 			}
 		}
+		setIsSubmitting(false);
 	};
 
 	if (hasError) {
