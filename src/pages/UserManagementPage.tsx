@@ -39,7 +39,7 @@ const UserManagementPage: React.FC = () => {
 
     useEffect(() => {
         const getUsers = async () => {
-            const userList = await apiClient({ apiFunc: fetchUserList, args: role === UserRole.admin ? [null] : [user_id] });
+            const userList = await apiClient({ apiFunc: fetchUserList, args: role === UserRole.admin ? [null, null] : [user_id, ['student']] });
             setUsers(userList);
             setFilteredUsers(userList);
         };
@@ -120,7 +120,7 @@ const UserManagementPage: React.FC = () => {
         try {
             await apiClient({ apiFunc: deleteUsers, args: [checkedUsers] });
             alert('選択されたユーザーが正常に削除されました。');
-            const updatedUserList = await apiClient({ apiFunc: fetchUserList, args: [null] });
+            const updatedUserList = await apiClient({ apiFunc: fetchUserList, args: role === UserRole.admin ? [null, null] : [user_id, ['student']] });
             setUsers(updatedUserList);
             setFilteredUsers(updatedUserList);
             setCheckedUsers([]);

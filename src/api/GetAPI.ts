@@ -324,11 +324,16 @@ export const downloadTemplate = async (token: string | null): Promise<{ data: Bl
 }
 
 
-export const fetchUserList = async (user_id: string | null, token: string | null): Promise<User[]> => {
+export const fetchUserList = async (user_id: string | null, roles: string[] | null, token: string | null): Promise<User[]> => {
+    // select * from Users where user_id = user_id or role in roles
+    // /users/all?user_id={user_id}&role={role1,role2,...}
     try {
         let url = `${API_PREFIX}/users/all`;
         if (user_id !== null) {
-            url += `?user_id=${user_id}&role=student`;
+            url += `?user_id=${user_id}`;
+        }
+        if (roles !== null) {
+            url += `&role=${roles.join(',')}`;
         }
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await axios.get(url, { headers });
