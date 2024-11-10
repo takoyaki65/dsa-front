@@ -17,6 +17,7 @@ import UserManagementPage from './pages/UserManagementPage';
 import UserArrangePage from './pages/UserArrangePage';
 import BatchStatusPage from './pages/BatchStatusPage';
 import ProblemUpdatePage from './pages/ProblemUpdatePage';
+import SubmissionStatusAll from './pages/SubmissionStatusAll';
 
 // ログインしているユーザーのみがアクセスできるページを作成するためのコンポーネント
 // ログインしていないユーザーはログインページにリダイレクトされる
@@ -42,6 +43,7 @@ const App: React.FC = () => {
 					<Route path="/" element={<PrivateRoute element={<Home />} />} />
 					<Route path="/submission/:lectureId/:assignmentId" element={<PrivateRoute element={<SubmissionPage />} />} />
 					<Route path="/status/me" element={<PrivateRoute element={<SubmissionStatusOfMe />} />} />
+					<Route path="/status/all" element={<PrivateRoute element={<SubmissionStatusAll />} />} />
 					<Route path="/result/:submissionId" element={<PrivateRoute element={<SubmissionDetail />} />} />
 					<Route path="/users/passChange" element={<PrivateRoute element={<StudentPassChangePage />} />} />
 					<Route path="/format-check" element={<PrivateRoute element={<FormatCheckSubmission />} />} />

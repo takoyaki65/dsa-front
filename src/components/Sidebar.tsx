@@ -39,6 +39,7 @@ const Sidebar: React.FC = () => {
 		<SidebarContainer>
 			<SidebarList>
 				<Link to="/status/me"><h3>{user_id}</h3></Link>
+				<Link to="/status/all"><h3>全ての提出</h3></Link>
 				<Link to="/"><h3>ホーム</h3></Link>
 				{lectures.map(
 					lecture => (
