@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'katex/dist/katex.min.css';
+import '../markdown/markdown.css';
 
 interface MarkdownRendererProps {
   content: string;
@@ -15,7 +17,8 @@ interface MarkdownRendererProps {
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkMath]}
+      className="markdownContent"
+      remarkPlugins={[remarkMath, remarkGfm]}
       rehypePlugins={[rehypeKatex, rehypeRaw]}
       components={{
         code({node, inline, className, children, ...props}: any) {
