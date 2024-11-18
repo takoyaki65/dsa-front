@@ -40,6 +40,7 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
   const [testCaseId2TestCase, setTestCaseId2TestCase] = useState<Map<number, TestCases>>(new Map());
   const [columns, setColumns] = useState<ColumnDefinition[]>(baseColumns);
   const [showingData, setShowingData] = useState<string>(openingData);
+  const [uploadedZipBlob, setUploadedZipBlob] = useState<Blob | null>(null);
 
   const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([]);
   const [selectedUploadedFile, setSelectedUploadedFile] = useState<string>('');
@@ -82,8 +83,9 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
         
         if (evaluationStatus.upload_file_exists) {
           // アップロードされたファイルを取得
-          const file_list = await apiClient({ apiFunc: fetchBatchSubmissionUserUploadedFile, args: [parseInt(batchId), userId] });
+          const {files: file_list, zipBlob: uploadedZipBlob} = await apiClient({ apiFunc: fetchBatchSubmissionUserUploadedFile, args: [parseInt(batchId), userId] });
           setUploadedFiles(file_list);
+          setUploadedZipBlob(uploadedZipBlob);
         }
 
         // テストケースを取得
@@ -171,6 +173,17 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
     );
     return submission?.result || "non-submitted";
   };
+
+  const handleUploadedZipDownload = () => {
+    if (!uploadedZipBlob) return;
+    const url = window.URL.createObjectURL(uploadedZipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "uploaded_files.zip";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
   console.log(JSON.stringify(evaluationStatus))
   
   return (
@@ -210,7 +223,10 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
           ))}
         </ResultContainer>
       </div>
-      <h2>提出ファイル</h2>
+      <TitleContainer>
+        <h2>提出ファイル</h2>
+        <DownloadButton onClick={handleUploadedZipDownload}>一括ダウンロード</DownloadButton>
+      </TitleContainer>
       <h3>レポート</h3>
       <ul>
         {uploadedFiles.filter(file => file.content instanceof Blob).map(file => (
@@ -459,3 +475,27 @@ const ExpandedContent = styled.div`
   border-top: 1px solid #E0E0E0;
 `;
 
+const TitleContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+`;
+
+const DownloadButton = styled.button`
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background-color: #45a049;
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`;

@@ -235,7 +235,7 @@ export const fetchEvaluationStatus = async (batch_id: number, user_id: string, t
 
 
 // "/api/v1/assignments/result/batch/{batch_id}/files/uploaded/{user_id}"を通じて、特定のバッチ採点の特定の学生が提出したファイルを取得する関数
-export const fetchBatchSubmissionUserUploadedFile = async (batch_id: number, user_id: string, token: string | null): Promise<FileRecord[]> => {
+export const fetchBatchSubmissionUserUploadedFile = async (batch_id: number, user_id: string, token: string | null): Promise<{files: FileRecord[], zipBlob: Blob}> => {
     try {
         // ZIPで受け取る
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/zip' } : {};
@@ -267,7 +267,10 @@ export const fetchBatchSubmissionUserUploadedFile = async (batch_id: number, use
             })
         );
 
-        return files;
+        // ArrayBufferからBlobを作成
+        const zipBlob = new Blob([response.data], { type: 'application/zip' });
+
+        return { files, zipBlob };
     } catch (error: any) {
         console.error("特定のバッチ採点の特定の学生が提出したファイルの取得に失敗しました", error);
         throw error;
