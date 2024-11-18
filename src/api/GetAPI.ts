@@ -108,6 +108,16 @@ export const fetchSubmissionList = async (page: number, all: boolean, user: stri
 };
 
 
+const textFileExtensions = [
+    ".txt", ".json", ".js", ".ts", ".html", ".css", ".md", ".py", ".java", ".c",
+    ".cpp", ".cs", ".go", ".rs", ".rb", ".php", ".swift", ".kt", ".scala", 
+    ".vb", ".sql", ".pl", ".r", ".sh", ".h", "Makefile", "makefile", 
+    "GNUMakefile"];
+
+const hasTextExtension = (filename: string): boolean => {
+    return textFileExtensions.some(ext => filename.toLowerCase().includes(ext.toLowerCase()));
+}
+
 // "/api/v1/assignments/status/submissions/id/{submission_id}/files/zip?type={uploaded|arranged}"を通じて、ジャッジリクエストに関連するファイルのリストを取得する関数
 export const fetchSubmissionFiles = async (submission_id: number, type: "uploaded" | "arranged", token: string | null): Promise<FileRecord[]> => {
     try {
@@ -130,10 +140,7 @@ export const fetchSubmissionFiles = async (submission_id: number, type: "uploade
             Object.keys(loadedZip.files).map(async (fileName) => {
                 let file = loadedZip.files[fileName];
                 let content: string | Blob;
-                if (fileName.endsWith(".txt") || fileName.endsWith(".json") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".json") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r") || fileName.endsWith(".sh") || fileName.endsWith(".h")) {
-                    content = await file.async('string');
-                    //console.log("ファイルの名前[string]: ", fileName);
-                } else if (fileName === "Makefile") {
+                if (hasTextExtension(fileName)) {
                     content = await file.async('string');
                     //console.log("ファイルの名前[string]: ", fileName);
                 } else {
@@ -247,7 +254,7 @@ export const fetchBatchSubmissionUserUploadedFile = async (batch_id: number, use
             Object.keys(loadedZip.files).map(async (fileName) => {
                 let file = loadedZip.files[fileName];
                 let content: string | Blob;
-                if (fileName.endsWith(".txt") || fileName.endsWith(".json") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r") || fileName.endsWith(".html") || fileName.endsWith(".css") || fileName.endsWith(".js") || fileName.endsWith(".ts") || fileName.endsWith(".json") || fileName.endsWith(".md") || fileName.endsWith(".py") || fileName.endsWith(".java") || fileName.endsWith(".c") || fileName.endsWith(".cpp") || fileName.endsWith(".cs") || fileName.endsWith(".go") || fileName.endsWith(".rs") || fileName.endsWith(".rb") || fileName.endsWith(".php") || fileName.endsWith(".swift") || fileName.endsWith(".kt") || fileName.endsWith(".scala") || fileName.endsWith(".vb") || fileName.endsWith(".sql") || fileName.endsWith(".pl") || fileName.endsWith(".r")) {
+                if (hasTextExtension(fileName)) {
                     content = await file.async('string');
                     //console.log("ファイルの名前[string]: ", fileName);
                 } else if (fileName.endsWith("Makefile") || fileName.endsWith("makefile") || fileName.endsWith("GNUmakefile")) {
