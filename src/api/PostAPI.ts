@@ -3,6 +3,7 @@ import { LoginCredentials, CreateUser, UserUpdatePassword } from '../types/user'
 import { Token, TokenResponse } from '../types/token';
 import { Submission, BatchSubmission } from '../types/Assignments';
 import { MessageResponse } from '../types/response';
+import { API_PREFIX } from '../constants/constants';
 
 interface UploadResult {
     unique_id: string;
@@ -10,7 +11,6 @@ interface UploadResult {
     result: string;
 }
 
-const API_PREFIX = 'http://localhost:8000/api/v1';
 
 // "/api/v1/assignments/judge/{lecture_id}/{assignment_id}/?eval={true|false}"を通して、課題のジャッジリクエストを送信する関数
 // eval=Trueの場合は、採点リソースも使用して採点を行う

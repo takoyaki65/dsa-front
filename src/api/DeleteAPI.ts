@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { UserDelete } from '../types/user';
 import { MessageResponse } from '../types/response';
-const API_PREFIX = 'http://localhost:8000/api/v1';
+import { API_PREFIX } from '../constants/constants';
 
 // ユーザーを削除するAPI関数
 export const deleteUsers = async (user_ids: string[], token: string | null): Promise<void> => {

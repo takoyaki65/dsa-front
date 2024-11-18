@@ -5,8 +5,7 @@ import { Token } from '../types/token';
 import { TextResponse } from '../types/response'
 import JSZip from 'jszip';
 import { SubmissionStatusQuery } from '../types/Assignments';
-
-const API_PREFIX = 'http://localhost:8000/api/v1';
+import { API_PREFIX } from '../constants/constants';
 
 // "/api/v1/assignments/info?all={true|false}"を通して、{全て|公開期間内}の授業エントリを全て取得する関数
 export const fetchLectures = async (all: boolean, token: string | null): Promise<Lecture[]> => {
