@@ -12,7 +12,7 @@ import { UserRole } from '../types/token';
 const SubmissionPage: React.FC = () => {
 	const { token, user_id, role } = useAuth();
 	let { lectureId, assignmentId } = useParams<{ lectureId: string; assignmentId: string }>();
-	const [ problem, setProblem ] = useState<Problem>();
+	const [problem, setProblem] = useState<Problem | null>(null);
 	const { apiClient } = useApiClient();
 	const [hasError, setHasError] = useState<boolean>(false);
 	const navigate = useNavigate();
@@ -26,7 +26,7 @@ const SubmissionPage: React.FC = () => {
 		const fetchData = async () => {
 			try {
 				if (lectureId && assignmentId) {
-					const problem_with_detail = await apiClient({ apiFunc: fetchProblemDetail, args: [parseInt(lectureId), parseInt(assignmentId), evaluation]});
+					const problem_with_detail = await apiClient({ apiFunc: fetchProblemDetail, args: [parseInt(lectureId), parseInt(assignmentId), evaluation] });
 					setProblem(problem_with_detail);
 				} else {
 					setHasError(true);
@@ -80,14 +80,23 @@ const SubmissionPage: React.FC = () => {
 	return (
 		<div style={{ paddingBottom: '100px' }}>
 			<div>
-				<MarkdownRenderer content={problem?.detail?.description || 'description is not found'} />
+				{problem && problem.detail && problem.detail.description && <MarkdownRenderer content={problem.detail.description} />}
 			</div>
 			<div>
+				{problem && (
+					<>
+					  <h1>制限</h1>
+						<p>実行時間: {problem.timeMS}ms</p>
+						<p>メモリ: {problem.memoryMB}MB</p>
+					</>
+				)}
 				<h1>必要なファイル</h1>
 				<ul>
-					{problem?.detail?.required_files.map((file, index) => (
-						<li key={index}>{file.name}</li>
-					))}
+					{problem && problem.detail && (
+						problem.detail.required_files.map((file, index) => (
+							<li key={index}>{file.name}</li>
+						))
+					)}
 				</ul>
 			</div>
 			<div>
