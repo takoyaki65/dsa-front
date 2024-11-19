@@ -332,7 +332,7 @@ const BatchDetailPage: React.FC = () => {
                                 </UserInfoItem>
                                 <UserInfoItem>
                                     <StyledStatusButton 
-                                        status={!submission.report_exists ? "未提出" : submission.status === "submitted" ? "提出" : "遅延"} 
+                                        status={submission.status === "non-submitted" ? "未提出" : submission.status === "submitted" ? "提出" : "遅延"} 
                                         isButton={true}
                                         onClick={() => handleStatusClick(submission.user_id, "レポート")}
                                     />
