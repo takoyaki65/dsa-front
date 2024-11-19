@@ -225,7 +225,7 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
       </div>
       <TitleContainer>
         <h2>提出ファイル</h2>
-        <DownloadButton onClick={handleUploadedZipDownload}>一括ダウンロード</DownloadButton>
+        {uploadedZipBlob && <DownloadButton onClick={handleUploadedZipDownload}>一括ダウンロード</DownloadButton>}
       </TitleContainer>
       <h3>レポート</h3>
       <ul>
