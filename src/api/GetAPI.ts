@@ -118,7 +118,7 @@ const hasTextExtension = (filename: string): boolean => {
 }
 
 // "/api/v1/assignments/status/submissions/id/{submission_id}/files/zip?type={uploaded|arranged}"を通じて、ジャッジリクエストに関連するファイルのリストを取得する関数
-export const fetchSubmissionFiles = async (submission_id: number, type: "uploaded" | "arranged", token: string | null): Promise<FileRecord[]> => {
+export const fetchSubmissionFiles = async (submission_id: number, type: "uploaded" | "arranged", token: string | null): Promise<{files: FileRecord[], zipBlob: Blob}> => {
     try {
         const headers = token ? { Authorization: `Bearer ${token}`, accept: 'application/zip' } : {};
         const response = await axios.get(`${API_PREFIX}/assignments/status/submissions/id/${submission_id}/files/zip?type=${type}`, { headers, responseType: 'arraybuffer' });
@@ -149,7 +149,9 @@ export const fetchSubmissionFiles = async (submission_id: number, type: "uploade
                 return { name: fileName, content };
             })
         );
-        return files;
+
+        const zipBlob = new Blob([response.data], { type: 'application/zip' });
+        return { files, zipBlob };
 
     } catch (error: any) {
         console.error("提出ファイルの取得に失敗しました", error);

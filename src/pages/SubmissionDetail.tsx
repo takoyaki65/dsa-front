@@ -44,8 +44,8 @@ const SubmissionDetail: React.FC = () => {
     useEffect(() => {
         const fetchFiles = async () => {
             try {
-                const uploadedData = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!), 'uploaded']})
-                const arrangedData = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!), 'arranged']})
+                const { files: uploadedData, zipBlob: notUsed } = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!), 'uploaded']})
+                const { files: arrangedData, zipBlob: notUsed2 } = await apiClient({ apiFunc: fetchSubmissionFiles, args: [parseInt(submissionId!), 'arranged']})
                 setUploadedFiles(uploadedData);
                 setArrangedFiles(arrangedData);
             } catch (error) {

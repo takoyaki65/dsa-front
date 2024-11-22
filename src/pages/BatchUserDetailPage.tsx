@@ -46,6 +46,7 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
   const [selectedUploadedFile, setSelectedUploadedFile] = useState<string>('');
 
   const [assignmentId2ArrangedFiles, setAssignmentId2ArrangedFiles] = useState<Map<number, FileRecord[]>>(new Map());
+  const [assignmentId2ArrangedZipBlob, setAssignmentId2ArrangedZipBlob] = useState<Map<number, Blob>>(new Map());
   const [selectedArrangedFile, setSelectedArrangedFile] = useState<string>('');
 
 
@@ -92,10 +93,15 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
         }
 
         for (const submission of evaluationStatus.submissions) {
-          const arrangedFiles = await apiClient({ apiFunc: fetchSubmissionFiles, args: [submission.id, "arranged"] });
+          const { files: arrangedFiles, zipBlob: arrangedZipBlob } = await apiClient({ apiFunc: fetchSubmissionFiles, args: [submission.id, "arranged"] });
           setAssignmentId2ArrangedFiles(prev => {
             const newMap = new Map(prev);
             newMap.set(submission.assignment_id, arrangedFiles);
+            return newMap;
+          });
+          setAssignmentId2ArrangedZipBlob(prev => {
+            const newMap = new Map(prev);
+            newMap.set(submission.assignment_id, arrangedZipBlob);
             return newMap;
           });
         }
@@ -205,6 +211,19 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
     const a = document.createElement("a");
     a.href = url;
     a.download = "uploaded_files.zip";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  const handleArrangedZipDownload = () => {
+    if (!selectedId) return;
+    const zipBlob = assignmentId2ArrangedZipBlob.get(selectedId)
+    if (!zipBlob) return;
+    const url = window.URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    // ファイル名: ex{evaluation_status.lecture?.id}-{selectedId}-arranged.zip
+    a.download = `ex${evaluationStatus?.lecture.id}-${selectedId}-arranged.zip`;
     a.click();
     window.URL.revokeObjectURL(url);
   }
@@ -320,7 +339,10 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
       {/* Arranged Files*/}
       {selectedId !== null && (
         <>
-          <h3>用意されたファイル</h3>
+          <TitleContainer>
+            <h3>用意されたファイル</h3>
+            <DownloadButton onClick={handleArrangedZipDownload}>一括ダウンロード</DownloadButton>
+          </TitleContainer>
           <Dropdown onChange={handleArrangedFileSelect} value={selectedArrangedFile}>
             <option value="">ファイルを選択</option>
             {assignmentId2ArrangedFiles.get(selectedId)?.map(file => (
