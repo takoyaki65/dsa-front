@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchBatchSubmissionUserUploadedFile, fetchEvaluationStatus, fetchProblemDetail } from '../api/GetAPI';
+import { fetchBatchSubmissionUserUploadedFile, fetchEvaluationStatus, fetchProblemDetail, fetchSubmissionFiles } from '../api/GetAPI';
 import { useAuth } from '../context/AuthContext';
 import useApiClient from '../hooks/useApiClient';
 import { Problem, EvaluationStatus, TestCases } from '../types/Assignments';
@@ -45,6 +45,9 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
   const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([]);
   const [selectedUploadedFile, setSelectedUploadedFile] = useState<string>('');
 
+  const [assignmentId2ArrangedFiles, setAssignmentId2ArrangedFiles] = useState<Map<number, FileRecord[]>>(new Map());
+  const [selectedArrangedFile, setSelectedArrangedFile] = useState<string>('');
+
 
   useEffect(() => {
     setIsLoading(true);
@@ -86,6 +89,15 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
           const {files: file_list, zipBlob: uploadedZipBlob} = await apiClient({ apiFunc: fetchBatchSubmissionUserUploadedFile, args: [parseInt(batchId), userId] });
           setUploadedFiles(file_list);
           setUploadedZipBlob(uploadedZipBlob);
+        }
+
+        for (const submission of evaluationStatus.submissions) {
+          const arrangedFiles = await apiClient({ apiFunc: fetchSubmissionFiles, args: [submission.id, "arranged"] });
+          setAssignmentId2ArrangedFiles(prev => {
+            const newMap = new Map(prev);
+            newMap.set(submission.assignment_id, arrangedFiles);
+            return newMap;
+          });
         }
 
         // テストケースを取得
@@ -141,8 +153,20 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
     setSelectedUploadedFile(event.target.value);
   };
 
+  const handleArrangedFileSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedArrangedFile(event.target.value);
+  };
+
   const getSelectedUploadedFileContent = () => {
     const file = uploadedFiles.find((file) => file.name === selectedUploadedFile);
+    return file?.content as string;
+  };
+
+  const getSelectedArrangedFileContent = () => {
+    if (selectedId === null) return '';
+    const files = assignmentId2ArrangedFiles.get(selectedId);
+    if (!files) return '';
+    const file = files.find((file) => file.name === selectedArrangedFile);
     return file?.content as string;
   };
 
@@ -151,7 +175,8 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
     if (column && column.label !== showingData) {
       setShowingData(column.label);
       setSelectedId(column.id);
-      }
+      setSelectedArrangedFile('');
+    }
   };
 
   const getStatusForColumn = (column: ColumnDefinition, evaluationStatus: EvaluationStatus | null) => {
@@ -291,6 +316,21 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
             ));
           })()}
         </ResultTable>
+      )}
+      {/* Arranged Files*/}
+      {selectedId !== null && (
+        <>
+          <h3>用意されたファイル</h3>
+          <Dropdown onChange={handleArrangedFileSelect} value={selectedArrangedFile}>
+            <option value="">ファイルを選択</option>
+            {assignmentId2ArrangedFiles.get(selectedId)?.map(file => (
+              <option key={file.name} value={file.name}>{file.name}</option>
+            ))}
+          </Dropdown>
+          {selectedArrangedFile && (
+            <CodeBlock code={getSelectedArrangedFileContent()} fileName={selectedArrangedFile} />
+          )}
+        </>
       )}
       
     </PageContainer>
