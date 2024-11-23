@@ -52,8 +52,8 @@ const SubmissionPage: React.FC = () => {
 			const missingFiles = problem?.detail?.required_files.filter(file => !uploadedFileNames.includes(file.name)) || [];
 
 			if (missingFiles.length > 0) {
-				console.error('以下のファイルがアップロードされていません：', missingFiles.join(', '));
-				alert(`以下のファイルがアップロードされていません：${missingFiles.join(', ')}`);
+				console.error('以下のファイルがアップロードされていません：', missingFiles.map(f => f.name).join(', '));
+				alert(`以下のファイルがアップロードされていません：${missingFiles.map(f => f.name).join(', ')}`);
 				setIsSubmitting(false);
 				return;
 			}
