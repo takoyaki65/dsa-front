@@ -237,7 +237,7 @@ const BatchUserDetailPage: React.FC<{ openingData: string }> = ({ openingData = 
         <LinkButton href={`/batch/result/${batchId}`}>
           {evaluationStatus?.lecture.title} (Batch ID: {batchId})
         </LinkButton>
-        &nbsp;&gt;&nbsp; {evaluationStatus?.username} &nbsp;&gt;&nbsp; {showingData}
+        &nbsp;&gt;&nbsp; {evaluationStatus?.username}({evaluationStatus?.user_id}) &nbsp;&gt;&nbsp; {showingData}
       </h2>
       <div style={{ fontSize: '14px', color: '#808080' }}>提出: {evaluationStatus?.submit_date instanceof Date ? evaluationStatus?.submit_date.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-') : new Date(evaluationStatus?.submit_date!).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/\//g, '-')}</div>
       <Divider style={{ height: '3px', marginBottom: '20px', borderRadius: '2px' }} />
