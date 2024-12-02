@@ -112,6 +112,7 @@ const SidebarContainer = styled.div`
 	height: 100vh;
 	background-color: dimgray;
 	position: fixed;
+	overflow-y: auto;
 `;
 
 const SidebarList = styled.ul`
