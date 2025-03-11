@@ -1,31 +1,13 @@
-2024/03/22 updated
-# installation（for Mac）
+# installation（for Mac & Linux）
 
-1. nodebrewのインストール
+1. nodeのインストール
+
    ```sh
-   brew install nodebrew  
-   # nodebrewインストール用ディレクトリ作成
-   mkdir ~/.nodebrew
-   mkdir ~/.nodebrew/src
-   ```
-2. nodeインストール
-   ```sh
-   # 安定版インストール
-   nodebrew install-binary stable
-
-   # インストールしたバージョンの確認
-   nodebrew ls
-
-   # 使用するバージョン選択
-   nodebrew use {バージョンを記入}
-
-   # パスを通す
-   # zshrcの部分は設定が書いてあるファイル
-   echo 'export PATH="$HOME/.nodebrew/current/bin:$PATH"' >> ~/.zshrc
-
-   # ターミナルを再起動するか以下で設定リロード
-   source ~/.zshrc
-
+   # nvm(nodeのバージョンマネージャー)をインストール
+   # ref: https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+   # nvmを用いて最新のnodeをインストール
+   nvm install node
    # バージョン確認
    node -v
    npm -v
