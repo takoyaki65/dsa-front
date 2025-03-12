@@ -1,5 +1,5 @@
 # ベースイメージ
-FROM node:20
+FROM node:23.9.0-bookworm-slim
 
 # アプリケーションディレクトリを作成
 WORKDIR /app
