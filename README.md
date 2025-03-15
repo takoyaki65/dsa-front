@@ -1,4 +1,6 @@
 # installation（for Mac & Linux）
+以下の手順は、ローカル環境でtypescriptのhintingおよびフロントのみの実行チェックをする場合に行う
+必要がある。Webアプリを立ち上げるだけの場合は特に必要ない。
 
 1. nodeのインストール
 
