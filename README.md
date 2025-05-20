@@ -15,19 +15,19 @@
    npm -v
    ```
 
-3. リポジトリをクローン(dsa_projectのクローンでまとめて行われるはずなので基本的には不要)
+3. リポジトリをクローン(dsa-projectのクローンでまとめて行われるはずなので基本的には不要)
    ```sh
    # 作業したいディレクトリへ移動
    cd {ディレクトリのパス}
 
    # リポジトリをクローン
-   git clone https://github.com/zakkii-k/dsa_front.git
+   git clone https://github.com/dsa-uts/dsa-front.git
    ```
 
-4. アプリケーションの起動(dsa_projectのdocker起動時に起動されるので基本的には不要)
+4. アプリケーションの起動(dsa-projectのdocker起動時に起動されるので基本的には不要)
    ```sh
    # ディレクトリ移動
-   cd dsa_front
+   cd dsa-front
 
    # スタート
    npm start
