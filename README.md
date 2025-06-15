@@ -1,49 +1,54 @@
-# installation（for Mac & Linux）
-以下の手順は、ローカル環境でtypescriptのhintingおよびフロントのみの実行チェックをする場合に行う
-必要がある。Webアプリを立ち上げるだけの場合は特に必要ない。
+# React + TypeScript + Vite
 
-1. nodeのインストール
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-   ```sh
-   # nvm(nodeのバージョンマネージャー)をインストール
-   # ref: https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-   # nvmを用いて最新のnodeをインストール
-   nvm install node
-   # バージョン確認
-   node -v
-   npm -v
-   ```
+Currently, two official plugins are available:
 
-3. リポジトリをクローン(dsa-projectのクローンでまとめて行われるはずなので基本的には不要)
-   ```sh
-   # 作業したいディレクトリへ移動
-   cd {ディレクトリのパス}
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-   # リポジトリをクローン
-   git clone https://github.com/dsa-uts/dsa-front.git
-   ```
+## Expanding the ESLint configuration
 
-4. アプリケーションの起動(dsa-projectのdocker起動時に起動されるので基本的には不要)
-   ```sh
-   # ディレクトリ移動
-   cd dsa-front
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-   # スタート
-   npm start
-   ```
+```js
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
 
-## ホスト環境でIntellisenseなどを有効にする方法(環境をいじらずに)
-1. venv環境の作成
-   ```sh
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-2. nodeenvのインストール
-   ```sh
-   pip install nodeenv
-   ```
-3. nodeenvの実行
-   ```sh
-   nodeenv -p
-   ```
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
+```
